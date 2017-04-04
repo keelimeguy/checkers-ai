@@ -1,3 +1,11 @@
+# text editor poop
+*~
+\#*\#
+
+# Java poop
+*.java
+*.class
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
