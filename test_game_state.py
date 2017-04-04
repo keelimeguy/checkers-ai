@@ -10,18 +10,24 @@ import unittest
 from samuel_state import SamuelGameState
 from state_superclass import CheckersGameState
 
-FRESH_BOARD_REPR = """-b-b-b-b
-b-b-b-b-
--b-b-b-b
---------
---------
-w-w-w-w-
--w-w-w-w
-w-w-w-w-
+FRESH_BOARD_REPR = """+b+b+b+b
+b+b+b+b+
++b+b+b+b
+-+-+-+-+
++-+-+-+-
+w+w+w+w+
++w+w+w+w
+w+w+w+w+
 
 Black's move"""
 
 class CheckersGameStateTestCase(unittest.TestCase):
+    """Test cases for checker boards. 
+
+    You can subclass this to test your own board.
+
+    This does test a particular board, because it will run and fail without a
+    working class. (This is easy to demonstrate at the time of writing!)"""
 
     def setUp(self):
         """Overwrite this in subclass to test a different class
@@ -76,3 +82,7 @@ class CheckersGameStateTestCase(unittest.TestCase):
             # We could also count the number of pieces (via the string
             # representation) to make sure that, e.g., players aren't losing
             # pieces on their own turns, or gaining pieces for that matter.
+
+
+if __name__ == "__main__":
+    unittest.main()
