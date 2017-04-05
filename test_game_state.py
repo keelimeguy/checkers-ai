@@ -173,6 +173,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          moves)
 
 class ParserHelperTestCase(unittest.TestCase):
+    """Tests the thing that makes parsing boards easier"""
 
     def test_parse_board_string(self):
         """Test the function that helps parse boards from strings"""
