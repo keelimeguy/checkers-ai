@@ -20,6 +20,8 @@ int main(void) {
         moves = actions(board);
         board = result(board, moves[0]);
 
+        fprintf(stdout, "Making first available move...\n\n");
+
         fprintf(stdout, "%s\n", Board_to_string(board));
     }
     Board_destroy(board);

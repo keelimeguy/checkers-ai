@@ -113,7 +113,7 @@ Move** actions(Board* b) {
 
     // Convert string of moves into Move list..
 
-    // fprintf(stdout, "%s\n", moveStr);
+    fprintf(stdout, "Available Moves:%s\n\n", moveStr);
 
     int len = strlen(moveStr);
     int numMoves = 0;
