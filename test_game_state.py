@@ -8,7 +8,7 @@ import unittest
 
 # put a line to import your game state implementation here
 from samuel_state import SamuelGameState
-from state_superclass import CheckersGameState
+from state_superclass import CheckersGameState, parse_board_string
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
@@ -121,6 +121,28 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
+class ParserHelperTestCase(unittest.TestCase):
+
+    def test_parse_board_string(self):
+        """Test the function that helps parse boards from strings"""
+        example = """
++-+-+-+w
+-+-+-+-+
++-+W+-+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+b+B
+-+-+-+-+
+
+White's move
+""".strip()
+        pieces, player = parse_board_string(example)
+        self.assertEqual(len(pieces), 4)
+        self.assertIn((1, 7, 'B'), pieces)
+        self.assertIn((1, 5, 'b'), pieces)
+        self.assertIn((5, 3, 'W'), pieces)
+        self.assertIn((7, 7, 'w'), pieces)
 
 if __name__ == "__main__":
     unittest.main()
