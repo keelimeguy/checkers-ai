@@ -12,7 +12,6 @@
 
 
 
-
 #include "test_keelin.h"
 
 // Static Function prototypes
@@ -177,7 +176,7 @@ unsigned int white_moves(char* str_moves, unsigned int b, unsigned int w, unsign
     // Start iterating through masks from 1st bit
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2]; // Will hold masks for the starting position of the piece before it moved
-    char outstr[100] = {0}; // Used to construct the list of available moves which will be returned through the argument str_moves
+    char outstr[999] = {0}; // Used to construct the list of available moves which will be returned through the argument str_moves
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         if (pos&king_moves[0]) { // If a white king is able to move forward to the current position
@@ -233,7 +232,7 @@ static void white_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
 
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2];
-    char outstr[100] = {0};
+    char outstr[999] = {0};
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         if (pos&k_moves[0]) {
@@ -250,26 +249,28 @@ static void white_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         if (new_j-i == 7) jumped_pos |= new_j-4;
                         else jumped_pos |= new_j-5;
                     }
-                    // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                    unsigned int next_k_moves[2] = {0,0};
-                    unsigned int next_n_moves[2] = {0,0};
-                    next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
-                    if (next_jumps) {
-                        char newstr[100] = {0};
-                        if (previous_moves!=0 && strlen(previous_moves)!=0)
-                            sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        else
-                            sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
-                    } else {
-                        if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                    if(b&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                        // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
+                        unsigned int next_k_moves[2] = {0,0};
+                        unsigned int next_n_moves[2] = {0,0};
+                        next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
+                        if (next_jumps) {
+                            char newstr[999] = {0};
+                            if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            else
+                                sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
                         } else {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            } else {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            }
                         }
                     }
                 }
@@ -289,26 +290,28 @@ static void white_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         if (i-new_j == 7) jumped_pos |= i-4;
                         else jumped_pos |= i-5;
                     }
-                    // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                    unsigned int next_k_moves[2] = {0,0};
-                    unsigned int next_n_moves[2] = {0,0};
-                    next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
-                    if (next_jumps) {
-                        char newstr[100] = {0};
-                        if (previous_moves!=0 && strlen(previous_moves)!=0)
-                            sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        else
-                            sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
-                    } else {
-                        if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                    if(b&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                        // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
+                        unsigned int next_k_moves[2] = {0,0};
+                        unsigned int next_n_moves[2] = {0,0};
+                        next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
+                        if (next_jumps) {
+                            char newstr[999] = {0};
+                            if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            else
+                                sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
                         } else {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            } else {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            }
                         }
                     }
                 }
@@ -328,26 +331,28 @@ static void white_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         if (new_j-i == 7) jumped_pos |= new_j-4;
                         else jumped_pos |= new_j-5;
                     }
-                    // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                    unsigned int next_k_moves[2] = {0,0};
-                    unsigned int next_n_moves[2] = {0,0};
-                    next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), 0, 1, next_k_moves, next_n_moves);
-                    if (next_jumps) {
-                        char newstr[100] = {0};
-                        if (previous_moves!=0 && strlen(previous_moves)!=0)
-                            sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        else
-                            sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), k&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
-                    } else {
-                        if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                    if(b&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                        // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
+                        unsigned int next_k_moves[2] = {0,0};
+                        unsigned int next_n_moves[2] = {0,0};
+                        next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
+                        if (next_jumps) {
+                            char newstr[999] = {0};
+                            if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            else
+                                sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
                         } else {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            } else {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            }
                         }
                     }
                 }
@@ -448,7 +453,7 @@ unsigned int black_moves(char* str_moves, unsigned int b, unsigned int w, unsign
     // Start iterating from 1st bit
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2];
-    char outstr[100] = {0};
+    char outstr[999] = {0};
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         if (pos&king_moves[0]) {
@@ -501,7 +506,7 @@ static void black_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
 
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2];
-    char outstr[100] = {0};
+    char outstr[999] = {0};
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         if (pos&k_moves[0]) {
@@ -518,26 +523,28 @@ static void black_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         if (i-new_j == 7) jumped_pos |= i-4;
                         else jumped_pos |= i-5;
                     }
-                    // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                    unsigned int next_k_moves[2] = {0,0};
-                    unsigned int next_n_moves[2] = {0,0};
-                    next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
-                    if (next_jumps) {
-                        char newstr[100] = {0};
-                        if (previous_moves!=0 && strlen(previous_moves)!=0)
-                            sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        else
-                            sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
-                    } else {
-                        if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                    if(w&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                        // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
+                        unsigned int next_k_moves[2] = {0,0};
+                        unsigned int next_n_moves[2] = {0,0};
+                        next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
+                        if (next_jumps) {
+                            char newstr[999] = {0};
+                            if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            else
+                                sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
                         } else {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            } else {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            }
                         }
                     }
                 }
@@ -557,26 +564,28 @@ static void black_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         if (new_j-i == 7) jumped_pos |= new_j-4;
                         else jumped_pos |= new_j-5;
                     }
-                    // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                    unsigned int next_k_moves[2] = {0,0};
-                    unsigned int next_n_moves[2] = {0,0};
-                    next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
-                    if (next_jumps) {
-                        char newstr[100] = {0};
-                        if (previous_moves!=0 && strlen(previous_moves)!=0)
-                            sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        else
-                            sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
-                    } else {
-                        if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                    if(w&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                        // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
+                        unsigned int next_k_moves[2] = {0,0};
+                        unsigned int next_n_moves[2] = {0,0};
+                        next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
+                        if (next_jumps) {
+                            char newstr[999] = {0};
+                            if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            else
+                                sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
                         } else {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            } else {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            }
                         }
                     }
                 }
@@ -596,26 +605,28 @@ static void black_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         if (i-new_j == 7) jumped_pos |= i-4;
                         else jumped_pos |= i-5;
                     }
-                    // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                    unsigned int next_k_moves[2] = {0,0};
-                    unsigned int next_n_moves[2] = {0,0};
-                    next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), 0, 1, next_k_moves, next_n_moves);
-                    if (next_jumps) {
-                        char newstr[100] = {0};
-                        if (previous_moves!=0 && strlen(previous_moves)!=0)
-                            sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        else
-                            sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                        white_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), k&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
-                    } else {
-                        if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                    if(w&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                        // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
+                        unsigned int next_k_moves[2] = {0,0};
+                        unsigned int next_n_moves[2] = {0,0};
+                        next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
+                        if (next_jumps) {
+                            char newstr[999] = {0};
+                            if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            else
+                                sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
                         } else {
-                            if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            } else {
+                                if (strlen(outstr)!=0)
+                                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
+                            }
                         }
                     }
                 }
