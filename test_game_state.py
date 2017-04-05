@@ -9,6 +9,8 @@ import unittest
 # put a line to import your game state implementation here
 from samuel_state import SamuelGameState
 from state_superclass import CheckersGameState, parse_board_string
+from EightXEight import EightXEightGameState
+
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
@@ -171,6 +173,11 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
+
+class EightByEightTestCase(CheckersGameStateTestCase):
+    def setUp(self):
+        self.state_class = EightXEightGameState
+
 
 class ParserHelperTestCase(unittest.TestCase):
     """Tests the thing that makes parsing boards easier"""
