@@ -336,13 +336,13 @@ static void white_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         unsigned int next_k_moves[2] = {0,0};
                         unsigned int next_n_moves[2] = {0,0};
                         next_jumps = white_moves((char*){0}, b&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
-                        if (next_jumps) {
+                        if (next_n_moves[0]) {
                             char newstr[999] = {0};
                             if (previous_moves!=0 && strlen(previous_moves)!=0)
                                 sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
                             else
                                 sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
+                            white_jump_handle(str_moves, b&~(1<<(jumped_pos-1)), (w&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr);
                         } else {
                             if (previous_moves!=0 && strlen(previous_moves)!=0) {
                                 if (strlen(outstr)!=0)
@@ -610,13 +610,13 @@ static void black_jump_handle(char* str_moves, unsigned int b, unsigned int w, u
                         unsigned int next_k_moves[2] = {0,0};
                         unsigned int next_n_moves[2] = {0,0};
                         next_jumps = black_moves((char*){0}, (1<<(i-1)), w&~(1<<(jumped_pos-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves);
-                        if (next_jumps) {
+                        if (next_n_moves[0]) {
                             char newstr[999] = {0};
                             if (previous_moves!=0 && strlen(previous_moves)!=0)
                                 sprintf(newstr, "%s:(%hu:%hu)", previous_moves, 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
                             else
                                 sprintf(newstr, "(%hu:%hu):(%hu:%hu)", 7-(j-1)/4, 2*((j-1)%4) + ((7-(j-1)/4)%2==0 ? 0 : 1), 7-(i-1)/4, 2*((i-1)%4) + ((7-(i-1)/4)%2==0 ? 0 : 1));
-                            black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr);
+                            black_jump_handle(str_moves, (b&~(1<<(j-1)))|(1<<(i-1)), w&~(1<<(jumped_pos-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr);
                         } else {
                             if (previous_moves!=0 && strlen(previous_moves)!=0) {
                                 if (strlen(outstr)!=0)

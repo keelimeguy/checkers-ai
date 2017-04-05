@@ -98,7 +98,7 @@ int main(void) {
     fprintf(stdout, "Player: %s\n", playerStr);
     fprintf(stdout, "Actions: %s\n", moves);
 
-//--------------------------------------------
+// //--------------------------------------------
     moves[0] = 0;
 
     fprintf(stdout, "\n");
@@ -113,6 +113,44 @@ int main(void) {
     fprintf(stdout, "Player: %s\n", playerStr);
     fprintf(stdout, "Actions: %s\n", moves);
 
+// //--------------------------------------------
+    moves[0] = 0;
+
+    fprintf(stdout, "\n");
+
+    setup(0x0c000000, 0x00000208, 0x08000200, 1);
+    printState();
+    player(playerStr);
+    actions(moves);
+
+    fprintf(stdout, "Player: %s\n", playerStr);
+    fprintf(stdout, "Actions: %s\n", moves);
+
+//--------------------------------------------
+    moves[0] = 0;
+
+    fprintf(stdout, "\n");
+
+    setup(0x0000c000, 0x00060000, 0x00000000, 0);
+    printState();
+    player(playerStr);
+    actions(moves);
+
+    fprintf(stdout, "Player: %s\n", playerStr);
+    fprintf(stdout, "Actions: %s\n", moves);
+
+//--------------------------------------------
+    moves[0] = 0;
+
+    fprintf(stdout, "\n");
+
+    setup(0x00c00000, 0x06000000, 0x00000000, 0);
+    printState();
+    player(playerStr);
+    actions(moves);
+
+    fprintf(stdout, "Player: %s\n", playerStr);
+    fprintf(stdout, "Actions: %s\n", moves);
 
     return 0;
 }

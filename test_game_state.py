@@ -121,6 +121,57 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
+    def test_jump_into_king_end_turn(self):
+        """According to rules: when your piece becomes a king, your turn ends there.
+           Let's check that we don't keep jumping
+        """
+        board_string = """
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+b+b+
++-+w+w+-
+-+-+-+-+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+        #                  for readability)
+
+        moves = sorted(["(2:6):(0:4)",
+                        "(2:4):(0:2)",
+                        "(2:4):(0:6)"])
+        acts = self.state_class.from_string(board_string).actions()
+        # The lists (which have both been sorted lexicographically) should be
+        # the same
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
+
+    def test_jump_forward_only(self):
+        """Test that we only jump forwards, not backwards
+        """
+        board_string = """
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+b+b+
++-+w+w+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+        #                  for readability)
+
+        moves = sorted(["(4:6):(2:4)",
+                        "(4:4):(2:2)",
+                        "(4:4):(2:6)"])
+        acts = self.state_class.from_string(board_string).actions()
+        # The lists (which have both been sorted lexicographically) should be
+        # the same
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
+
 class ParserHelperTestCase(unittest.TestCase):
 
     def test_parse_board_string(self):
@@ -143,6 +194,12 @@ White's move
         self.assertIn((1, 5, 'b'), pieces)
         self.assertIn((5, 3, 'W'), pieces)
         self.assertIn((7, 7, 'w'), pieces)
+
+class KeelinGameStateTestCase(CheckersGameStateTestCase):
+    """Test keelin's game state"""
+
+    def setUp(self):
+        self.state_class = KeelinGameState
 
 if __name__ == "__main__":
     unittest.main()
