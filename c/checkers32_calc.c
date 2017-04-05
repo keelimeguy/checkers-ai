@@ -12,7 +12,7 @@
 
 
 
-#include "test_keelin.h"
+#include "checkers32_calc.h"
 
 // Static Function prototypes
 // (probably a way to combine white and black specific functions together, as they are incredibly similar)
@@ -162,7 +162,8 @@ unsigned int white_moves(char* str_moves, unsigned int b, unsigned int w, unsign
                 return king_jump_moves[0]|king_jump_moves[1]|normal_jump_moves[0];
             }
             white_jump_handle(str_moves, b, w, k, king_jump_moves, normal_jump_moves, (char*){0});
-            return king_jump_moves[0]|king_jump_moves[1]|normal_jump_moves[0];
+            if (jump_detect_only || strlen(str_moves)!=0)
+                return king_jump_moves[0]|king_jump_moves[1]|normal_jump_moves[0];
         }
     } else if (jump_detect_only) return 0;
 
@@ -442,7 +443,8 @@ unsigned int black_moves(char* str_moves, unsigned int b, unsigned int w, unsign
                 return king_jump_moves[0]|king_jump_moves[1]|normal_jump_moves[0];
             }
             black_jump_handle(str_moves, b, w, k, king_jump_moves, normal_jump_moves, (char*){0});
-            return king_jump_moves[0]|king_jump_moves[1]|normal_jump_moves[0];
+            if (jump_detect_only || strlen(str_moves)!=0)
+                return king_jump_moves[0]|king_jump_moves[1]|normal_jump_moves[0];
         }
     } else if (jump_detect_only) return 0;
 

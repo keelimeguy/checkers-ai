@@ -1,15 +1,9 @@
 all:
-	gcc -c -fpic main.c test_keelin.c
-	ld -r main.o test_keelin.o -o test.o
+	gcc -c -fpic main_test.c main.c checkers32.c checkers32_calc.c
+	ld -r checkers32.o checkers32_calc.o -o test.o
 	gcc -shared test.o -o libtest.so
-	gcc -ggdb3 main.c test_keelin.c -o main.o
+	gcc -ggdb3 main_test.c checkers32_calc.c -o test_checkers32.exe
+	gcc -ggdb3 main.c checkers32_calc.c checkers32.c -o checkers32.exe
 
 clean:
-	rm test.o main.o test_keelin.o libtest.so
-
-# all: main.o test_keelin.o
-# 	gcc -shared test_keelin.o -o libtest.dll -Wl,--out-implib,libtest.a
-# 	gcc main.o -Wl,-rpath=. -L. -ltest -o main
-
-# clean:
-# 	rm main.o test_keelin.o libtest.dll libtest.a
+	rm test.o main.o main_test.o checkers32.o checkers32_calc.o libtest.so checkers32.exe test_checkers32.exe

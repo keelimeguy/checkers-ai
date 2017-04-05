@@ -3,8 +3,8 @@
    CSE4705 - HW4: Checkers Representations
    "32-array" Representation - using 3 unsigned ints
 ------------------------------------------------------*/
-#ifndef TEST_KEELIN_H
-#define TEST_KEELIN_H
+#ifndef CHECKERS32_CALC_H
+#define CHECKERS32_CALC_H
 
 #include <stdio.h>
 #include <stdlib.h>
