@@ -7,4 +7,4 @@ Run make (creates a shared object), then from python:
 >>> md
 >>> from structs import *
 
-Then you can call any library function with md.foo, using pointer() for pointers
+Then you can call any library function with md.foo, using pointer(<type>) for pointers
