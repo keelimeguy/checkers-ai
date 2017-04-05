@@ -10,6 +10,7 @@ for sample output see files:
 "sample_out_full_game_first_move.txt"
 "sample_out_multi_jump_forced_loss.txt"
 "sample_out_test_cases.txt"
+"sample_out_sparse_full_game.txt" (sparse representation only)
 
 Notice: Most implementations are written in python with some pieces written in C, which are called from python using c_lists
 Choices in language are made with consideration for speed

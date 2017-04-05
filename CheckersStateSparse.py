@@ -199,12 +199,13 @@ currentState = parseStringState(startPlayer, startState)
 print currentState
 
 import random
-while True:
+while True: #run to test full game
     print ""
     actions = currentState.actions()
     if len(actions) == 0:
         print "%s Loses" %currentState.player
         break
+    print "actions: %s" %str(actions)
     action = random.choice(actions)
     print "%s: %s" %(currentState.player,action)
     currentState = currentState.result(action)
