@@ -1,6 +1,7 @@
 from ctypes import cdll
-
-md = cdll.LoadLibrary('libtest.so')
+import os
+md = cdll.LoadLibrary(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libtest.so'))
 
 # import os
 # import ctypes
