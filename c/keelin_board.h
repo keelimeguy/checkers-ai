@@ -1,6 +1,8 @@
 #ifndef KEELIN_BOARD_H
 #define KEELIN_BOARD_H
 
+#include "test_keelin.h"
+
 typedef struct Board {
   unsigned int b, w, k;
   unsigned short plyr;

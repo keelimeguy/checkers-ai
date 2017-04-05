@@ -95,9 +95,9 @@ void player(Board* b, char* str) {
 Move* actions(Board* b) {
     if (b->plyr)
       // TODO fix move representation
-        white_moves(moves, b->b, b->w, b->k, 0, (unsigned int*){0}, (unsigned int*){0});
+        return white_moves(b->b, b->w, b->k, 0, (unsigned int*){0}, (unsigned int*){0});
     else
-        black_moves(moves, b->b, b->w, b->k, 0, (unsigned int*){0}, (unsigned int*){0});
+        return black_moves(b->b, b->w, b->k, 0, (unsigned int*){0}, (unsigned int*){0});
 }
 
 Board* result(Board* b, Move* move) {
