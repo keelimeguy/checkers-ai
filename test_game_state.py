@@ -21,6 +21,8 @@ w+w+w+w+
 
 Black's move"""
 
+
+
 class CheckersGameStateTestCase(unittest.TestCase):
     """Test cases for checker boards. 
 
@@ -38,6 +40,13 @@ class CheckersGameStateTestCase(unittest.TestCase):
         methods, the usual convention is to use underscores.
         """
         self.state_class = SamuelGameState
+
+    def test_parsing_from_string(self):
+        """If only to facilitate testing, it's nice to parse the string version
+        of a board into an actual board.
+        """
+        self.assertEqual(str(self.state_class.from_string(FRESH_BOARD_REPR)),
+                         FRESH_BOARD_REPR)
 
     def test_initial_state_player(self):
         """Black goes first"""
@@ -82,6 +91,35 @@ class CheckersGameStateTestCase(unittest.TestCase):
             # We could also count the number of pieces (via the string
             # representation) to make sure that, e.g., players aren't losing
             # pieces on their own turns, or gaining pieces for that matter.
+
+
+    def test_king_jump_option_computation(self):
+        """Correctly parse a board (with from_string) and find four possible
+        jump sequences. Also accurately represent double-jump moves in server
+        format.
+        """
+        board_string = """
++b+-+-+-
+-+b+-+-+
++-+W+-+-
+-+b+b+-+
++-+-+-+-
+-+b+b+b+
++-+-+-+-
+-+-+-+-+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+        #                  for readability)
+
+        moves = sorted(["(5:3):(3:1):(1:3):(3:5):(5:3)",
+                        "(5:3):(3:1):(1:3):(3:5):(1:7)",
+                        "(5:3):(3:5):(1:7)",
+                        "(5:3):(3:5):(1:3):(3:1):(5:3)"])
+        acts = self.state_class.from_string(board_string).actions()
+        # The lists (which have both been sorted lexicographically) should be
+        # the same
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
 
 
 if __name__ == "__main__":
