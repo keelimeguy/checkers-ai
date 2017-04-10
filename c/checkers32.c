@@ -94,14 +94,14 @@ char* Board_to_string(Board* b) {
 char* Move_to_string(Move* m) {
     char* repr = malloc((m->length*5 + (m->length > 1) ? (m->length-1) : 0) * sizeof(char));
     for (int i = 0; i < m->length; i++) {
-	unsigned short pos = m->route[i];
-	repr[i*6] = '(';
-	repr[i*6+1] = (char)(7-(pos-1)/4 + 48);
-	repr[i*6+2] = ':';
-	repr[i*6+3] = (char)(2*((pos-1)%4) + (7-(pos-1)/4)%2 + 48);
-	repr[i*6+4] = ')';
-	if (i != m->length-1)
-	    repr[i*6+5] = ':';
+    unsigned short pos = m->route[i];
+    repr[i*6] = '(';
+    repr[i*6+1] = (char)(pos_to_row(pos) + 48);
+    repr[i*6+2] = ':';
+    repr[i*6+3] = (char)(pos_to_col(pos) + 48);
+    repr[i*6+4] = ')';
+    if (i != m->length-1)
+        repr[i*6+5] = ':';
     }
     return repr;
 }
@@ -113,7 +113,6 @@ unsigned short pos_to_col(unsigned short pos) {
     return 2 * ((pos - 1) % 4) + (pos_to_row(pos) % 2);
 }
 
-
 void player(Board* b, char* str) {
     if (b->plyr)
         sprintf(str, "White");
@@ -121,8 +120,6 @@ void player(Board* b, char* str) {
         sprintf(str, "Black");
 }
 
-// This Move* should be a list of moves.. should it be Move** ?
-// Or does the Board* need to be Board in the result(..) function below
 Move** actions(Board* b, int* length) {
     char moveStr[999]; // Sorry...
     moveStr[0] = 0; // Just in case...
@@ -181,14 +178,13 @@ Move** actions(Board* b, int* length) {
 
 
         ret[i] = Move_alloc();
-	Move_init(ret[i], numSteps);
+    Move_init(ret[i], numSteps);
         for (int j = 0; j<numSteps; j++)
             ret[i]->route[j] = temp_pos[j];
     }
     return ret;
 }
 
-// See what I mean? Board* or Board ?
 Board* result(Board* b, Move* move) {
     Board* res = Board_alloc();
     res->b = b->b;
