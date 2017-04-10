@@ -17,7 +17,8 @@ int main(void) {
 
     Move** moves;
     for (int i = 0; i < 2; i++) {
-        moves = actions(board);
+        int length = 0;
+        moves = actions(board, &length);
         board = result(board, moves[0]);
 
         fprintf(stdout, "Making first available move...\n\n");

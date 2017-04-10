@@ -24,12 +24,12 @@ void Move_destroy(Move* m);
 
 /* void printState(Board* b); */
 char* Board_to_string(Board* b);
-/* char* Move_to_string(Move* m); */
+char* Move_to_string(Move* m);
 // rather just access the struct from python and print it from there
 
 void player(Board* b, char* str);
 /* void actions(char* moves); */
-Move** actions(Board* b);
+Move** actions(Board* b, int* length);
 
 Board* result(Board* b, Move* m);
 
