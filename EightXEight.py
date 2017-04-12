@@ -83,16 +83,16 @@ class EightXEightGameState(CheckersGameState):
             return self.find_peon_jumps(r, c)
 
     def find_peon_jumps(self, r, c):
-    	"""This one is easier. You never jump backwards, even if the piece is promoted"""
-    	# don't check self.Board[r][c] in case this is a recursive case
+        """This one is easier. You never jump backwards, even if the piece is promoted"""
+        # don't check self.Board[r][c] in case this is a recursive case
         vert_mv = -1 if self.Black else 1
         enemy = "wW" if self.Black else 'bB'
         results = []  # list of lists of (coord,inates)
         for horiz_mv in [-1, 1]:
-        	if (self.Board[r+vert_mv][c+horiz_mv] in enemy
-        		and not self.occupied(r+2*vert_mv, c+2*horiz_mv)):  # TODO fix index-out-of-bounds bug
-        		for tail in self.find_peon_jumps(r+2*vert_mv, c+2*horiz_mv):
-        			results.append([(r+2*vert_mv, c+2*horiz_mv), *tail])
+            if (self.Board[r+vert_mv][c+horiz_mv] in enemy
+                and not self.occupied(r+2*vert_mv, c+2*horiz_mv)):  # TODO fix index-out-of-bounds bug
+                for tail in self.find_peon_jumps(r+2*vert_mv, c+2*horiz_mv):
+                    results.append([(r+2*vert_mv, c+2*horiz_mv), tail])
         return results  # notice the base case is [], except that actually it will go off the board and throw an error whenever it possibly can. Not hard to fix except at 4:35 AM.
 
 

@@ -29,9 +29,10 @@ void Move_destroy(Move* m);
 
 char Board_char_at_pos(Board* b, unsigned short pos);
 char* Board_to_string(Board* b);
+Board* Board_from_string(char* str);
 char* Move_to_string(Move* m);
 
-void player(Board* b, char* str);
+char* player(Board* b);
 Move** actions(Board* b, int* length);
 Board* result(Board* b, Move* m);
 

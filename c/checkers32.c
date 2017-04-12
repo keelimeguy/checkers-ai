@@ -67,7 +67,7 @@ char Board_char_at_pos(Board* b, unsigned short pos) {
 }
 
 char* Board_to_string(Board* b) {
-    char* repr = malloc(86 * sizeof(char));
+    char* repr = malloc(85 * sizeof(char));
     int next = 0;
     for(int i = 1; i <= 32; i++) {
         if ((i-1) % 8 < 4) {
@@ -82,7 +82,9 @@ char* Board_to_string(Board* b) {
         }
     }
     repr[next++] = '\n';
-    player(b, & repr[next]);
+    char* playerStr = player(b);
+    for (int i = 0; i < 5; i++)
+        repr[next+i] = playerStr[i];
     repr[next+5]='\'';
     repr[next+6]='s';
     repr[next+7]=' ';
@@ -90,9 +92,42 @@ char* Board_to_string(Board* b) {
     repr[next+9]='o';
     repr[next+10]='v';
     repr[next+11]='e';
-    repr[next+12]='\n';
-    repr[next+13]='\0';
+    repr[next+12]='\0';
     return repr;
+}
+
+Board* Board_from_string(char* str) {
+    if (strlen(str)!=85) return (Board*){0};
+    Board* ret = Board_alloc();
+    int next = 0;
+    unsigned int b = 0, w = 0, k = 0;
+    for(int i = 1; i <= 32; i++) {
+        if ((i-1) % 8 < 4)
+            next++;
+        if (str[next]=='B') {
+            b |= (1<<(i-1));
+            k |= (1<<(i-1));
+        } else if (str[next]=='W') {
+            w |= (1<<(i-1));
+            k |= (1<<(i-1));
+        } else if (str[next]=='b') {
+            b |= (1<<(i-1));
+        } else if (str[next]=='w') {
+            w |= (1<<(i-1));
+        }
+        next++;
+        if ((i-1) % 8 >= 4)
+            next++;
+        if (i % 4 == 0)
+            next++;
+    }
+    next++;
+    if (str[next]=='W') ret->plyr = 1;
+    else ret->plyr = 0;
+    ret->b = b;
+    ret->w = w;
+    ret->k = k;
+    return ret;
 }
 
 char* Move_to_string(Move* m) {
@@ -111,11 +146,14 @@ char* Move_to_string(Move* m) {
     return repr;
 }
 
-void player(Board* b, char* str) {
+char* player(Board* b) {
+    char* str = malloc(6*sizeof(char));
     if (b->plyr)
         sprintf(str, "White");
     else
         sprintf(str, "Black");
+    str[5] = (char)0;
+    return str;
 }
 
 Move** actions(Board* b, int* length) {
@@ -129,7 +167,7 @@ Move** actions(Board* b, int* length) {
 
     // Convert string of moves into Move list..
 
-    fprintf(stdout, "Available Moves:%s\n\n", moveStr);
+    // fprintf(stdout, "Available Moves:%s\n\n", moveStr);
 
     int len = strlen(moveStr);
     int numMoves = 0;

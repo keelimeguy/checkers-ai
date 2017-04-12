@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
 
 """Unit tests for game state representations"""
-
 from __future__ import print_function  # in case you're using python2
 import sys  # to print an error in a certain case
 import unittest
+
+import sys
+sys.path.insert(0, 'c/')
 
 # put a line to import your game state implementation here
 from samuel_state import SamuelGameState
 from state_superclass import CheckersGameState, parse_board_string
 from EightXEight import EightXEightGameState
-
+from bitboard_32_state import Bitboard32State
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
@@ -41,13 +43,14 @@ class CheckersGameStateTestCase(unittest.TestCase):
         FYI, the creators of unittest use camel-casing, but for functions and
         methods, the usual convention is to use underscores.
         """
-        self.state_class = SamuelGameState
+        self.state_class = Bitboard32State
+        # self.state_class = SamuelGameState
 
     def test_parsing_from_string(self):
         """If only to facilitate testing, it's nice to parse the string version
         of a board into an actual board.
         """
-        self.assertEqual(str(self.state_class.from_string(FRESH_BOARD_REPR)),
+        self.assertEqual(str(self.state_class.from_string(self.state_class, FRESH_BOARD_REPR)),
                          FRESH_BOARD_REPR)
 
     def test_initial_state_player(self):
@@ -66,13 +69,12 @@ class CheckersGameStateTestCase(unittest.TestCase):
     def test_initial_state_actions(self):
         """Sanity check for the available actions of the initial state"""
         # put the possible actions in a list and make sure its length is 7
-        self.assertEqual(len([*self.state_class().actions()]),
+        self.assertEqual(len(list(self.state_class().actions())),
                          7)
 
     def test_action_results(self):
         """Make some random moves and do some sanity checks"""
         current = self.state_class()
-
 
         for _ in range(10):  # i.e. repeat 10 times
             # Note that the game can't end in 10 moves, so if it does,
@@ -111,13 +113,13 @@ class CheckersGameStateTestCase(unittest.TestCase):
 -+-+-+-+
 
 White's move""".strip()  # strip() removes the initial newline # (which is just
-        #                  for readability)
+                         # for readability)
 
         moves = sorted(["(5:3):(3:1):(1:3):(3:5):(5:3)",
                         "(5:3):(3:1):(1:3):(3:5):(1:7)",
                         "(5:3):(3:5):(1:7)",
                         "(5:3):(3:5):(1:3):(3:1):(5:3)"])
-        acts = self.state_class.from_string(board_string).actions()
+        acts = self.state_class.from_string(self.state_class, board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
@@ -138,12 +140,12 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
 -+-+-+-+
 
 Black's move""".strip()  # strip() removes the initial newline # (which is just
-        #                  for readability)
+                         # for readability)
 
         moves = sorted(["(2:6):(0:4)",
                         "(2:4):(0:2)",
                         "(2:4):(0:6)"])
-        acts = self.state_class.from_string(board_string).actions()
+        acts = self.state_class.from_string(self.state_class, board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
@@ -163,20 +165,50 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
 -+-+-+-+
 
 Black's move""".strip()  # strip() removes the initial newline # (which is just
-        #                  for readability)
+                         # for readability)
 
         moves = sorted(["(4:6):(2:4)",
                         "(4:4):(2:2)",
                         "(4:4):(2:6)"])
-        acts = self.state_class.from_string(board_string).actions()
+        acts = self.state_class.from_string(self.state_class, board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
-class EightByEightTestCase(CheckersGameStateTestCase):
-    def setUp(self):
-        self.state_class = EightXEightGameState
+    def test_king_piece_condition(self):
+        """Test that we king a piece when it reaches opposite end
+        """
+        board_string = """
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+w+b
+-+-+-+-+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        result_string = """
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+w+-
+-+-+-+B+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        start_state = self.state_class.from_string(self.state_class, board_string)
+        acts = start_state.actions()
+        self.assertEqual(str(start_state.result(list(acts)[0])),
+                         result_string)
 
 
 class ParserHelperTestCase(unittest.TestCase):
@@ -203,11 +235,16 @@ White's move
         self.assertIn((5, 3, 'W'), pieces)
         self.assertIn((7, 7, 'w'), pieces)
 
-class KeelinGameStateTestCase(CheckersGameStateTestCase):
-    """Test keelin's game state"""
 
-    def setUp(self):
-        self.state_class = KeelinGameState
+# class EightByEightTestCase(CheckersGameStateTestCase):
+#     def setUp(self):
+#         self.state_class = EightXEightGameState
+
+
+# class Bitboard32StateTestCase(CheckersGameStateTestCase):
+#     def setUp(self):
+#         self.state_class = Bitboard32State
+
 
 if __name__ == "__main__":
     unittest.main()
