@@ -77,7 +77,7 @@ class SamuelGameState(CheckersGameState):
             for i in range(0, 36, 9):
                 self.board[i] = None
         self.black = black
-        
+
 
     @staticmethod
     def horiz_valid(index):

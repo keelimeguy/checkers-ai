@@ -9,7 +9,7 @@ class SparseGameState(CheckersGameState):
 
     def player(self):
         return player
-    
+
     def findJumps(self, pos, piece, prevPos = 0):
         jumps = [""] #if a piece can jump it must, does it need to chain jump if able?
         if pos < 1 or pos > 35 or piece == "phantom":
@@ -35,7 +35,7 @@ class SparseGameState(CheckersGameState):
                 otherjumps = self.findJumps(pos-10, piece, pos)
                 jumps += [move+":"+jump for jump in otherjumps]
         return jumps
-        
+
     def actions(self): #returns possible actions for a player to take, returns 2-tuple (prev space, next space)
         actions = []
         stateDict = self.stateDict
@@ -65,7 +65,7 @@ class SparseGameState(CheckersGameState):
                 if pos-5 not in stateDict and pos-5>0:
                     actions.append("(%d:%d)" %(pos, pos-5))
         return actions
-            
+
 
     def result(self, movement):
         moves = movement.split(")")
@@ -100,7 +100,7 @@ class SparseGameState(CheckersGameState):
                 newStateDict[endPos].isKing = True
             newPlayer = "Black"
         return SparseGameState(newPlayer, newStateDict)
-        
+
 
     def __str__(self):
         count = 1
@@ -128,7 +128,7 @@ class SparseGameState(CheckersGameState):
             out += rowStr
         out += "\n"
         out += "%s's move" %self.player
-        return out            
+        return out
 
 class Piece(object):
     def __init__(self, owner, position, isKing = False):
@@ -182,8 +182,8 @@ def parseStringState(player, stringState):
                 piece = Piece(owner, posCount, isKing)
                 stateDict[posCount] = piece
     return SparseGameState(player, stateDict)
-                
-            
+
+
 startState = """
 +b+b+b+b
 b+b+b+b+
@@ -210,4 +210,4 @@ while True: #run to test full game
     print "%s: %s" %(currentState.player,action)
     currentState = currentState.result(action)
     print currentState
-    
+

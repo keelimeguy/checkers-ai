@@ -13,7 +13,9 @@
 // Function prototypes
 void print_board(unsigned int b, unsigned int w, unsigned int k);
 void print_mask(unsigned int mask);
-unsigned int white_moves(char* str_moves, unsigned int b, unsigned int w, unsigned int k, unsigned short jump_detect_only, unsigned int* k_moves, unsigned int* n_moves);
-unsigned int black_moves(char* str_moves, unsigned int b, unsigned int w, unsigned int k, unsigned short jump_detect_only, unsigned int* k_moves, unsigned int* n_moves);
+unsigned short pos_to_row(unsigned short pos);
+unsigned short pos_to_col(unsigned short pos);
+unsigned int white_moves(char* str_moves, unsigned int b, unsigned int w, unsigned int k);
+unsigned int black_moves(char* str_moves, unsigned int b, unsigned int w, unsigned int k);
 
 #endif

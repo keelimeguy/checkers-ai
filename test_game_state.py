@@ -26,7 +26,7 @@ Black's move"""
 
 
 class CheckersGameStateTestCase(unittest.TestCase):
-    """Test cases for checker boards. 
+    """Test cases for checker boards.
 
     You can subclass this to test your own board.
 

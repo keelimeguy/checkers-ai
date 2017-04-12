@@ -98,7 +98,7 @@ class EightXEightGameState(CheckersGameState):
 
 
 
-                
+
 
     #def move(self, ourMove)
 

@@ -49,6 +49,12 @@ void Move_destroy(Move* m) {
     free(m);
 }
 
+void Move_list_destroy(Move** m, int size) {
+    for (int i = 0; i < size; i++)
+        Move_destroy(m[i]);
+    free(m);
+}
+
 char Board_char_at_pos(Board* b, unsigned short pos) {
     char ret = '-';
     if (b->b & (1<<(pos-1)))
@@ -86,31 +92,23 @@ char* Board_to_string(Board* b) {
     repr[next+11]='e';
     repr[next+12]='\n';
     repr[next+13]='\0';
-    // Causes seg fault
-    // strcpy("'s move", & repr[next+5]);
     return repr;
 }
 
 char* Move_to_string(Move* m) {
-    char* repr = malloc((m->length*5 + (m->length > 1) ? (m->length-1) : 0) * sizeof(char));
+    char* repr = malloc((m->length*5 + m->length) * sizeof(char));
     for (int i = 0; i < m->length; i++) {
-    unsigned short pos = m->route[i];
-    repr[i*6] = '(';
-    repr[i*6+1] = (char)(pos_to_row(pos) + 48);
-    repr[i*6+2] = ':';
-    repr[i*6+3] = (char)(pos_to_col(pos) + 48);
-    repr[i*6+4] = ')';
-    if (i != m->length-1)
-        repr[i*6+5] = ':';
+        unsigned short pos = m->route[i];
+        repr[i*6] = '(';
+        repr[i*6+1] = (char)(pos_to_row(pos) + 48);
+        repr[i*6+2] = ':';
+        repr[i*6+3] = (char)(pos_to_col(pos) + 48);
+        repr[i*6+4] = ')';
+        if (i != m->length-1)
+            repr[i*6+5] = ':';
+        else repr[i*6+5] = (char)0;
     }
     return repr;
-}
-
-unsigned short pos_to_row(unsigned short pos) {
-    return 7 - (pos - 1) / 4;
-}
-unsigned short pos_to_col(unsigned short pos) {
-    return 2 * ((pos - 1) % 4) + (pos_to_row(pos) % 2);
 }
 
 void player(Board* b, char* str) {
@@ -125,9 +123,9 @@ Move** actions(Board* b, int* length) {
     moveStr[0] = 0; // Just in case...
 
     if (b->plyr)
-        white_moves(moveStr, b->b, b->w, b->k, 0, (unsigned int*){0}, (unsigned int*){0});
+        white_moves(moveStr, b->b, b->w, b->k);
     else
-        black_moves(moveStr, b->b, b->w, b->k, 0, (unsigned int*){0}, (unsigned int*){0});
+        black_moves(moveStr, b->b, b->w, b->k);
 
     // Convert string of moves into Move list..
 
@@ -178,7 +176,7 @@ Move** actions(Board* b, int* length) {
 
 
         ret[i] = Move_alloc();
-    Move_init(ret[i], numSteps);
+        Move_init(ret[i], numSteps);
         for (int j = 0; j<numSteps; j++)
             ret[i]->route[j] = temp_pos[j];
     }

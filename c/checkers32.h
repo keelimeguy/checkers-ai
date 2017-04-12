@@ -21,6 +21,7 @@ void Board_destroy(Board* b);
 
 Move* Move_alloc();
 void Move_init(Move* m, int length);
+void Move_list_destroy(Move** m, int size);
 void Move_destroy(Move* m);
 
 // rather just access the struct from python and print it from there
@@ -29,8 +30,6 @@ void Move_destroy(Move* m);
 char Board_char_at_pos(Board* b, unsigned short pos);
 char* Board_to_string(Board* b);
 char* Move_to_string(Move* m);
-unsigned short pos_to_row(unsigned short pos);
-unsigned short pos_to_col(unsigned short pos);
 
 void player(Board* b, char* str);
 Move** actions(Board* b, int* length);

@@ -40,7 +40,7 @@ int main(void) {
     curPlayer = 0; // 0 for player black, 1 for player white
 
     char moves[999] = {0};
-    char playerStr[5] = {0};
+    char playerStr[6] = {0};
 
     printState();
 
@@ -188,9 +188,9 @@ void player(char* str) {
 
 void actions(char* moves) {
     if (curPlayer)
-        white_moves(moves, b_board, w_board, k_board, 0, (unsigned int*){0}, (unsigned int*){0});
+        white_moves(moves, b_board, w_board, k_board);
     else
-        black_moves(moves, b_board, w_board, k_board, 0, (unsigned int*){0}, (unsigned int*){0});
+        black_moves(moves, b_board, w_board, k_board);
 }
 
 void result(char* move) {
