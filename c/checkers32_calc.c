@@ -258,7 +258,7 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
         }
         for (int n = 0; n < 4; n++)
             if (j[n]>0 && j[n]<=32) {
-                if ((1<<(j[n]-1))&start_moves[0]&friend) { // If there is a piece at the starting position and it is friendly
+                if ((1<<(j[n]-1))&start_moves[0]&friend && (((pos&normal_moves[0])&&(1<<(j[n]-1))&~k)||((pos&king_moves[0]||pos&king_moves[1])&&(1<<(j[n]-1))&k))) { // If there is a piece at the starting position and it is friendly
                     if (strlen(outstr)!=0)
                         sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                     else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
@@ -288,6 +288,7 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                     if(plyr)white_double_moves(start_moves, pos&test, 0);
                     else black_double_moves(start_moves, pos&test, 0);
                 }
+
                 // Now iterate through all positions which may end at the current position (only 4 if all jump)
                 short j[4] = {i-9, i-7, i+7, i+9};
                 for (int n = 0; n < 4; n++)
@@ -315,8 +316,11 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                             if (foe&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
                                 unsigned int next_k_moves[2] = {0,0};
                                 unsigned int next_n_moves[2] = {0,0};
+
                                 // See if we can continuously jump
-                                next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves, plyr);
+                                if(t==2) next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), 0, 1, next_k_moves, next_n_moves, plyr);
+                                else next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves, plyr);
+
                                 if ((t!=2 && next_jumps) || (t==2 && next_n_moves[0])) {
                                     char newstr[999] = {0};
                                     if (previous_moves!=0 && strlen(previous_moves)!=0)

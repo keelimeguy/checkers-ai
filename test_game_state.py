@@ -176,6 +176,37 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
+
+    def test_king_non_king_adjacent_moves(self):
+        """Test that we only jump forwards, not backwards
+        """
+        board_string = """
++-+-+-+W
+-+-+-+-+
++-+-+-+-
+-+-+-+-+
++-+-+-+-
+b+-+-+-+
++B+b+b+-
+-+-+-+-+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        moves = sorted(["(1:1):(0:0)",
+                        "(1:1):(0:2)",
+                        "(1:3):(0:2)",
+                        "(1:3):(0:4)",
+                        "(1:5):(0:4)",
+                        "(1:5):(0:6)",
+                        "(1:1):(2:2)"])
+        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        # The lists (which have both been sorted lexicographically) should be
+        # the same
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
+
+
     def test_king_piece_condition(self):
         """Test that we king a piece when it reaches opposite end
         """
@@ -209,6 +240,45 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
         acts = start_state.actions()
         self.assertEqual(str(start_state.result(list(acts)[0])),
                          result_string)
+
+
+    def test_double_jump_to_king(self):
+        """Test double jumping into king
+        """
+        board_string = """
++-+-+b+b
+b+-+-+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+b+-+w+w+
++w+w+w+w
+-+w+w+w+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        result_string = """
++-+-+b+b
+b+-+-+b+
++b+-+b+b
+-+-+-+-+
++-+-+-+-
+b+-+w+w+
++-+w+w+w
+B+w+w+w+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        moves = sorted(["(4:0):(2:2):(0:0)"])
+        start_state = self.state_class.from_string(self.state_class, board_string)
+        acts = start_state.actions()
+        self.assertEqual(str(start_state.result(list(acts)[0])),
+                         result_string)
+        acts = start_state.actions()
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
 
 
 class ParserHelperTestCase(unittest.TestCase):

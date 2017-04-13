@@ -31,6 +31,7 @@ char Board_char_at_pos(Board* b, unsigned short pos);
 char* Board_to_string(Board* b);
 Board* Board_from_string(char* str);
 char* Move_to_string(Move* m);
+Move* Move_from_string(char* str);
 
 char* player(Board* b);
 Move** actions(Board* b, int* length);

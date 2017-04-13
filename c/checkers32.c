@@ -146,6 +146,42 @@ char* Move_to_string(Move* m) {
     return repr;
 }
 
+Move* Move_from_string(char* str) {
+    unsigned int len = strlen(str);
+    if (str==0 || len<11) return (Move*){0};
+
+    unsigned short row_start = (unsigned short)(str[1]-48); // 48 is ASCII for '0'
+    unsigned short col_start = (unsigned short)(str[3]-48);
+    unsigned short row_end = row_start;
+    unsigned short col_end = col_start;
+
+    int numSteps = 1;
+    unsigned short temp_pos[10]; // Max move should be 9 jumps.. I think
+    temp_pos[0] = (7-row_start)*4+1 + col_start/2;
+
+    int index = 5;
+    while (index<len && str[index]==':') {
+        index+=2;
+
+        row_start = row_end;
+        col_start = col_end;
+
+        row_end = (unsigned short)(str[index]-48);
+        index+=2;
+        col_end = (unsigned short)(str[index]-48);
+        index+=2;
+
+        temp_pos[numSteps++] = (7-row_end)*4+1 + col_end/2;
+    }
+
+    Move* ret = Move_alloc();
+    Move_init(ret, numSteps);
+    for (int j = 0; j<numSteps; j++)
+        ret->route[j] = temp_pos[j];
+    return ret;
+}
+
+
 char* player(Board* b) {
     char* str = malloc(6*sizeof(char));
     if (b->plyr)
@@ -207,7 +243,6 @@ Move** actions(Board* b, int* length) {
             temp_pos[numSteps++] = (7-row_end)*4+1 + col_end/2;
         }
         index+=2;
-
 
         ret[i] = Move_alloc();
         Move_init(ret[i], numSteps);
