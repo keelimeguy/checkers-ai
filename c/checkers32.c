@@ -70,7 +70,7 @@ char* Board_to_string(Board* b) {
     char* repr = malloc(85 * sizeof(char));
     int next = 0;
     for(int i = 1; i <= 32; i++) {
-        if ((i-1) % 8 < 4) {
+        if (pos_to_row(i)%2) {
             repr[next++] = '+';
             repr[next++] = Board_char_at_pos(b, i);
         } else {
@@ -102,7 +102,7 @@ Board* Board_from_string(char* str) {
     int next = 0;
     unsigned int b = 0, w = 0, k = 0;
     for(int i = 1; i <= 32; i++) {
-        if ((i-1) % 8 < 4)
+        if (pos_to_row(i)%2)
             next++;
         if (str[next]=='B') {
             b |= (1<<(i-1));
@@ -116,7 +116,7 @@ Board* Board_from_string(char* str) {
             w |= (1<<(i-1));
         }
         next++;
-        if ((i-1) % 8 >= 4)
+        if (!(pos_to_row(i)%2))
             next++;
         if (i % 4 == 0)
             next++;
@@ -167,8 +167,6 @@ Move** actions(Board* b, int* length) {
 
     // Convert string of moves into Move list..
 
-    // fprintf(stdout, "Available Moves:%s\n\n", moveStr);
-
     int len = strlen(moveStr);
     int numMoves = 0;
     if (len > 10) numMoves = 1;
@@ -177,8 +175,6 @@ Move** actions(Board* b, int* length) {
     *length = numMoves;
 
     if (numMoves==0) return (Move**){0};
-
-    // fprintf(stdout, "%d\n", numMoves);
 
     // Allocate space for move list
     Move** ret = malloc(sizeof(Move)*numMoves);

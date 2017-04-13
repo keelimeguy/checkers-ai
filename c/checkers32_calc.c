@@ -15,6 +15,9 @@ static unsigned int black_double_moves(unsigned int* moves, unsigned int b_mask,
 static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigned int friend, unsigned int k, unsigned short jump_detect_only, unsigned int* k_moves, unsigned int* n_moves, unsigned short plyr);
 static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, unsigned int k, unsigned int* k_moves, unsigned int* n_moves, char* previous_moves, unsigned short plyr);
 
+static unsigned short p_to_r_lookup[32] = {7, 7, 7, 7, 6, 6, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0};
+static unsigned short p_to_c_lookup[32] = {1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6};
+
 // Print the current checkers board
 void print_board(unsigned int b, unsigned int w, unsigned int k) {
     // Start iterating from 1st bit
@@ -32,7 +35,7 @@ void print_board(unsigned int b, unsigned int w, unsigned int k) {
         // 8: w+w+w+w+ -> 29-30-31-32-
 
         // "+" means empty non-playable space
-        if ((i%8)<5 && (i%8)!=0) // Odd rows, starting from top row as 1st
+        if (pos_to_row(i)%2) // Odd rows, starting from top row as 1st
             printf("+"); // Mark empty position before piece
 
         // Familiarize yourself with bitwise operators..
@@ -44,7 +47,7 @@ void print_board(unsigned int b, unsigned int w, unsigned int k) {
         else if (pos & b) printf("b"); // "b" means normal black piece
         else printf("-"); // "-" means empty playable space
 
-        if ((i%8)>=5 || (i%8)==0) // Even rows
+        if (!(pos_to_row(i)%2)) // Even rows
             printf("+"); // Mark empty position after piece
 
         if (i%4==0) // Last piece in row
@@ -62,13 +65,13 @@ void print_mask(unsigned int mask) {
     unsigned int pos = 0x00000001;
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
-        if ((i%8)<5 && (i%8)!=0) // Odd rows, starting from top row as 1st
+        if (pos_to_row(i)%2) // Odd rows, starting from top row as 1st
             printf("+"); // Mark empty position before piece
 
         if (pos & mask) printf("1");
         else printf("0");
 
-        if ((i%8)>=5 || (i%8)==0) // Even rows
+        if (!(pos_to_row(i)%2)) // Even rows
             printf("+"); // Mark empty position after piece
 
         if (i%4==0) // Last piece in row
@@ -81,11 +84,13 @@ void print_mask(unsigned int mask) {
 }
 
 unsigned short pos_to_row(unsigned short pos) {
-    return 7 - (pos - 1) / 4;
+    // return 7 - (pos - 1) / 4;
+    return p_to_r_lookup[pos-1];
 }
 
 unsigned short pos_to_col(unsigned short pos) {
-    return 2 * ((pos - 1) % 4) + (pos_to_row(pos) % 2);
+    // return 2 * ((pos - 1) % 4) + (pos_to_row(pos) % 2);
+    return p_to_c_lookup[pos-1];
 }
 
 static void white_moves_helper(unsigned int* moves, unsigned int w_mask, unsigned int k_mask) {
@@ -240,31 +245,32 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
             if (plyr) black_moves_helper(start_moves, pos&normal_moves[0], 0);
             else white_moves_helper(start_moves, pos&normal_moves[0], 0);
         }
-        // Now iterate through all positions which may end at the current position
-        // (Can be simplified greatly, i.e. should only be four possible positions so no need to loop over all 32 bits)
-        unsigned int npos = 0x00000001;
-        for (unsigned short j = 1; j <= 32; j++) {
-            if (npos&start_moves[0]&friend) { // If there is a piece at the starting position and it is friendly
-                if (strlen(outstr)!=0)
-                    sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j), pos_to_col(j), pos_to_row(i), pos_to_col(i));
-                else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j), pos_to_col(j), pos_to_row(i), pos_to_col(i));
-            }
-            npos = npos<<1;
+        // Now iterate through all positions which may end at the current position (only 4 for non jump)
+        short j[4];
+        j[0] = i-4;
+        j[2] = i+4;
+        if (pos_to_row(i)%2) { // If odd row
+            j[1] = i-3;
+            j[3] = i+5;
+        } else {
+            j[1] = i-5;
+            j[3] = i+3;
         }
+        for (int n = 0; n < 4; n++)
+            if (j[n]>0 && j[n]<=32) {
+                if ((1<<(j[n]-1))&start_moves[0]&friend) { // If there is a piece at the starting position and it is friendly
+                    if (strlen(outstr)!=0)
+                        sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                    else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                }
+            }
         pos = pos<<1;
     }
-    // fprintf(stdout, "%s\n", outstr);
     sprintf(str_moves, "%s", outstr);
     return (king_moves[0]|normal_moves[0]|king_moves[1]);
 }
 
 static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, unsigned int k, unsigned int* k_moves, unsigned int* n_moves, char* previous_moves, unsigned short plyr) {
-    // fprintf(stdout, "test\n");
-    // print_mask(k_moves[0]);
-    // print_mask(k_moves[1]);
-    // print_mask(n_moves[0]);
-    // fprintf(stdout, "done\n");
-
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2];
     char outstr[999] = {0};
@@ -282,61 +288,61 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                     if(plyr)white_double_moves(start_moves, pos&test, 0);
                     else black_double_moves(start_moves, pos&test, 0);
                 }
-                unsigned int npos = 0x00000001;
-                for (unsigned short j = 1; j <= 32; j++) {
-                    if (npos&start_moves[0]&friend) {
-                        unsigned short jumped_pos = 0, new_j = j;
-                        unsigned int next_jumps;
-                        if((t!=1 && plyr) || (t==1 && !plyr)) {
-                            if ((new_j%8<5) && (new_j%8!=0)) { // If started on odd row
-                                if (new_j-i == 7) jumped_pos |= new_j-3;
-                                else jumped_pos |= new_j-4;
-                            } else {
-                                if (new_j-i == 7) jumped_pos |= new_j-4;
-                                else jumped_pos |= new_j-5;
-                            }
-                        } else {
-                            if ((new_j%8<5) && (new_j%8!=0)) { // If started on odd row
-                                if (i-new_j == 7) jumped_pos |= i-3;
-                                else jumped_pos |= i-4;
-                            } else {
-                                if (i-new_j == 7) jumped_pos |= i-4;
-                                else jumped_pos |= i-5;
-                            }
-                        }
-                        if(foe&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
-                            // fprintf(stdout, "multi-jump:%d\n", jumped_pos);
-                            unsigned int next_k_moves[2] = {0,0};
-                            unsigned int next_n_moves[2] = {0,0};
-                            next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves, plyr);
-                            if ((t!=2 && next_jumps) || (t==2 && next_n_moves[0])) {
-                                char newstr[999] = {0};
-                                if (previous_moves!=0 && strlen(previous_moves)!=0)
-                                    sprintf(newstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
-                                else
-                                    sprintf(newstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j), pos_to_col(j), pos_to_row(i), pos_to_col(i));
-                                if(t==2)jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr, plyr);
-                                else jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j-1)))|(1<<(i-1)), (k&~(1<<(j-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr, plyr);
-                            } else {
-                                if (previous_moves!=0 && strlen(previous_moves)!=0) {
-                                    if (strlen(outstr)!=0)
-                                        sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, pos_to_row(i), pos_to_col(i));
-                                    else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
+                // Now iterate through all positions which may end at the current position (only 4 if all jump)
+                short j[4] = {i-9, i-7, i+7, i+9};
+                for (int n = 0; n < 4; n++)
+                    if (j[n]>0 && j[n]<=32) {
+                        if ((1<<(j[n]-1))&start_moves[0]&friend) {
+                            unsigned short jumped_pos = 0, new_j = j[n];
+                            unsigned int next_jumps;
+                            if((t!=1 && plyr) || (t==1 && !plyr)) {
+                                if (pos_to_row(new_j)%2) { // If started on odd row
+                                    if (new_j-i == 7) jumped_pos |= new_j-3;
+                                    else jumped_pos |= new_j-4;
                                 } else {
-                                    if (strlen(outstr)!=0)
-                                        sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j), pos_to_col(j), pos_to_row(i), pos_to_col(i));
-                                    else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j), pos_to_col(j), pos_to_row(i), pos_to_col(i));
+                                    if (new_j-i == 7) jumped_pos |= new_j-4;
+                                    else jumped_pos |= new_j-5;
+                                }
+                            } else {
+                                if (pos_to_row(new_j)%2) { // If started on odd row
+                                    if (i-new_j == 7) jumped_pos |= i-3;
+                                    else jumped_pos |= i-4;
+                                } else {
+                                    if (i-new_j == 7) jumped_pos |= i-4;
+                                    else jumped_pos |= i-5;
+                                }
+                            }
+                            if (foe&(1<<(jumped_pos-1))) { // Only continue if piece jumped an opposite player
+                                unsigned int next_k_moves[2] = {0,0};
+                                unsigned int next_n_moves[2] = {0,0};
+                                // See if we can continuously jump
+                                next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves, plyr);
+                                if ((t!=2 && next_jumps) || (t==2 && next_n_moves[0])) {
+                                    char newstr[999] = {0};
+                                    if (previous_moves!=0 && strlen(previous_moves)!=0)
+                                        sprintf(newstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
+                                    else
+                                        sprintf(newstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                    if(t==2)jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr, plyr);
+                                    else jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr, plyr);
+                                } else {
+                                    if (previous_moves!=0 && strlen(previous_moves)!=0) {
+                                        if (strlen(outstr)!=0)
+                                            sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, pos_to_row(i), pos_to_col(i));
+                                        else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
+                                    } else {
+                                        if (strlen(outstr)!=0)
+                                            sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                        else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                    }
                                 }
                             }
                         }
                     }
-                    npos = npos<<1;
-                }
             }
         }
         pos = pos<<1;
     }
-    // fprintf(stdout, "%s\n", outstr);
     if (str_moves!=0 && strlen(str_moves)!=0) {
         if (outstr!=0 && strlen(outstr)!=0)
             sprintf(str_moves, "%s, %s", str_moves, outstr);
