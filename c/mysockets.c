@@ -150,6 +150,7 @@ int setup(int opponent) {
     recv(mySocket, inbuf, BUFSIZE, 0);
     printf("<< %s\n", inbuf);
 
+    // Username prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
     printf("<< %s\n", inbuf);
@@ -159,6 +160,7 @@ int setup(int opponent) {
     send(mySocket, msgbuf, strlen(msgbuf), 0);
     printf(">> %s\n", msgbuf);
 
+    // Password prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
     printf("<< %s\n", inbuf);
@@ -168,6 +170,7 @@ int setup(int opponent) {
     send(mySocket, msgbuf, strlen(msgbuf), 0);
     printf(">> %s\n", msgbuf);
 
+    // Opponent prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
     printf("<< %s\n", inbuf);
@@ -177,14 +180,17 @@ int setup(int opponent) {
     send(mySocket, msgbuf, strlen(msgbuf), 0);
     printf(">> %s\n", msgbuf);
 
+    // Game number
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
     printf("<< %s\n", inbuf);
 
+    // Color prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
     printf("<< %s\n", inbuf);
 
+    // Return 1 if we are white, else 0
     return inbuf[6]=='W';
 }
 
@@ -195,13 +201,19 @@ char* send_move(char* move) {
         send(mySocket, msgbuf, strlen(msgbuf), 0);
         printf(">> %s\n", msgbuf);
 
-        memset(inbuf, 0, BUFSIZE);
-        recv(mySocket, inbuf, BUFSIZE, 0);
-        printf("<< %s\n", inbuf);
+        // Note: Sometimes server sends echo and response at same time?
 
+        // Get move echo
         memset(inbuf, 0, BUFSIZE);
         recv(mySocket, inbuf, BUFSIZE, 0);
         printf("<< %s\n", inbuf);
+        if(strstr(inbuf, "Result:")) return (char*)0;
+        if (!strstr(inbuf+1, "Move:")) {
+            // Get opponent move
+            memset(inbuf, 0, BUFSIZE);
+            recv(mySocket, inbuf, BUFSIZE, 0);
+            printf("<< %s\n", inbuf);
+        }
     }
 
     char* substr = strstr(inbuf, "(");

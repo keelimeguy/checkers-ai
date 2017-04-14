@@ -6,20 +6,6 @@
 
 #include "checkers32.h"
 
-// An unsigned int is 32-bits
-// ( Notice that three unsigned ints is equivalent to a 32 length array of 3-bit variables,
-//   hence the algorithms in this code will be equivalent to using a 32-b/* it array ) */
-/* unsigned int w_board, b_board, k_board; // white, black, and king-ed pieces */
-/* unsigned int curPlayer; */
-
-
-/* void setup(unsigned int b, unsigned int w, unsigned int k, unsigned short plyr) { */
-/*     b_board = b; */
-/*     w_board = w; */
-/*     k_board = k; */
-/*     curPlayer = plyr; */
-/* } */
-
 Board* Board_alloc() {
     return malloc(sizeof(Board));
 }

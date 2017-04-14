@@ -24,6 +24,8 @@
 
 #define USERNUM     5
 #define PASSWORD    291701
+// #define USERNUM     6
+// #define PASSWORD    615566
 
 #define SVR_ADDR    "icarus.engr.uconn.edu" /* server name */
 #define SVR_PORT    3499 /* Port # of checkers server */

@@ -281,6 +281,52 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          moves)
 
 
+    def test_non_overlapping_move_generation(self):
+        """Test that a normal piece isn't mistaken for a king piece when adjacent to king piece
+        """
+        board_string = """
++-+-+-+-
+W+-+-+-+
++b+b+b+b
+-+b+-+-+
++b+-+b+-
+b+-+-+-+
++-+b+B+-
+-+-+-+-+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        moves = sorted(["(5:1):(4:0)", "(5:3):(4:4)", "(5:5):(4:4)", "(5:5):(4:6)", "(5:7):(4:6)",
+            "(4:2):(3:3)", "(3:1):(2:2)", "(2:0):(1:1)", "(3:5):(2:4)", "(3:5):(2:6)", "(1:3):(0:2)",
+            "(1:3):(0:4)", "(1:5):(0:4)", "(1:5):(0:6)", "(1:5):(2:4)", "(1:5):(2:6)"])
+        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
+
+
+    def test_complex_valid_jump(self):
+        """Test a complex jump scenario: a normal piece and king pice can both make jumps landing on same square
+        """
+        board_string = """
++b+-+b+b
+b+b+b+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+w+
++w+w+w+w
+B+-+w+w+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        moves = sorted(["(0:0):(2:2)", "(4:0):(2:2)"])
+        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        self.assertEqual(sorted([str(act) for act in acts]),
+                         moves)
+
+
 class ParserHelperTestCase(unittest.TestCase):
     """Tests the thing that makes parsing boards easier"""
 

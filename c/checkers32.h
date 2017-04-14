@@ -13,8 +13,6 @@ typedef struct Move {
     int length;
 } Move;
 
-/* void setup(unsigned int b, unsigned int w, unsigned int k, unsigned short plyr); */
-
 Board* Board_alloc();
 void Board_init(Board* b, unsigned int _b, unsigned int _w, unsigned int _k, unsigned short _plyr);
 void Board_destroy(Board* b);
@@ -23,9 +21,6 @@ Move* Move_alloc();
 void Move_init(Move* m, int length);
 void Move_list_destroy(Move** m, int size);
 void Move_destroy(Move* m);
-
-// rather just access the struct from python and print it from there
-/* void printState(Board* b); */
 
 char Board_char_at_pos(Board* b, unsigned short pos);
 char* Board_to_string(Board* b);

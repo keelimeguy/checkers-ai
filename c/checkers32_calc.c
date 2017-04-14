@@ -231,39 +231,43 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
     char outstr[999] = {0}; // Used to construct the list of available moves which will be returned through the argument str_moves
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
-        start_moves[0] = 0;
-        if (pos&king_moves[0]) { // If a white king is able to move forward to the current position
-            // Calculate the start position of the king (use opposite move_helper to move backward)
-            if (plyr) black_moves_helper(start_moves, pos&king_moves[0], 0);
-            else white_moves_helper(start_moves, pos&king_moves[0], 0);
-        } else if (pos&king_moves[1]) {
-            // Calculate the start position of the backfacing king (use forward move_helper to move backward)
-            if (plyr) white_moves_helper(start_moves, pos&king_moves[1], 0);
-            else black_moves_helper(start_moves, pos&king_moves[1], 0);
-        } else if (pos&normal_moves[0]) {
-            // Calculate the start position of the piece (use opposite move_helper to move backward)
-            if (plyr) black_moves_helper(start_moves, pos&normal_moves[0], 0);
-            else white_moves_helper(start_moves, pos&normal_moves[0], 0);
-        }
-        // Now iterate through all positions which may end at the current position (only 4 for non jump)
-        short j[4];
-        j[0] = i-4;
-        j[2] = i+4;
-        if (pos_to_row(i)%2) { // If odd row
-            j[1] = i-3;
-            j[3] = i+5;
-        } else {
-            j[1] = i-5;
-            j[3] = i+3;
-        }
-        for (int n = 0; n < 4; n++)
-            if (j[n]>0 && j[n]<=32) {
-                if ((1<<(j[n]-1))&start_moves[0]&friend && (((pos&normal_moves[0])&&(1<<(j[n]-1))&~k)||((pos&king_moves[0]||pos&king_moves[1])&&(1<<(j[n]-1))&k))) { // If there is a piece at the starting position and it is friendly
-                    if (strlen(outstr)!=0)
-                        sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
-                    else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+        for (unsigned short t = 0; t < 3; t++) {
+            start_moves[0] = 0;
+            unsigned int test = normal_moves[0];
+            if (t<2) test = king_moves[t];
+            if (pos&test) {
+                if (t!=1) {
+                    if (plyr) black_moves_helper(start_moves, pos&test, 0);
+                    else white_moves_helper(start_moves, pos&test, 0);
+                } else {
+                    if (plyr) white_moves_helper(start_moves, pos&test, 0);
+                    else black_moves_helper(start_moves, pos&test, 0);
                 }
+                // Only friendly moves
+                start_moves[0]&=friend;
+                if (t < 2) start_moves[0]&=k;
+                else start_moves[0]&=~k;
+                // Now iterate through all positions which may end at the current position (only 4 for non jump)
+                short j[4];
+                j[0] = i-4;
+                j[2] = i+4;
+                if (pos_to_row(i)%2) { // If odd row
+                    j[1] = i-3;
+                    j[3] = i+5;
+                } else {
+                    j[1] = i-5;
+                    j[3] = i+3;
+                }
+                for (int n = 0; n < 4; n++)
+                    if (j[n]>0 && j[n]<=32) {
+                        if ((1<<(j[n]-1))&start_moves[0]) { // If there is a piece at the starting position and it is friendly
+                            if (strlen(outstr)!=0)
+                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                        }
+                    }
             }
+        }
         pos = pos<<1;
     }
     sprintf(str_moves, "%s", outstr);
@@ -277,9 +281,8 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         for(unsigned short t = 0; t < 3; t++) {
-            unsigned int test;
-            if (t==2) test = n_moves[0];
-            else test = k_moves[t];
+            unsigned int test = n_moves[0];
+            if (t<2) test = k_moves[t];
             if (pos&test) {
                 if (t!=1) {
                     if(plyr)black_double_moves(start_moves, pos&test, 0);
@@ -288,12 +291,14 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                     if(plyr)white_double_moves(start_moves, pos&test, 0);
                     else black_double_moves(start_moves, pos&test, 0);
                 }
-
+                start_moves[0]&=friend;
+                if (t < 2) start_moves[0]&=k;
+                else start_moves[0]&=~k;
                 // Now iterate through all positions which may end at the current position (only 4 if all jump)
                 short j[4] = {i-9, i-7, i+7, i+9};
                 for (int n = 0; n < 4; n++)
                     if (j[n]>0 && j[n]<=32) {
-                        if ((1<<(j[n]-1))&start_moves[0]&friend) {
+                        if ((1<<(j[n]-1))&start_moves[0]) {
                             unsigned short jumped_pos = 0, new_j = j[n];
                             unsigned int next_jumps;
                             if((t!=1 && plyr) || (t==1 && !plyr)) {
@@ -320,14 +325,17 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                                 // See if we can continuously jump
                                 if(t==2) next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), 0, 1, next_k_moves, next_n_moves, plyr);
                                 else next_jumps = find_moves_helper((char*){0}, foe&~(1<<(jumped_pos-1)), (1<<(i-1)), (1<<(i-1)), 1, next_k_moves, next_n_moves, plyr);
-
+                                next_k_moves[0]&=~(friend&~(1<<(i-1)));
+                                next_k_moves[1]&=~(friend&~(1<<(i-1)));
+                                next_n_moves[0]&=~(friend&~(1<<(i-1)));
+                                next_jumps&=~(friend&~(1<<(i-1)));
                                 if ((t!=2 && next_jumps) || (t==2 && next_n_moves[0])) {
                                     char newstr[999] = {0};
                                     if (previous_moves!=0 && strlen(previous_moves)!=0)
                                         sprintf(newstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
                                     else
                                         sprintf(newstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
-                                    if(t==2)jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr, plyr);
+                                    if(t==2)jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), k&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr, plyr);
                                     else jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr, plyr);
                                 } else {
                                     if (previous_moves!=0 && strlen(previous_moves)!=0) {
