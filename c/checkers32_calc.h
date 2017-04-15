@@ -11,6 +11,7 @@
 #include <string.h>
 
 // Function prototypes
+unsigned short count_bits(unsigned int bits);
 void print_board(unsigned int b, unsigned int w, unsigned int k);
 void print_mask(unsigned int mask);
 unsigned short pos_to_row(unsigned short pos);

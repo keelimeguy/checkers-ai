@@ -17,6 +17,28 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
 
 static unsigned short p_to_r_lookup[32] = {7, 7, 7, 7, 6, 6, 6, 6, 5, 5, 5, 5, 4, 4, 4, 4, 3, 3, 3, 3, 2, 2, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0};
 static unsigned short p_to_c_lookup[32] = {1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6, 1, 3, 5, 7, 0, 2, 4, 6};
+static unsigned short bit_count_lookup[256] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4, 1, 2,
+    2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4,
+    3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4,
+    4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6,
+    4, 5, 5, 6, 5, 6, 6, 7, 1, 2, 2, 3, 2, 3, 3, 4, 2, 3, 3, 4, 3, 4, 4, 5, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4,
+    4, 5, 4, 5, 5, 6, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6,
+    5, 6, 6, 7, 2, 3, 3, 4, 3, 4, 4, 5, 3, 4, 4, 5, 4, 5, 5, 6, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6,
+    6, 7, 3, 4, 4, 5, 4, 5, 5, 6, 4, 5, 5, 6, 5, 6, 6, 7, 4, 5, 5, 6, 5, 6, 6, 7, 5, 6, 6, 7, 6, 7, 7, 8 };
+
+/*--------------------------------------------
+// To generate bit_count_lookup table:
+// (note that static blocks are not valid c)
+//--------------------------------------------
+    static {
+        for(int i = 0; i < 256; i ++) {
+            unsigned short count = 0;
+            for (int pos = 0; pos < 8; pos++)
+                if (i&(1<<pos)) count++;
+            bit_count_lookup[i] = count;
+        }
+    }
+--------------------------------------------*/
 
 // Print the current checkers board
 void print_board(unsigned int b, unsigned int w, unsigned int k) {
@@ -81,6 +103,10 @@ void print_mask(unsigned int mask) {
         pos = pos<<1;
     }
     printf("\n"); // Print new line
+}
+
+unsigned short count_bits(unsigned int bits) {
+    return bit_count_lookup[(bits>>24)&0xff] + bit_count_lookup[(bits>>16)&0xff] + bit_count_lookup[(bits>>8)&0xff] + bit_count_lookup[bits&0xff];
 }
 
 unsigned short pos_to_row(unsigned short pos) {

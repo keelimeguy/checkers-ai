@@ -17,14 +17,22 @@ int main(void) {
 
     Move** moves;
     for (int i = 0; i < 2; i++) {
+        printf("%d pieces total\n", count_bits(board->b|board->w));
+        printf("%d black pieces\n", count_bits(board->b));
+        printf("%d white pieces\n", count_bits(board->w));
+
         int length = 0;
         moves = actions(board, &length);
         board = result(board, moves[0]);
-
         fprintf(stdout, "Making first available move...\n\n");
 
         fprintf(stdout, "%s\n", Board_to_string(board));
     }
+
+    printf("%d pieces total\n", count_bits(board->b|board->w));
+    printf("%d black pieces\n", count_bits(board->b));
+    printf("%d white pieces\n", count_bits(board->w));
+
     Board_destroy(board);
     return 0;
 }
