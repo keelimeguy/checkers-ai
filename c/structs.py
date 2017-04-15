@@ -1,10 +1,13 @@
 import os
 from ctypes import *
 
-state32 = cdll.LoadLibrary(
-    os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libtest.so'))
+state32_lib = cdll.LoadLibrary(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libcheckers32.so'))
 
-printf = state32.printf
+samserver_lib = cdll.LoadLibrary(
+    os.path.join(os.path.abspath(os.path.dirname(__file__)), 'libmysockets.so'))
+
+printf = state32_lib.printf
 
 class BOARD(Structure):
     _fields_ = [("b", c_uint),
@@ -16,10 +19,13 @@ class MOVE(Structure):
     _fields_ = [("route", POINTER(c_ushort)),
             ("length", c_int)]
 
-state32.actions.restype = POINTER(POINTER(MOVE))
-state32.Board_alloc.restype = POINTER(BOARD)
-state32.Move_alloc.restype = POINTER(MOVE)
-state32.Board_from_string.restype = POINTER(BOARD)
-state32.Board_to_string.restype = c_char_p
-state32.Move_to_string.restype = c_char_p
-state32.player.restype = c_char_p
+state32_lib.actions.restype = POINTER(POINTER(MOVE))
+state32_lib.Board_alloc.restype = POINTER(BOARD)
+state32_lib.Move_alloc.restype = POINTER(MOVE)
+state32_lib.Board_from_string.restype = POINTER(BOARD)
+state32_lib.Move_from_string.restype = POINTER(MOVE)
+state32_lib.Board_to_string.restype = c_char_p
+state32_lib.Move_to_string.restype = c_char_p
+state32_lib.player.restype = c_char_p
+
+samserver_lib.send_move.restype = c_char_p

@@ -109,7 +109,7 @@ int SockaddrToString (char *string, struct sockaddr_in *ss) {
     return 1;
 }
 
-static int mySocket;
+static int mySocket, isVerbose;
 static struct sockaddr_in destAddr, myAddr;
 static int sizeofmyAddr, sizeofdestAddr;
 static char inbuf[BUFSIZE], msgbuf[BUFSIZE], addrbuf[BUFSIZE], saddrbuf[BUFSIZE];
@@ -118,7 +118,8 @@ void end_connection(){
     close(mySocket);
 }
 
-int setup(int opponent) {
+int setup(int isB, int opponent, int verbose) {
+    isVerbose = verbose;
     if ((mySocket = socket(AF_INET,SOCK_STREAM,0)) < 0)
         die("couldn't allocate socket");
 
@@ -147,48 +148,51 @@ int setup(int opponent) {
     }
 
     // Get the reply
+    memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
-    printf("<< %s\n", inbuf);
+    if (isVerbose) printf("<< %s\n", inbuf);
 
     // Username prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
-    printf("<< %s\n", inbuf);
+    if (isVerbose) printf("<< %s\n", inbuf);
 
     // Write the client username to the socket
-    sprintf(msgbuf,"%d\r\n", USERNUM);
+    if (isB) sprintf(msgbuf,"%d\r\n", USERNUM_B);
+    else sprintf(msgbuf,"%d\r\n", USERNUM_A);
     send(mySocket, msgbuf, strlen(msgbuf), 0);
-    printf(">> %s\n", msgbuf);
+    if (isVerbose) printf(">> %s\n", msgbuf);
 
     // Password prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
-    printf("<< %s\n", inbuf);
+    if (isVerbose) printf("<< %s\n", inbuf);
 
     // Write the client password to the socket
-    sprintf(msgbuf,"%d\r\n", PASSWORD);
+    if (isB) sprintf(msgbuf,"%d\r\n", PASSWORD_B);
+    else sprintf(msgbuf,"%d\r\n", PASSWORD_A);
     send(mySocket, msgbuf, strlen(msgbuf), 0);
-    printf(">> %s\n", msgbuf);
+    if (isVerbose) printf(">> %s\n", msgbuf);
 
     // Opponent prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
-    printf("<< %s\n", inbuf);
+    if (isVerbose) printf("<< %s\n", inbuf);
 
     // Write the opponent to the socket
     sprintf(msgbuf,"%d\r\n", opponent);
     send(mySocket, msgbuf, strlen(msgbuf), 0);
-    printf(">> %s\n", msgbuf);
+    if (isVerbose) printf(">> %s\n", msgbuf);
 
     // Game number
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
-    printf("<< %s\n", inbuf);
+    if (isVerbose) printf("<< %s\n", inbuf);
 
     // Color prompt
     memset(inbuf, 0, BUFSIZE);
     recv(mySocket, inbuf, BUFSIZE, 0);
-    printf("<< %s\n", inbuf);
+    if (isVerbose) printf("<< %s\n", inbuf);
 
     // Return 1 if we are white, else 0
     return inbuf[6]=='W';
@@ -196,27 +200,51 @@ int setup(int opponent) {
 
 char* send_move(char* move) {
     if(strlen(move)!=0) {
+        // Don't send move until asked for move
+        if (!strstr(inbuf, "?Move")) {
+            // Move prompt
+            memset(inbuf, 0, BUFSIZE);
+            recv(mySocket, inbuf, BUFSIZE, 0);
+            if (isVerbose) printf("<< %s\n", inbuf);
+            if(strstr(inbuf, "Error:")) return inbuf;
+            if(strstr(inbuf, "Result:")) return (char*)0;
+        }
+
         // Write the move to the socket
         sprintf(msgbuf,"%s\r\n", move);
         send(mySocket, msgbuf, strlen(msgbuf), 0);
-        printf(">> %s\n", msgbuf);
+        if (isVerbose) printf(">> %s\n", msgbuf);
 
         // Note: Sometimes server sends echo and response at same time?
 
         // Get move echo
         memset(inbuf, 0, BUFSIZE);
         recv(mySocket, inbuf, BUFSIZE, 0);
-        printf("<< %s\n", inbuf);
+        if (isVerbose) printf("<< %s\n", inbuf);
+        if(strstr(inbuf, "Error:")) return inbuf;
         if(strstr(inbuf, "Result:")) return (char*)0;
         if (!strstr(inbuf+1, "Move:")) {
             // Get opponent move
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
-            printf("<< %s\n", inbuf);
+            if (isVerbose) printf("<< %s\n", inbuf);
+            if(strstr(inbuf, "Error:")) return inbuf;
+            if(strstr(inbuf, "Result:")) return (char*)0;
+        }
+    } else {
+        if (!strstr(inbuf, "Move:")) {
+            // Move result
+            memset(inbuf, 0, BUFSIZE);
+            recv(mySocket, inbuf, BUFSIZE, 0);
+            if (isVerbose) printf("<< %s\n", inbuf);
+            if(strstr(inbuf, "Error:")) return inbuf;
+            if(strstr(inbuf, "Result:")) return (char*)0;
         }
     }
 
-    char* substr = strstr(inbuf, "(");
+    char* instr_sub = strstr(inbuf, "(");
+    char* substr = malloc(strlen(instr_sub) * sizeof(char) + 1);
+    strncpy(substr, strstr(inbuf, "("), strlen(instr_sub) + 1);
     if(!substr) return (char*)0;
     int len = strstr(substr, "\n") - substr;
     substr[len] = (char)0;

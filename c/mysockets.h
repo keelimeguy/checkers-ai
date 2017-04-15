@@ -22,10 +22,10 @@
 #define NMSIZE      26
 #define BUFSIZE     1024
 
-#define USERNUM     5
-#define PASSWORD    291701
-// #define USERNUM     6
-// #define PASSWORD    615566
+#define USERNUM_A     5
+#define PASSWORD_A    291701
+#define USERNUM_B     6
+#define PASSWORD_B    615566
 
 #define SVR_ADDR    "icarus.engr.uconn.edu" /* server name */
 #define SVR_PORT    3499 /* Port # of checkers server */
@@ -35,7 +35,7 @@ int StringToSockaddr(char *name, struct sockaddr_in *address);
 char *getTime(void);
 void die(char *s);
 
-int setup();
+int setup(int isB, int opponent, int verbose);
 void end_connection();
 char* send_move(char* move);
 
