@@ -17,4 +17,4 @@ all:
 
 clean:
 	# Remove all files created during C code and library compiling:
-	rm libmysockets.o libcheckers32.o main.o main_test.o checkers32.o checkers32_calc.o libmysockets.so libcheckers32.so checkers32.exe test_checkers32.exe server.exe
+	rm libmysockets.o libcheckers32.o main.o main_test.o mysockets.o checkers32.o checkers32_calc.o libmysockets.so libcheckers32.so checkers32.exe test_checkers32.exe server.exe
