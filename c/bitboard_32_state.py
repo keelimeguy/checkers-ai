@@ -1,6 +1,3 @@
-import sys
-sys.path.insert(0, '../')
-
 from state_superclass import CheckersGameState
 from structs import *
 
@@ -71,3 +68,31 @@ class Bitboard32State(CheckersGameState):
 
     def player(self):
         return state32_lib.player(self.board).decode("utf-8")
+
+    def count_friends(self):
+        if self.board.contents.plyr:
+            friends = self.board.contents.w
+        else:
+            friends = self.board.contents.b
+        return state32_lib.count_bits(friends)
+
+    def count_foes(self):
+        if self.board.contents.plyr:
+            foes = self.board.contents.b
+        else:
+            foes = self.board.contents.w
+        return state32_lib.count_bits(foes)
+
+    def count_crowned_friends(self):
+        if self.board.contents.plyr:
+            friends = self.board.contents.w
+        else:
+            friends = self.board.contents.b
+        return state32_lib.count_bits(friends & self.board.contents.k)
+
+    def count_crowned_foes(self):
+        if self.board.contents.plyr:
+            foes = self.board.contents.b
+        else:
+            foes = self.board.contents.w
+        return state32_lib.count_bits(foes & self.board.contents.k)

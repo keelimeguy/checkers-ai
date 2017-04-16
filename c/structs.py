@@ -20,6 +20,7 @@ class MOVE(Structure):
             ("length", c_int)]
 
 state32_lib.actions.restype = POINTER(POINTER(MOVE))
+state32_lib.result.restype = POINTER(BOARD)
 state32_lib.Board_alloc.restype = POINTER(BOARD)
 state32_lib.Move_alloc.restype = POINTER(MOVE)
 state32_lib.Board_from_string.restype = POINTER(BOARD)
