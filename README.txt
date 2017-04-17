@@ -4,19 +4,30 @@ Jonathan Homburg
 Philip Ira
 Oliver Kisielius
 
-CSE4705 - HW4: Checkers Representations
+CSE4705 - Final: Checkers Learner
 
-Running code:
-In your command line, navigate to the "./c/" directory (probably using "cd" commands)
-From there you may run the precompiled executable "checkers32.exe" (the command "./checkers32.exe" should work if you are in the "./c/" directory)
-This code will show a state, it's available moves, and the results of taking the first available move twice.
-In order to change the starting state of the board you must change it within "./c/main.c" according to these guidelines:
-    - The lines:  board->b = 0x00e06021;
-                  board->w = 0x00000200;
-                  board->k = 0x00000200;
-                  board->plyr = 1;
-      will determine the starting state. You should only need to change these lines.
+Evaluation Function Parameters:
+• Difference between numbers of checkers of player and opponent
+• Supervising selected fields on the board (opposite rows are very significant)
+• Supervising the center of the board (a number of own vs opponent checkers in central 4×4 place)
+• Number of kings in the central place of the board
+• Number of checkers that are nearly of king state
+• Number movable pieces (own vs opponent)
+• Exposure of checkers (a number of checkers that potentially can be captured)
+• Proximity of pieces (keep our pieces close, their pieces separated)
 
+End Game Condition:
+?
+• Threshold on number of pieces left
+• Threshold on number of kings
+• King row cleared
+
+
+
+--------------Note: Our code cannot run on windows!--------------
+
+
+C code 32 representation:
     - b correspondes to a black bit board , w to a white, k for the king-ed pieces, and plyr is the current player ( 0 = black, 1 = white)
 
     - A bit board is represented as a 32 bit number with each bit cooresponding to a playable position of the board, (bit 1 (the LSB) being position 1). Using hexidecimal makes it easier to parse
@@ -45,38 +56,3 @@ In order to change the starting state of the board you must change it within "./
                             +w+w+w+w
                             w+w+w+w+
                         with, b=black, B = black king, w = white, W = white king, - = empty playable square, + = empty non-playable square
-
-After making these changes to the starting board in "./c/main.c", the code will need to be compiled.
-To compile the changed code, running the command "make" while you are still in the "./c" directory in command line should work.
-(If that does not work try "gcc -ggdb3 main.c checkers32_calc.c checkers32.c -o checkers32.exe")
-Now the edited code should be compiled and able to be ran by starting "checkers32.exe" (using the command "./checkers32.exe" for instance)
-
-Compiling the code requires gcc (the c compiler) to be on your machine, which it likely already is
-
--------------------------------------------------------------------
--------------------------------------------------------------------
-
-for sample output see files:
-"sample_out_full_game_first_move.txt"
-"sample_out_multi_jump_forced_loss.txt"
-"sample_out_test_cases.txt"
-"sample_out_sparse_full_game.txt"
-
-Notice: Most implementations are written in python with some pieces written in C, which are called from python using c_lists
-        Choices in these languages are made with consideration for speed
-
-8 by 8 array: "./EightXEight.py"
-    pros: direct representation
-    cons: higher space, less speed
-
-32 element array: "./c/checkers32.c"
-    pros: speed in calculating moves
-    cons: more complexity
-
-35 element array: "./samuel_state.py"
-    pros: ease and speed in calculating moves
-    cons: less complexity
-
-Sparse representation: "./CheckersStateSparse.py"
-    pros: low space, ease in finding where a given piece is at
-    cons: difficulty in finding what is at a given board position, low speed
