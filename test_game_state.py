@@ -9,9 +9,6 @@ import sys
 sys.path.insert(0, 'c/')
 
 # put a line to import your game state implementation here
-from samuel_state import SamuelGameState
-from state_superclass import CheckersGameState, parse_board_string
-from EightXEight import EightXEightGameState
 from bitboard_32_state import Bitboard32State
 
 FRESH_BOARD_REPR = """+b+b+b+b
@@ -44,7 +41,6 @@ class CheckersGameStateTestCase(unittest.TestCase):
         methods, the usual convention is to use underscores.
         """
         self.state_class = Bitboard32State
-        # self.state_class = SamuelGameState
 
     def test_parsing_from_string(self):
         """If only to facilitate testing, it's nice to parse the string version
@@ -350,16 +346,6 @@ White's move
         self.assertIn((1, 5, 'b'), pieces)
         self.assertIn((5, 3, 'W'), pieces)
         self.assertIn((7, 7, 'w'), pieces)
-
-
-# class EightByEightTestCase(CheckersGameStateTestCase):
-#     def setUp(self):
-#         self.state_class = EightXEightGameState
-
-
-# class Bitboard32StateTestCase(CheckersGameStateTestCase):
-#     def setUp(self):
-#         self.state_class = Bitboard32State
 
 
 if __name__ == "__main__":
