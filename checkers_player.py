@@ -4,11 +4,23 @@ from checkers import Checkers
 import functools
 import random
 import time
+import json
 
 CACHE_SIZE = 10001
 
+weights = json.load(open("weights_example.json","r"))
+
+def paramLookup(state): #will be expanded later
+    return {'friend_count' : state.board.count_friends(), 'foe_count' : state.board.count_foes(),
+            'friend_kings' : state.board.count_friends_kings(), 'foe_kings' : state.board.count_foes_kings()}
+
 def eval(state):
-    score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
+    score = 0
+    paramValues = paramLookup(state)
+    for parameter in weights:
+        weight = weights[parameter]["weight"]
+        score += weight * paramValues[parameter]
+    #score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
     if state.board.c_board.contents.plyr == state.player:
         return score
     return -score
