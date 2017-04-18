@@ -6,6 +6,25 @@ Oliver Kisielius
 
 CSE4705 - Final: Checkers Learner
 
+
+
+Organization:
+
+- checkers_player.py has the code which runs the player with certain evaluation  and state searching functions
+      - this is the file which should be considered the most while writing other code which plays checkers, with added learning algorithms perhaps
+      - can also provide statistics and visual representation of completed games
+- checkers.py has the code to represent and control a checkers game played with the server
+      - requires bitboard_32_state.py, the checkers board state, which is a python wrapper for checkers32.c
+            - checkers32.c is the higher level representation of the base bitboards in c
+            - checkers32_calc.c is provides helpful computational functions so that checkers32.c may work
+      - requires sam_server.py, the server protocol interface, which is a python wrapper for mysockets.c
+            - mysockets.c provides the interfacing and protocol for communicating with the server (through sockets library)
+
+Checkers -> | -> CheckersState -> BitboardState -> checkers32.c
+            | -> SamServer -> mysockets.c
+
+
+
 Evaluation Function Parameters:
 • Difference between numbers of checkers of player and opponent
 • Supervising selected fields on the board (opposite rows are very significant)
@@ -27,6 +46,7 @@ End Game Condition:
 --------------Note: Our code cannot run on windows!--------------
 
 
+
 C code 32 representation:
     - b correspondes to a black bit board , w to a white, k for the king-ed pieces, and plyr is the current player ( 0 = black, 1 = white)
 
@@ -41,7 +61,7 @@ C code 32 representation:
                   21 - 22  - 23  - 24  -
                   - 25  - 26  - 27  - 28
                   29 - 30  - 31  - 32  -
-                with bits in 0xCCCCCCCC ordered 32,31,..,2,1 (each C cooresponding to 4-bits, i.e. a row)
+                with bits in 0xXXXXXXXX ordered 32,31,..,2,1 (each X corresponding to 4-bits, i.e. a row)
 
                     An example: b = 0x00000fff
                                 w = 0xfff00000

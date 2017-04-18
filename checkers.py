@@ -2,9 +2,6 @@ from bitboard_32_state import Bitboard32State
 from sam_server import SamServer
 from structs import *
 
-import random
-import time
-
 class Checkers:
 
     class CheckersState:
@@ -21,24 +18,13 @@ class Checkers:
         def actions(self):
             return self.board.actions()
 
-        def eval(self, move=None):
-            state = self.board.result(move)
-            score = state.count_friends() - state.count_foes() + 3*state.count_crowned_friends() - 3*state.count_crowned_foes()
-            if state.board.contents.plyr == self.player:
-                return score
-            return -score
-
-
-    def __init__(self):
+    def __init__(self, opponent=0, is_B_client=False):
         self.gameState = self.CheckersState()
-        self.server = SamServer()
-        # self.server = SamServer(6)
-        # self.server = SamServer(5, True)
+        self.server = SamServer(opponent, is_B_client)
         self.gameover = True
         self.moves = []
 
     def reset(self, verbose=False):
-        random.seed(time.time())
         self.server.disconnect()
         self.gameState = self.CheckersState(self.server.connect(verbose))
         self.moves = []
@@ -53,7 +39,7 @@ class Checkers:
         return self.gameState.actions()
 
     def result(self, move=None):
-        return self.CheckersState(self.gameState.player, self.gameState.board.result(move))
+        return self.gameState.result(move)
 
     def play(self, move=None):
         if move:
@@ -72,6 +58,7 @@ class Checkers:
             if "Result" in response:
                 self.gameover = True
                 self.server.disconnect()
+                return False
             if "Error" in response:
                 self.gameover = True
                 self.server.disconnect()
@@ -90,6 +77,7 @@ class Checkers:
             return True
         return False
 
+    # We store a list of moves played throughout a game, and use this function to show the entire game at the end
     def show_game(self):
         state = Bitboard32State()
         if self.gameState.player:
@@ -100,14 +88,14 @@ class Checkers:
         for move in self.moves:
             state = state.result(move)
             print(state)
-        result = state.board.contents
+        result = state.c_board.contents
         final = "\nUNKNOWN\n"
         if self.gameState.player and result.b or not self.gameState.player and result.w:
             actions = state.actions()
             if actions:
                 extra_move = next(actions)
                 state = state.result(extra_move)
-                result = state.board.contents
+                result = state.c_board.contents
                 if not self.gameState.player and result.b and state.actions() or self.gameState.player and result.w and state.actions():
                     final = "\nDRAW!\n"
                 else:
@@ -122,72 +110,3 @@ class Checkers:
             print(move)
         print(final)
         return final.strip()
-
-def alphabeta(node, depth = 7, alpha=float('-inf'), beta=float('inf'), maximum=True):
-    if depth == 0 or node.terminal():
-        return node.eval()
-    if maximum:
-        val = float('-inf')
-        actions = node.actions()
-        action = next(actions, None)
-        while action:
-            child = node.result(action)
-            val = max(val, alphabeta(child, depth - 1, alpha, beta, False))
-            alpha = max(alpha, val)
-            if beta <= alpha:
-                break
-            action = next(actions, None)
-        return val
-    else:
-        val = float('inf')
-        actions = node.actions()
-        action = next(actions, None)
-        while action:
-            child = node.result(action)
-            val = min(val, alphabeta(child, depth - 1, alpha, beta, True))
-            beta = min(beta, val)
-            if beta <= alpha:
-                break
-            action = next(actions, None)
-        return val
-
-if __name__ == "__main__":
-    game = Checkers()
-    final = ""
-    error = False
-    wins = 0
-    losses = 0
-    draws = 0
-    count = 10
-    while not error and count>0:
-        game.reset()
-        print("Start {}:".format(count))
-        while not game.finished():
-            actions = game.actions()
-            action = next(actions, None)
-            bestScore = float('-inf')
-            if action:
-                move_list = [action]
-            while action:
-                score = alphabeta(game.result(action))
-                # print(game.gameState.board.result(action), '\nhas score: ', score)
-                if float(score) > bestScore:
-                    bestScore = score
-                    move_list = [action]
-                elif score == bestScore:
-                    move_list.append(action)
-                action = next(actions, None)
-            index = random.randint(0, len(move_list)-1)
-            error = game.play(move_list[index])
-        if not error:
-            final = game.show_game()
-            if final == "DRAW!":
-                draws+=1
-            elif final == "WON!":
-                wins+=1
-            elif final == "LOSE!":
-                losses+=1
-            else:
-                print("Unknown final? : " + final)
-        count-=1
-    print("Stats: {}:{}:{}".format(wins, draws, losses))

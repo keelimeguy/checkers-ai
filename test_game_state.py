@@ -10,6 +10,7 @@ sys.path.insert(0, 'c/')
 
 # put a line to import your game state implementation here
 from bitboard_32_state import Bitboard32State
+from state_superclass import *
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
