@@ -69,12 +69,21 @@ class Bitboard32State(CheckersGameState):
     def player(self):
         return state32_lib.player(self.board).decode("utf-8")
 
+    # We will use heuristics as described in the Warsaw Paper
+
     def count_friends(self):
         if self.board.contents.plyr:
             friends = self.board.contents.w
         else:
             friends = self.board.contents.b
         return state32_lib.count_bits(friends)
+
+    def count_friends_pawns(self):
+        if self.board.contents.plyr:
+            friends = self.board.contents.w
+        else:
+            friends = self.board.contents.b
+        return state32_lib.count_bits(friends & ~self.board.contents.k)
 
     def count_foes(self):
         if self.board.contents.plyr:
@@ -83,33 +92,140 @@ class Bitboard32State(CheckersGameState):
             foes = self.board.contents.w
         return state32_lib.count_bits(foes)
 
-    def count_crowned_friends(self):
+    def count_foes_pawns(self):
+        if self.board.contents.plyr:
+            foes = self.board.contents.b
+        else:
+            foes = self.board.contents.w
+        return state32_lib.count_bits(foes & ~self.board.contents.k)
+
+    def count_friends_kings(self):
         if self.board.contents.plyr:
             friends = self.board.contents.w
         else:
             friends = self.board.contents.b
         return state32_lib.count_bits(friends & self.board.contents.k)
 
-    def count_crowned_foes(self):
+    def count_foes_kings(self):
         if self.board.contents.plyr:
             foes = self.board.contents.b
         else:
             foes = self.board.contents.w
         return state32_lib.count_bits(foes & self.board.contents.k)
 
-    def count_foes_center(self):
+    def count_safe_friends_pawns(self):
+        if self.board.contents.plyr:
+            friends = self.board.contents.w
+        else:
+            friends = self.board.contents.b
+        return state32_lib.count_bits(friends & 0xf818181f & ~self.board.contents.k)
+
+    def count_safe_foes_pawns(self):
         if self.board.contents.plyr:
             foes = self.board.contents.b
         else:
             foes = self.board.contents.w
-        return state32_lib.count_bits(foes & 0x00666600)
+        return state32_lib.count_bits(foes & 0xf818181f & ~self.board.contents.k)
 
-    def difference_pieces(self):
+    def count_safe_friends_kings(self):
+        if self.board.contents.plyr:
+            friends = self.board.contents.w
+        else:
+            friends = self.board.contents.b
+        return state32_lib.count_bits(friends & 0xf818181f & self.board.contents.k)
+
+    def count_safe_foes_kings(self):
         if self.board.contents.plyr:
             foes = self.board.contents.b
-            selfs = self.baord.contents.w
         else:
             foes = self.board.contents.w
-            selfs = self.board.contents.b
-        return state32_lib.count_bits(selfs) - state32_lib.count_bits(foes)
+        return state32_lib.count_bits(foes & 0xf818181f & self.board.contents.k)
 
+    def count_movable_friends_pawns(self):
+
+    def count_movable_foes_pawns(self):
+
+    def count_movable_friends_kings(self):
+
+    def count_movable_foes_kings(self):
+
+    def aggregate_distance_promotion_friends(self):
+
+    def aggregate_distance_promotion_foes(self):
+
+    def count_unoccupied_promotion_friends(self):
+
+    def count_unoccupied_promotion_foes(self):
+
+    def count_defender_pieces_friends(self):
+
+    def count_defender_pieces_foes(self):
+
+    def count_attack_pawns_friends(self):
+
+    def count_attack_pawns_foes(self):
+
+    def count_center_pawns_friends(self):
+
+    def count_center_pawns_foes(self):
+
+    def count_center_kings_friends(self):
+
+    def count_center_kings_foes(self):
+        if self.board.contents.plyr:
+            foes = self.board.contents.b
+        else:
+            foes = self.board.contents.w
+        return state32_lib.count_bits(foes & 0x00666600 & self.board.contents.k)
+
+    def count_diagonalmain_pawns_friends(self):
+
+    def count_diagonalmain_pawns_foes(self):
+
+    def count_diagonalmain_kings_friends(self):
+
+    def count_diagonalmain_kings_foes(self):
+
+    def count_diagonaldouble_pawns_friends(self):
+
+    def count_diagoanldouble_pawns_foes(self):
+
+    def count_diagonaldouble_kings_friends(self):
+
+    def count_diagonaldouble_kings_foes(self):
+
+    def count_loner_pawns_friends(self):
+
+    def count_loner_pawns_foes(self):
+
+    def count_loner_kings_friends(self):
+
+    def count_loner_kings_foes(self):
+
+    def count_holes_friends(self):
+
+    def count_holes_foes(self):
+
+    def triangle_friends(self):
+
+    def triangle_foes(self):
+
+    def oreo_friends(self):
+
+    def oreo_foes(self):
+
+    def bridge_friends(self):
+
+    def bridge_foes(self):
+
+    def dog_friends(self):
+
+    def dog_foes(self):
+
+    def pawn_corner_friends(self):
+
+    def pawn_corner_foes(self):
+
+    def king_corner_friends(self):
+
+    def king_corner_foes(self):
