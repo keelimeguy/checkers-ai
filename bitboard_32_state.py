@@ -96,3 +96,20 @@ class Bitboard32State(CheckersGameState):
         else:
             foes = self.board.contents.w
         return state32_lib.count_bits(foes & self.board.contents.k)
+
+    def count_foes_center(self):
+	if self.board.contents.plyr:
+	    foes = self.board.contents.b
+	else:
+	    foes = self.board.contents.w
+	return state32_lib.count_bits(foes & 00666600)
+
+    def difference_pieces(self):
+	if self.board.contents.plyr:
+	    foes = self.board.contents.b
+	    selfs = self.baord.contents.w
+	else:
+	    foes = self.board.contents.w
+	    selfs = self.board.contents.b
+	return state32_lib.count_bits(selfs) - state32_lib.count_bits(foes)
+
