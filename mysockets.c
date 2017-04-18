@@ -206,8 +206,8 @@ char* send_move(char* move) {
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
             if (isVerbose) printf("<< %s\n", inbuf);
-            if(strstr(inbuf, "Error:")) return (char*)0;
-            if(strstr(inbuf, "Result:")) return (char*)0;
+            if(strstr(inbuf, "Error:")) return inbuf;
+            if(strstr(inbuf, "Result:")) return inbuf;
         }
 
         // Write the move to the socket
@@ -221,15 +221,15 @@ char* send_move(char* move) {
         memset(inbuf, 0, BUFSIZE);
         recv(mySocket, inbuf, BUFSIZE, 0);
         if (isVerbose) printf("<< %s\n", inbuf);
-        if(strstr(inbuf, "Error:")) return (char*)0;
-        if(strstr(inbuf, "Result:")) return (char*)0;
+        if(strstr(inbuf, "Error:")) return inbuf;
+        if(strstr(inbuf, "Result:")) return inbuf;
         if (!strstr(inbuf+1, "Move:")) {
             // Get opponent move
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
             if (isVerbose) printf("<< %s\n", inbuf);
-            if(strstr(inbuf, "Error:")) return (char*)0;
-            if(strstr(inbuf, "Result:")) return (char*)0;
+            if(strstr(inbuf, "Error:")) return inbuf;
+            if(strstr(inbuf, "Result:")) return inbuf;
         }
     } else {
         if (!strstr(inbuf, "Move:")) {
@@ -237,8 +237,8 @@ char* send_move(char* move) {
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
             if (isVerbose) printf("<< %s\n", inbuf);
-            if(strstr(inbuf, "Error:")) return (char*)0;
-            if(strstr(inbuf, "Result:")) return (char*)0;
+            if(strstr(inbuf, "Error:")) return inbuf;
+            if(strstr(inbuf, "Result:")) return inbuf;
         }
     }
 

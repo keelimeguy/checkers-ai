@@ -31,9 +31,9 @@ class Checkers:
 
     def __init__(self):
         self.gameState = self.CheckersState()
-        # self.server = SamServer()
+        self.server = SamServer()
         # self.server = SamServer(6)
-        self.server = SamServer(5, True)
+        # self.server = SamServer(5, True)
         self.gameover = True
         self.moves = []
 
@@ -59,17 +59,36 @@ class Checkers:
         if move:
             self.moves.append(move)
             self.gameState.board = self.gameState.board.result(move)
-            self.tell_server(str(move))
+            # returns False if error occurred, else True
+            return self.tell_server(str(move))
+        else:
+            self.show_game()
+            print("Null move error!")
+            return True
 
     def tell_server(self, move=""):
         response = self.server.send_and_receive(move)
         if response:
+            if "Result" in response:
+                self.gameover = True
+                self.server.disconnect()
+            if "Error" in response:
+                self.gameover = True
+                self.server.disconnect()
+                self.show_game()
+                print("Error detected:")
+                print(response)
+                return True
             nextmove = self.gameState.board.move_from_string(response)
             self.moves.append(nextmove)
             self.gameState.board = self.gameState.board.result(nextmove)
         else:
             self.gameover = True
             self.server.disconnect()
+            self.show_game()
+            print("Unknown Error!")
+            return True
+        return False
 
     def show_game(self):
         state = Bitboard32State()
@@ -102,6 +121,7 @@ class Checkers:
         for move in self.moves:
             print(move)
         print(final)
+        return final.strip()
 
 def alphabeta(node, depth = 7, alpha=float('-inf'), beta=float('inf'), maximum=True):
     if depth == 0 or node.terminal():
@@ -133,21 +153,41 @@ def alphabeta(node, depth = 7, alpha=float('-inf'), beta=float('inf'), maximum=T
 
 if __name__ == "__main__":
     game = Checkers()
-    game.reset(True)
-    while not game.finished():
-        move = None
-        actions = game.actions()
-        action = next(actions, None)
-        bestScore = float('-inf')
-        while action:
-            score = alphabeta(game.result(action))
-            # print(game.gameState.board.result(action), '\nhas score: ', score)
-            if float(score) > bestScore:
-                bestScore = score
-                move_list = [action]
-            elif score == bestScore:
-                move_list.append(action)
+    final = ""
+    error = False
+    wins = 0
+    losses = 0
+    draws = 0
+    count = 10
+    while not error and count>0:
+        game.reset()
+        print("Start {}:".format(count))
+        while not game.finished():
+            actions = game.actions()
             action = next(actions, None)
-        index = random.randint(0, len(move_list)-1)
-        game.play(move_list[index])
-    game.show_game()
+            bestScore = float('-inf')
+            if action:
+                move_list = [action]
+            while action:
+                score = alphabeta(game.result(action))
+                # print(game.gameState.board.result(action), '\nhas score: ', score)
+                if float(score) > bestScore:
+                    bestScore = score
+                    move_list = [action]
+                elif score == bestScore:
+                    move_list.append(action)
+                action = next(actions, None)
+            index = random.randint(0, len(move_list)-1)
+            error = game.play(move_list[index])
+        if not error:
+            final = game.show_game()
+            if final == "DRAW!":
+                draws+=1
+            elif final == "WON!":
+                wins+=1
+            elif final == "LOSE!":
+                losses+=1
+            else:
+                print("Unknown final? : " + final)
+        count-=1
+    print("Stats: {}:{}:{}".format(wins, draws, losses))
