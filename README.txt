@@ -7,16 +7,19 @@ Oliver Kisielius
 CSE4705 - Final: Checkers Learner
 
 
+Learning Method:
+- Least mean square algorithm?
+- ?
+
 
 Organization:
-
-- checkers_player.py has the code which runs the player with certain evaluation  and state searching functions
+- checkers_player.py has the code which runs the player with certain evaluation and state searching functions
       - this is the file which should be considered the most while writing other code which plays checkers, with added learning algorithms perhaps
       - can also provide statistics and visual representation of completed games
 - checkers.py has the code to represent and control a checkers game played with the server
       - requires bitboard_32_state.py, the checkers board state, which is a python wrapper for checkers32.c
             - checkers32.c is the higher level representation of the base bitboards in c
-            - checkers32_calc.c is provides helpful computational functions so that checkers32.c may work
+            - checkers32_calc.c provides helpful computational functions so that checkers32.c may work
       - requires sam_server.py, the server protocol interface, which is a python wrapper for mysockets.c
             - mysockets.c provides the interfacing and protocol for communicating with the server (through sockets library)
 
@@ -24,8 +27,7 @@ Checkers -> | -> CheckersState -> BitboardState -> checkers32.c
             | -> SamServer -> mysockets.c
 
 
-
-Evaluation Function Parameters:
+Potential Evaluation Function Parameters:
 • Difference between numbers of checkers of player and opponent
 • Supervising selected fields on the board (opposite rows are very significant)
 • Supervising the center of the board (a number of own vs opponent checkers in central 4×4 place)
@@ -36,7 +38,7 @@ Evaluation Function Parameters:
 • Proximity of pieces (keep our pieces close, their pieces separated)
 
 End Game Condition:
-?
+• ?
 • Threshold on number of pieces left
 • Threshold on number of kings
 • King row cleared
