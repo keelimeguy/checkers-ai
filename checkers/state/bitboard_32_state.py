@@ -1,5 +1,5 @@
-from state_superclass import CheckersGameState
-from structs import *
+from .state_superclass import CheckersGameState
+from checkers.c.structs import *
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+

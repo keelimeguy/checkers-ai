@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 
-from checkers import Checkers
+
+from checkers.checkers import Checkers
+
 import functools
 import random
 import time
 import json
+from math import inf
+import os.path
 
 CACHE_SIZE = 10001
 
-weights = json.load(open("weights_example.json","r"))
+weights = json.load(open(os.path.join(
+    os.path.dirname(os.path.realpath(__file__)),
+    "weights_example.json"),
+                         "r"))
 
 def paramLookup(state): #will be expanded later
     return {'friend_count' : state.board.count_friends(), 'foe_count' : state.board.count_foes(),
@@ -28,35 +35,54 @@ def eval(state):
 # Simple alpha-beta minimax search
 @functools.lru_cache(CACHE_SIZE)
 def alphabeta_search(node):
-    return alphabeta(node, depth = 7, alpha=float('-inf'), beta=float('inf'), maximum=True)
+    return alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True)
 
-def alphabeta(node, depth = 7, alpha=float('-inf'), beta=float('inf'), maximum=True):
+def alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True):
+    # TODO make unit tests for this
     if depth == 0 or node.terminal():
         return eval(node)
     if maximum:
-        val = float('-inf')
-        actions = node.actions()
-        action = next(actions, None)
-        while action:
-            child = node.result(action)
-            val = max(val, alphabeta(child, depth - 1, alpha, beta, False))
-            alpha = max(alpha, val)
-            if beta <= alpha:
-                break
-            action = next(actions, None)
-        return val
+        val = -inf
+        choose = max
     else:
-        val = float('inf')
-        actions = node.actions()
-        action = next(actions, None)
-        while action:
-            child = node.result(action)
-            val = min(val, alphabeta(child, depth - 1, alpha, beta, True))
-            beta = min(beta, val)
-            if beta <= alpha:
-                break
-            action = next(actions, None)
-        return val
+        val = inf
+        choose = min
+    for action in node.actions():
+        child = node.result(action)
+        val = choose(val, alphabeta(child, depth=(depth-1), alpha=alpha,
+                                    beta=beta, maximum=(not maximum)))
+        if maximum:
+            alpha = choose(alpha, val)
+        else:
+            beta = choose(beta, val)
+        if beta <= alpha:
+            break
+    return val
+
+    # if maximum:
+    #     val = -inf
+    #     actions = node.actions()
+    #     action = next(actions, None)
+    #     while action:
+    #         child = node.result(action)
+    #         val = max(val, alphabeta(child, depth - 1, alpha, beta, False))
+    #         alpha = max(alpha, val)
+    #         if beta <= alpha:
+    #             break
+    #         action = next(actions, None)
+    #     return val
+    # else:
+    #     val = inf
+    #     actions = node.actions()
+    #     action = next(actions, None)
+    #     while action:
+    #         child = node.result(action)
+    #         val = min(val, alphabeta(child, depth - 1, alpha, beta, True))
+    #         beta = min(beta, val)
+    #         if beta <= alpha:
+    #             break
+    #         action = next(actions, None)
+    #     return val
 
 if __name__ == "__main__":
     random.seed(time.time())
@@ -80,7 +106,7 @@ if __name__ == "__main__":
         while not game.finished():
             actions = game.actions()
             action = next(actions, None)
-            bestScore = float('-inf')
+            bestScore = -inf
             if action:
                 move_list = [action]
             while action:

@@ -76,3 +76,80 @@ C code 32 representation:
                             +w+w+w+w
                             w+w+w+w+
                         with, b=black, B = black king, w = white, W = white king, - = empty playable square, + = empty non-playable square
+
+
+###############################################################################
+###   Installation:
+###############################################################################
+You want Python version at least 3.5 (the first version with a fast C
+implementation of OrderedDict).
+
+Use a virtual environment!  This is normal Python procedure.  If you don't use
+virtualenvs, you'll eventually install conflicting packages (like PIL and
+pillow) and stuff will break.
+
+All a virtualenv does is 
+
+########## Installing virtualenv (and using it) ###############################
+
+To install virtualenvwrapper, follow the instructions for your distro here:
+
+        https://virtualenvwrapper.readthedocs.io/en/latest/
+
+The link above has too much information. Basically what you want to do is:
+
+        my-package-manager install python-virtualenvwrapper
+
+        # edit ~/.bashrc to source some scripts
+        # I added these lines to my ~/.zshrc, for example:
+        export WORKON_HOME=~/.config/.virtualenvs
+        source /usr/bin/virtualenvwrapper.sh
+        export PIP_REQUIRE_VIRTUALENV=true
+
+
+        # You want at least python3.5.
+        # After this example, `which python` returns
+        #   /home/oliver/.config/.virtualenvs/ai/bin/python
+        # and `python --version` returns
+        #   Python 3.6.0
+        # (It'll probably change add "(ai-env)" to your shell prompt, too.)
+        mkvirtualenv --python=$(which python3.6) ai-env
+
+        # To exit the virtualenv again:
+        deactivate
+        # Now `which python` returns "/usr/bin/python" as normal
+
+        # to reactivate a virtualenv you've created:
+        workon ai-env
+
+
+To see a list of virtualenvwrapper commands, simply type
+
+        virtualenvwrapper
+
+The only commands I ever use are mkvirtualenv, workon, deactivate, and
+rmvirtualenv, but I'm sure the others are lovely, too.
+
+
+########## Installing the package #############################################
+
+From the current directory (checkers-ai), with your virtualenv active, run
+
+        python setup.py develop
+
+Installing this way allows you to make changes and see the effects immediately
+without reinstalling.  ($WORKON_HOME/ai-env/lib/python3.6/site-packages will
+now have a bunch of symbolic links to the code in the repo.)
+
+Notice that now you can run python in any directory and import the checkers code with
+
+        import checkers.c.structs
+
+or what-have-you.
+
+
+########## Running the unit tests #############################################
+
+        python -m unittest
+
+That's all.
