@@ -1,4 +1,5 @@
 from checkers.c.structs import samserver_lib
+from ctypes import *
 
 class SamServer:
     """Simple methods to communicate with server"""

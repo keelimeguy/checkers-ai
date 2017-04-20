@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 
-
+import sys
 from checkers.checkers import Checkers
 
+import argparse
 import functools
 import random
 import time
 import json
-from math import inf
+import sys
 import os.path
 
 CACHE_SIZE = 10001
@@ -35,17 +36,17 @@ def eval(state):
 # Simple alpha-beta minimax search
 @functools.lru_cache(CACHE_SIZE)
 def alphabeta_search(node):
-    return alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True)
+    return alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
-def alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True):
+def alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True):
     # TODO make unit tests for this
     if depth == 0 or node.terminal():
         return eval(node)
     if maximum:
-        val = -inf
+        val = float('-inf')
         choose = max
     else:
-        val = inf
+        val = float('inf')
         choose = min
     for action in node.actions():
         child = node.result(action)
@@ -60,7 +61,7 @@ def alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True):
     return val
 
     # if maximum:
-    #     val = -inf
+    #     val = float('-inf')
     #     actions = node.actions()
     #     action = next(actions, None)
     #     while action:
@@ -72,7 +73,7 @@ def alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True):
     #         action = next(actions, None)
     #     return val
     # else:
-    #     val = inf
+    #     val = float('inf')
     #     actions = node.actions()
     #     action = next(actions, None)
     #     while action:
@@ -86,7 +87,12 @@ def alphabeta(node, depth=7, alpha=-inf, beta=inf, maximum=True):
 
 if __name__ == "__main__":
     random.seed(time.time())
-    game = Checkers()
+    parser = argparse.ArgumentParser(description='Plays a given number of games with a given opponent using the given user number.')
+    parser.add_argument('-o', '--opponent', type=int, default=0, help='The opponent user number.')
+    parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
+    parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
+    args = parser.parse_args()
+    game = Checkers(args.opponent, args.user==6)
     final = ""
     error = False
     wins = 0
@@ -98,7 +104,7 @@ if __name__ == "__main__":
     min_time = 0
 
     # How many times to run a game
-    count = 10
+    count = args.count
     while not error and count>0:
         start_time = time.time()
         game.reset(False)
@@ -106,7 +112,7 @@ if __name__ == "__main__":
         while not game.finished():
             actions = game.actions()
             action = next(actions, None)
-            bestScore = -inf
+            bestScore = float('-inf')
             if action:
                 move_list = [action]
             while action:

@@ -7,6 +7,12 @@ Oliver Kisielius
 CSE4705 - Final: Checkers Learner
 
 
+###################################################################################
+Running code:
+  While in the directory '/checkers-ai', run 'python -m checkers.checkers_player -h'
+###################################################################################
+Also: Follow Olivers instructions at the bottom to install virtualenv (probably optional at this point, might be necessary later)
+
 
 Organization:
 
