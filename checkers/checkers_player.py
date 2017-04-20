@@ -10,6 +10,7 @@ import time
 import json
 import sys
 import os.path
+import gc
 
 CACHE_SIZE = 10001
 
@@ -144,5 +145,6 @@ if __name__ == "__main__":
         print("Finished in {}s\n".format(time_diff))
         num+=1
         count-=1
+        gc.collect()
 
     print("Stats: {}w:{}d:{}l\navg time = {}s\nmax time = {}s\nmin time = {}s".format(wins, draws, losses, total_time/num, max_time, min_time))
