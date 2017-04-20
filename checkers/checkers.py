@@ -1,6 +1,6 @@
-from bitboard_32_state import Bitboard32State
-from sam_server import SamServer
-from structs import *
+from checkers.state.bitboard_32_state import Bitboard32State
+from checkers.sam_server import SamServer
+from checkers.c.structs import *
 
 class Checkers:
 

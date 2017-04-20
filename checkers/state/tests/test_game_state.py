@@ -2,15 +2,12 @@
 
 """Unit tests for game state representations"""
 from __future__ import print_function  # in case you're using python2
-import sys  # to print an error in a certain case
 import unittest
 
-import sys
-sys.path.insert(0, 'c/')
 
 # put a line to import your game state implementation here
-from bitboard_32_state import Bitboard32State
-from state_superclass import *
+from ..bitboard_32_state import Bitboard32State
+from ..state_superclass import *
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+

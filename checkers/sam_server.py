@@ -1,4 +1,5 @@
-from structs import *
+from checkers.c.structs import samserver_lib
+from ctypes import *
 
 class SamServer:
     """Simple methods to communicate with server"""
@@ -10,7 +11,10 @@ class SamServer:
         self.player = None
 
     def __str__(self):
-        return "<SamServer: connected=" + str(self.connected) + ", is_B_client=" + str(self.is_B_client) + ", player=" + str(self.player) + ", opponent=" + str(self.opponent) + ">"
+        return ("<SamServer: connected=" + str(self.connected)
+                + ", is_B_client=" + str(self.is_B_client)
+                + ", player=" + str(self.player)
+                + ", opponent=" + str(self.opponent) + ">")
 
     def connect(self, verbose=False):
         self.disconnect()
