@@ -34,8 +34,14 @@ class SamServer:
 
     def send_and_receive(self, msg=""):
         if self.connected:
-            response = samserver_lib.send_move(msg.encode("utf-8"))
-            if response:
-                return response.decode("utf-8")
+            error = c_int(0)
+            response = samserver_lib.send_move(msg.encode("utf-8"), byref(error))
+            if response and not error:
+                ptr = response
+                string = cast(ptr, c_char_p).value.decode("utf-8")
+                samserver_lib.free(ptr)
+                return string
+            elif response:
+                return cast(response, c_char_p).value.decode("utf-8")
             else:
                 return None

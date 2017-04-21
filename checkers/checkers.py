@@ -18,6 +18,9 @@ class Checkers:
         def actions(self):
             return self.board.actions()
 
+        def destroy(self):
+            return self.board.destroy()
+
     def __init__(self, opponent=0, is_B_client=False):
         self.gameState = self.CheckersState()
         self.server = SamServer(opponent, is_B_client)
@@ -26,7 +29,12 @@ class Checkers:
 
     def reset(self, verbose=False):
         self.server.disconnect()
-        self.gameState = self.CheckersState(self.server.connect(verbose))
+        if self.gameState:
+            self.gameState.destroy()
+        if self.moves:
+            for move in self.moves:
+                move.destroy()
+        self.gameState = self.CheckersState(self.server.connect(verbose), Bitboard32State())
         self.moves = []
         if self.gameState.player:
             self.tell_server("")

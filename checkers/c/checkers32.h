@@ -19,6 +19,7 @@ void Board_destroy(Board* b);
 
 Move* Move_alloc();
 void Move_init(Move* m, int length);
+Move* Move_copy(Move* src);
 void Move_list_destroy(Move** m, int size);
 void Move_destroy(Move* m);
 

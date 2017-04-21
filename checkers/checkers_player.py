@@ -58,31 +58,6 @@ def alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=Tru
             break
     return val
 
-    # if maximum:
-    #     val = float('-inf')
-    #     actions = node.actions()
-    #     action = next(actions, None)
-    #     while action:
-    #         child = node.result(action)
-    #         val = max(val, alphabeta(child, depth - 1, alpha, beta, False))
-    #         alpha = max(alpha, val)
-    #         if beta <= alpha:
-    #             break
-    #         action = next(actions, None)
-    #     return val
-    # else:
-    #     val = float('inf')
-    #     actions = node.actions()
-    #     action = next(actions, None)
-    #     while action:
-    #         child = node.result(action)
-    #         val = min(val, alphabeta(child, depth - 1, alpha, beta, True))
-    #         beta = min(beta, val)
-    #         if beta <= alpha:
-    #             break
-    #         action = next(actions, None)
-    #     return val
-
 if __name__ == "__main__":
     random.seed(time.time())
     parser = argparse.ArgumentParser(description='Plays a given number of games with a given opponent using the given user number.')
@@ -90,6 +65,7 @@ if __name__ == "__main__":
     parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
     parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
     parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
+    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
     args = parser.parse_args()
     game = Checkers(args.opponent, args.user==6)
     final = ""
@@ -110,24 +86,44 @@ if __name__ == "__main__":
 
     while not error and count>0:
         start_time = time.time()
-        game.reset(False)
+        game.reset(args.verbose=='True')
         print("Start {}:".format(count))
         while not game.finished():
+            # actions = game.actions()
+            # action = next(actions, None)
+            # bestScore = float('-inf')
+            # error = True
+            # if action:
+            #     move_list = [action]
+            #     while action:
+            #         score = alphabeta_search(game.result(action))
+            #         if float(score) > bestScore:
+            #             bestScore = score
+            #             move_list = [action]
+            #         elif score == bestScore:
+            #             move_list.append(action)
+            #         action = next(actions, None)
+            #     index = random.randint(0, len(move_list)-1)
+            #     error = game.play(move_list[index])
+            error = True
             actions = game.actions()
-            action = next(actions, None)
+            move_list = [next(actions, None)]
             bestScore = float('-inf')
-            if action:
-                move_list = [action]
-            while action:
-                score = alphabeta_search(game.result(action))
-                if float(score) > bestScore:
-                    bestScore = score
-                    move_list = [action]
-                elif score == bestScore:
-                    move_list.append(action)
-                action = next(actions, None)
-            index = random.randint(0, len(move_list)-1)
-            error = game.play(move_list[index])
+            if move_list[0]:
+                for act in actions:
+                    score = alphabeta_search(game.result(act))
+                    if float(score) > bestScore:
+                        bestScore = score
+                        move_list = [act]
+                    elif score == bestScore:
+                        move_list.append(act)
+                index = random.randint(0, len(move_list)-1)
+                error = game.play(move_list[index])
+                if error:
+                    break;
+            else:
+                error = True
+                break;
         if not error:
             final = game.show_game()
             if final == "DRAW!":

@@ -30,6 +30,14 @@ void Move_init(Move* m, int length) {
     m->route = malloc(length * sizeof(unsigned short));
 }
 
+Move* Move_copy(Move* src) {
+    Move* ret = Move_alloc();
+    Move_init(ret, src->length);
+    for (int i = 0; i < ret->length; i++)
+        ret->route[i] = src->route[i];
+    return ret;
+}
+
 void Move_destroy(Move* m) {
     free(m->route);
     free(m);

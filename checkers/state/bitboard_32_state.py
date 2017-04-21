@@ -17,13 +17,20 @@ class Bitboard32State(CheckersGameState):
 
     class Move:
         def __init__(self, p_move=None):
-            self.move = p_move
+            if p_move:
+                self.move = state32_lib.Move_copy(p_move)
             if not self.move:
                 self.move = state32_lib.Move_alloc()
                 state32_lib.Move_init(self.move, 0)
 
         def __str__(self):
-            return state32_lib.Move_to_string(self.move).decode("utf-8")
+            ptr = state32_lib.Move_to_string(self.move)
+            string = cast(ptr, c_char_p).value.decode("utf-8")
+            state32_lib.free(ptr)
+            return string
+
+        def destroy(self):
+            state32_lib.Move_destroy(self.move)
 
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board
@@ -36,7 +43,13 @@ class Bitboard32State(CheckersGameState):
             state32_lib.Board_init(self.c_board, black_pieces, white_pieces, king_pieces, plyr)
 
     def __str__(self):
-        return state32_lib.Board_to_string(self.c_board).decode("utf-8")
+        ptr = state32_lib.Board_to_string(self.c_board)
+        string = cast(ptr, c_char_p).value.decode("utf-8")
+        state32_lib.free(ptr)
+        return string
+
+    def destroy(self):
+        state32_lib.Board_destroy(self.c_board)
 
     def from_string(self, board_string=FRESH_BOARD_REPR):
         new_board = state32_lib.Board_from_string(create_string_buffer(board_string.encode("utf-8")))
@@ -58,6 +71,7 @@ class Bitboard32State(CheckersGameState):
         for i in range(0, numMoves.value):
             newMove = Bitboard32State.Move(movelist[i])
             moves.append(newMove)
+        state32_lib.Move_list_destroy(movelist, numMoves.value)
         return moves
 
     def result(self, move=None):
@@ -67,7 +81,10 @@ class Bitboard32State(CheckersGameState):
         return Bitboard32State(0, 0, 0, False, new_board)
 
     def player(self):
-        return state32_lib.player(self.c_board).decode("utf-8")
+        ptr = state32_lib.player(self.c_board)
+        string = cast(ptr, c_char_p).value.decode("utf-8")
+        state32_lib.free(ptr)
+        return string
 
     # We will use heuristics as described in the Warsaw Paper
 
@@ -142,33 +159,176 @@ class Bitboard32State(CheckersGameState):
         return state32_lib.count_bits(foes & 0xf818181f & self.c_board.contents.k)
 
     def count_movable_friends_pawns(self):
+        every = self.c_board.contents.w | self.c_board.contents.b
+        pos = 1
+        count = 0
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
+            friends = self.c_board.contents.w & ~self.c_board.contents.k
+            foes = self.c_board.contents.b
+            for i in range(0,32):
+                if (friends & pos & 0x0f0f0f00):
+                    if (not ((pos>>4)&every) or ((pos&0x07070700) and not ((pos>>3)&every))):
+                        count+=1
+                    elif ((pos>>4)&foes) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                        count+=1
+                    elif ((pos>>3)&foes) and (pos&0x77777700) and not ((pos>>7)&every):
+                        count+=1
+                elif (friends & pos & 0xf0f0f0f0):
+                    if (not ((pos>>4)&every)) or ((pos&0xe0e0e0e0) and not ((pos>>5)&every)):
+                        count+=1
+                    elif ((pos>>5)&foes) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                        count+=1
+                    elif ((pos>>4)&foes) and (pos&0x77777700) and not ((pos>>7)&every):
+                        count+=1
+                pos = pos<<1
         else:
-            friends = self.c_board.contents.b  
-        pass   
-        
+            friends = self.c_board.contents.b & ~self.c_board.contents.k
+            foes = self.c_board.contents.w
+            for i in range(0,32):
+                if (friends & pos & 0x0f0f0f0f):
+                    if (not ((pos<<4)&every)) or ((pos&0x07070707) and not ((pos<<5)&every)):
+                        count+=1
+                    elif ((pos<<4)&foes) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                        count+=1
+                    elif ((pos<<5)&foes) and (pos&0x00777777) and not ((pos<<9)&every):
+                        count+=1
+                elif (friends & pos & 0x00f0f0f0):
+                    if (not ((pos<<4)&every)) or ((pos&0x00e0e0e0) and not ((pos<<3)&every)):
+                        count+=1
+                    elif ((pos<<3)&foes) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                        count+=1
+                    elif ((pos<<4)&foes) and (pos&0x00777777) and not ((pos<<9)&every):
+                        count+=1
+                pos = pos<<1
+        return count
 
     def count_movable_foes_pawns(self):
+        every = self.c_board.contents.w | self.c_board.contents.b
+        pos = 1
+        count = 0
         if self.c_board.contents.plyr:
-            foes = self.c_board.contents.b
+            foes = self.c_board.contents.b & ~self.c_board.contents.k
+            friends = self.c_board.contents.w
+            for i in range(0,32):
+                if (foes & pos & 0x0f0f0f0f):
+                    if (not ((pos<<4)&every)) or ((pos&0x07070707) and not ((pos<<5)&every)):
+                        count+=1
+                    elif ((pos<<4)&friends) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                        count+=1
+                    elif ((pos<<5)&friends) and (pos&0x00777777) and not ((pos<<9)&every):
+                        count+=1
+                elif (foes & pos & 0x00f0f0f0):
+                    if (not ((pos<<4)&every)) or ((pos&0x00e0e0e0) and not ((pos<<3)&every)):
+                        count+=1
+                    elif ((pos<<3)&friends) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                        count+=1
+                    elif ((pos<<4)&friends) and (pos&0x00777777) and not ((pos<<9)&every):
+                        count+=1
+                pos = pos<<1
         else:
-            foes = self.c_board.contents.w
-        pass
+            foes = self.c_board.contents.w & ~self.c_board.contents.k
+            friends = self.c_board.contents.b
+            for i in range(0,32):
+                if (foes & pos & 0x0f0f0f00):
+                    if (not ((pos>>4)&every)) or ((pos&0x07070700) and not ((pos>>3)&every)):
+                        count+=1
+                    elif ((pos>>4)&friends) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                        count+=1
+                    elif ((pos>>3)&friends) and (pos&0x77777700) and not ((pos>>7)&every):
+                        count+=1
+                elif (foes & pos & 0xf0f0f0f0):
+                    if (not ((pos>>4)&every)) or ((pos&0xe0e0e0e0) and not ((pos>>5)&every)):
+                        count+=1
+                    elif ((pos>>5)&friends) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                        count+=1
+                    elif ((pos>>4)&friends) and (pos&0x77777700) and not ((pos>>7)&every):
+                        count+=1
+                pos = pos<<1
+        return count
 
     def count_movable_friends_kings(self):
+        every = self.c_board.contents.w | self.c_board.contents.b
+        pos = 1
+        count = 0
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
-        else:
-            friends = self.c_board.contents.b
-        pass
-
-    def count_movable_foes_kings(self):
-        if self.c_board.contents.plyr:
+            friends = self.c_board.contents.w & self.c_board.contents.k
             foes = self.c_board.contents.b
         else:
+            friends = self.c_board.contents.b & self.c_board.contents.k
             foes = self.c_board.contents.w
-        pass
+        for i in range(0,32):
+            if (friends & pos & 0x0f0f0f0f):
+                if (not ((pos<<4)&every)) or ((pos&0x07070707) and not ((pos<<5)&every)):
+                    count+=1
+                elif ((pos<<4)&foes) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                    count+=1
+                elif ((pos<<5)&foes) and (pos&0x00777777) and not ((pos<<9)&every):
+                    count+=1
+                elif (friends & pos & 0x0f0f0f00):
+                    if (not ((pos>>4)&every) or ((pos&0x07070700) and not ((pos>>3)&every))):
+                        count+=1
+                    elif ((pos>>4)&foes) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                        count+=1
+                    elif ((pos>>3)&foes) and (pos&0x77777700) and not ((pos>>7)&every):
+                        count+=1
+            elif (friends & pos & 0xf0f0f0f0):
+                if (not ((pos>>4)&every)) or ((pos&0xe0e0e0e0) and not ((pos>>5)&every)):
+                    count+=1
+                elif ((pos>>5)&foes) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                    count+=1
+                elif ((pos>>4)&foes) and (pos&0x77777700) and not ((pos>>7)&every):
+                    count+=1
+                elif (friends & pos & 0x00f0f0f0):
+                    if (not ((pos<<4)&every)) or ((pos&0x00e0e0e0) and not ((pos<<3)&every)):
+                        count+=1
+                    elif ((pos<<3)&foes) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                        count+=1
+                    elif ((pos<<4)&foes) and (pos&0x00777777) and not ((pos<<9)&every):
+                        count+=1
+            pos = pos<<1
+        return count
+
+    def count_movable_foes_kings(self):
+        every = self.c_board.contents.w | self.c_board.contents.b
+        pos = 1
+        count = 0
+        if self.c_board.contents.plyr:
+            foes = self.c_board.contents.b & self.c_board.contents.k
+            friends = self.c_board.contents.w
+        else:
+            foes = self.c_board.contents.w & self.c_board.contents.k
+            friends = self.c_board.contents.b
+        for i in range(0,32):
+            if (foes & pos & 0x0f0f0f0f):
+                if (not ((pos<<4)&every)) or ((pos&0x07070707) and not ((pos<<5)&every)):
+                    count+=1
+                elif ((pos<<4)&friends) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                    count+=1
+                elif ((pos<<5)&friends) and (pos&0x00777777) and not ((pos<<9)&every):
+                    count+=1
+                elif (foes & pos & 0x0f0f0f00):
+                    if ((not ((pos>>4)&every)) or ((pos&0x07070700) and not ((pos>>3)&every))):
+                        count+=1
+                    elif ((pos>>4)&friends) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                        count+=1
+                    elif ((pos>>3)&friends) and (pos&0x77777700) and not ((pos>>7)&every):
+                        count+=1
+            elif (foes & pos & 0xf0f0f0f0):
+                if (not ((pos>>4)&every)) or ((pos&0xe0e0e0e0) and not ((pos>>5)&every)):
+                    count+=1
+                elif ((pos>>5)&friends) and (pos&0xeeeeee00) and not ((pos>>9)&every):
+                    count+=1
+                elif ((pos>>4)&friends) and (pos&0x77777700) and not ((pos>>7)&every):
+                    count+=1
+                elif (foes & pos & 0x00f0f0f0):
+                    if (not ((pos<<4)&every)) or ((pos&0x00e0e0e0) and not ((pos<<3)&every)):
+                        count+=1
+                    elif ((pos<<3)&friends) and (pos&0x00eeeeee) and not ((pos<<7)&every):
+                        count+=1
+                    elif ((pos<<4)&friends) and (pos&0x00777777) and not ((pos<<9)&every):
+                        count+=1
+            pos = pos<<1
+        return count
 
     def aggregate_distance_promotion_friends(self):
         if self.c_board.contents.plyr:
@@ -188,12 +348,12 @@ class Bitboard32State(CheckersGameState):
         if self.c_board.contents.plyr:
             friends = self.c_board.contents.w
             foes = self.c_board.contents.b
-            side = white
+            side = 'white'
         else:
             friends = self.c_board.contents.b
             foes = self.c_board.contents.w
-            side = black
-        if(side == white):
+            side = 'black'
+        if(side == 'white'):
             return state32_lib.count_bits(foes & ~0x0000000f)
         else:
             return state32_lib.count_bits(foes & ~0xf0000000)
@@ -203,13 +363,13 @@ class Bitboard32State(CheckersGameState):
         if self.c_board.contents.plyr:
             friends = self.c_board.contents.w
             foes = self.c_board.contents.b
-            side = black
+            side = 'black'
         else:
             friends = self.c_board.contents.b
             foes = self.c_board.contents.w
-            side = white
+            side = 'white'
 
-        if(side == white):
+        if(side == 'white'):
             return state32_lib.count_bits(friends & ~0x0000000f)
         else:
             return state32_lib.count_bits(friends & ~0xf0000000)
@@ -321,7 +481,7 @@ class Bitboard32State(CheckersGameState):
         return state32_lib.count_bits(friends & 0x8cc66331 & ~self.c_board.contents.k)
 
 
-    def count_diagoanldouble_pawns_foes(self):
+    def count_diagonaldouble_pawns_foes(self):
         if self.c_board.contents.plyr:
             foes = self.c_board.contents.b
         else:
@@ -401,9 +561,9 @@ class Bitboard32State(CheckersGameState):
         else:
             foes = self.c_board.contents.w
         if self.c_board.contents.plyr:
-            return(state32_lib(foes & 0x00000023) == 3)
+            return(state32_lib.count_bits(foes & 0x00000023) == 3)
         else:
-            return(state32_lib(foes & 0xc4000000) == 3)
+            return(state32_lib.count_bits(foes & 0xc4000000) == 3)
 
     def oreo_friends(self):
         if self.c_board.contents.plyr:
@@ -421,9 +581,9 @@ class Bitboard32State(CheckersGameState):
         else:
             foes = self.c_board.contents.w
         if self.c_board.contents.plyr:
-            return(state32_lib(foes & 0x00000046) == 3)
+            return(state32_lib.count_bits(foes & 0x00000046) == 3)
         else:
-            return(state32_lib(foes & 0x62000000) == 3)
+            return(state32_lib.count_bits(foes & 0x62000000) == 3)
 
     def bridge_friends(self):
         if self.c_board.contents.plyr:

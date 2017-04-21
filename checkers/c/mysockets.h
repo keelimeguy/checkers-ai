@@ -37,6 +37,6 @@ void die(char *s);
 
 int setup(int isB, int opponent, int verbose);
 void end_connection();
-char* send_move(char* move);
+char* send_move(char* move, int* error);
 
 #endif

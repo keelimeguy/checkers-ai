@@ -69,7 +69,6 @@ class CheckersGameStateTestCase(unittest.TestCase):
     def test_action_results(self):
         """Make some random moves and do some sanity checks"""
         current = self.state_class()
-
         for _ in range(10):  # i.e. repeat 10 times
             # Note that the game can't end in 10 moves, so if it does,
             # then something is terribly wrong
@@ -320,6 +319,46 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
+    def test_count_movable_pieces(self):
+        """Test the count movable pieces heuristic functions
+        """
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_movable_friends_pawns(), 5)
+        self.assertEqual(state.count_movable_foes_pawns(), 4)
+        self.assertEqual(state.count_movable_friends_kings(), 3)
+        self.assertEqual(state.count_movable_foes_kings(), 2)
+
+        board_string2 = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string2)
+        self.assertEqual(state.count_movable_friends_kings(), 2)
+        self.assertEqual(state.count_movable_foes_kings(), 3)
+        self.assertEqual(state.count_movable_friends_pawns(), 4)
+        self.assertEqual(state.count_movable_foes_pawns(), 5)
 
 class ParserHelperTestCase(unittest.TestCase):
     """Tests the thing that makes parsing boards easier"""

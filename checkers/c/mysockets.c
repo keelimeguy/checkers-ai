@@ -198,7 +198,8 @@ int setup(int isB, int opponent, int verbose) {
     return inbuf[6]=='W';
 }
 
-char* send_move(char* move) {
+char* send_move(char* move, int* error) {
+    *error = 0;
     if(strlen(move)!=0) {
         // Don't send move until asked for move
         if (!strstr(inbuf, "?Move")) {
@@ -206,8 +207,14 @@ char* send_move(char* move) {
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
             if (isVerbose) printf("<< %s\n", inbuf);
-            if(strstr(inbuf, "Error:")) return inbuf;
-            if(strstr(inbuf, "Result:")) return inbuf;
+            if(strstr(inbuf, "Error:")) {
+                *error = 1;
+                return inbuf;
+            }
+            if(strstr(inbuf, "Result:")) {
+                *error = 2;
+                return inbuf;
+            }
         }
 
         // Write the move to the socket
@@ -221,15 +228,27 @@ char* send_move(char* move) {
         memset(inbuf, 0, BUFSIZE);
         recv(mySocket, inbuf, BUFSIZE, 0);
         if (isVerbose) printf("<< %s\n", inbuf);
-        if(strstr(inbuf, "Error:")) return inbuf;
-        if(strstr(inbuf, "Result:")) return inbuf;
+        if(strstr(inbuf, "Error:")) {
+            *error = 1;
+            return inbuf;
+        }
+        if(strstr(inbuf, "Result:")) {
+            *error = 2;
+            return inbuf;
+        }
         if (!strstr(inbuf+1, "Move:")) {
             // Get opponent move
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
             if (isVerbose) printf("<< %s\n", inbuf);
-            if(strstr(inbuf, "Error:")) return inbuf;
-            if(strstr(inbuf, "Result:")) return inbuf;
+            if(strstr(inbuf, "Error:")) {
+                *error = 1;
+                return inbuf;
+            }
+            if(strstr(inbuf, "Result:")) {
+                *error = 2;
+                return inbuf;
+            }
         }
     } else {
         if (!strstr(inbuf, "Move:")) {
@@ -237,8 +256,14 @@ char* send_move(char* move) {
             memset(inbuf, 0, BUFSIZE);
             recv(mySocket, inbuf, BUFSIZE, 0);
             if (isVerbose) printf("<< %s\n", inbuf);
-            if(strstr(inbuf, "Error:")) return inbuf;
-            if(strstr(inbuf, "Result:")) return inbuf;
+            if(strstr(inbuf, "Error:")) {
+                *error = 1;
+                return inbuf;
+            }
+            if(strstr(inbuf, "Result:")) {
+                *error = 2;
+                return inbuf;
+            }
         }
     }
 
@@ -250,5 +275,6 @@ char* send_move(char* move) {
     substr[len] = (char)0;
     char* response = malloc((len+1)*sizeof(char));
     sprintf(response, "%s", substr);
+    free(substr);
     return response;
 }
