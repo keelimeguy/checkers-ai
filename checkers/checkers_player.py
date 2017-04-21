@@ -113,22 +113,6 @@ if __name__ == "__main__":
         game.reset(args.verbose=='True')
         print("Start {}:".format(count))
         while not game.finished():
-            # actions = game.actions()
-            # action = next(actions, None)
-            # bestScore = float('-inf')
-            # error = True
-            # if action:
-            #     move_list = [action]
-            #     while action:
-            #         score = alphabeta_search(game.result(action))
-            #         if float(score) > bestScore:
-            #             bestScore = score
-            #             move_list = [action]
-            #         elif score == bestScore:
-            #             move_list.append(action)
-            #         action = next(actions, None)
-            #     index = random.randint(0, len(move_list)-1)
-            #     error = game.play(move_list[index])
             error = True
             actions = game.actions()
             move_list = [next(actions, None)]

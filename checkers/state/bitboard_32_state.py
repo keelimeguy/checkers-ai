@@ -348,30 +348,20 @@ class Bitboard32State(CheckersGameState):
         if self.c_board.contents.plyr:
             friends = self.c_board.contents.w
             foes = self.c_board.contents.b
-            side = 'white'
+            return state32_lib.count_bits(foes & ~0x0000000f)
         else:
             friends = self.c_board.contents.b
             foes = self.c_board.contents.w
-            side = 'black'
-        if(side == 'white'):
-            return state32_lib.count_bits(foes & ~0x0000000f)
-        else:
             return state32_lib.count_bits(foes & ~0xf0000000)
-
 
     def count_unoccupied_promotion_foes(self):
         if self.c_board.contents.plyr:
             friends = self.c_board.contents.w
             foes = self.c_board.contents.b
-            side = 'black'
+            return state32_lib.count_bits(friends & ~0x0000000f)
         else:
             friends = self.c_board.contents.b
             foes = self.c_board.contents.w
-            side = 'white'
-
-        if(side == 'white'):
-            return state32_lib.count_bits(friends & ~0x0000000f)
-        else:
             return state32_lib.count_bits(friends & ~0xf0000000)
 
     def count_defender_pieces_friends(self):
