@@ -417,9 +417,9 @@ class Bitboard32State(CheckersGameState):
 
     def count_center_pawns_friends(self):
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
+            foes = self.c_board.contents.b
         else:
-            friends = self.c_board.contents.b
+            foes = self.c_board.contents.w
         return state32_lib.count_bits(foes & 0x00666600 & ~self.c_board.contents.k)
 
     def count_center_pawns_foes(self):

@@ -17,19 +17,22 @@ for parameter in weight_tests:
     for weight in weight_tests[parameter]:
         weight = int(weight)
         active_weights = json.load(open(os.path.join(parent_dir, "weights_example.json"), "r"))
-        active_weights[parameter]["weight"] = weight
+        if parameter in active_weights:
+            active_weights[parameter]["weight"] = weight
+        else:
+            active_weights[parameter] = {"weight" : weight, "wins" : 0, "total" : 0}
         json.dump(active_weights, open(outfile,"w"))
 
         #This is horrible code, but everything else that I can think of does not work due to memory leak.
         os.chdir(run_dir)
         try:
-            result = subprocess.check_output("python3 -m checkers.checkers_player -c 3 -w {}".format(outfile),
+            result = subprocess.check_output("python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
                                              stderr=subprocess.STDOUT, shell=True)
         except subprocess.CalledProcessError as e:
             print("Failed first attempt:")
             print(e.output)
             try:
-                result = subprocess.check_output("python3 -m checkers.checkers_player -c 3 -w {}".format(outfile),
+                result = subprocess.check_output("python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
                                                 stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError as e:
                 print("Failed")
