@@ -193,7 +193,7 @@ class Bitboard32State(CheckersGameState):
             friends = self.c_board.contents.b
             foes = self.c_board.contents.w
             side = black
-        if(side == white)
+        if(side == white):
             return state32_lib.count_bits(foes & ~0x0000000f)
         else:
             return state32_lib.count_bits(foes & ~0xf0000000)
@@ -209,7 +209,7 @@ class Bitboard32State(CheckersGameState):
             foes = self.c_board.contents.w
             side = white
 
-        if(side == white)
+        if(side == white):
             return state32_lib.count_bits(friends & ~0x0000000f)
         else:
             return state32_lib.count_bits(friends & ~0xf0000000)

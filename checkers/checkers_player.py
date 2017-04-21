@@ -14,10 +14,7 @@ import gc
 
 CACHE_SIZE = 10001
 
-weights = json.load(open(os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "weights_example.json"),
-                         "r"))
+weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights_example.json")
 
 def paramLookup(state): #will be expanded later
     return {'friend_count' : state.board.count_friends(), 'foe_count' : state.board.count_foes(),
@@ -25,10 +22,10 @@ def paramLookup(state): #will be expanded later
 
 def eval(state):
     score = 0
-    paramValues = paramLookup(state)
+    param_values = paramLookup(state)
     for parameter in weights:
         weight = weights[parameter]["weight"]
-        score += weight * paramValues[parameter]
+        score += weight * param_values[parameter]
     #score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
     if state.board.c_board.contents.plyr == state.player:
         return score
@@ -92,6 +89,7 @@ if __name__ == "__main__":
     parser.add_argument('-o', '--opponent', type=int, default=0, help='The opponent user number.')
     parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
     parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
+    parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
     args = parser.parse_args()
     game = Checkers(args.opponent, args.user==6)
     final = ""
@@ -106,6 +104,10 @@ if __name__ == "__main__":
 
     # How many times to run a game
     count = args.count
+
+    global weights
+    weights = json.load(open(args.weights, 'r'))
+
     while not error and count>0:
         start_time = time.time()
         game.reset(False)
