@@ -26,7 +26,7 @@ def paramLookup(state): #will be expanded later
             'movable_friend_kings' : state.board.count_movable_friends_kings(), 'movable_foe_kings' : state.board.count_safe_foes_kings(),
             'friend_distance_promotion' : state.board.aggregate_distance_promotion_foes(), 'foe_distance_promotion' : state.board.aggregate_distance_promotion_foes(),
             'unoccupied_promotion_friends' : state.board.count_unoccupied_promotion_friends(), 'unoccupied_promotion_foes' : state.board.count_unoccupied_promotion_foes(),
-            'defender_friends' : state.board.count_defender_pieces_friends(), "defender_foes" : state.board.count_defender_pieces_foes(),
+            'defender_friends' : state.board.count_defender_pieces_friends(), 'defender_foes' : state.board.count_defender_pieces_foes(),
             'attack_pawn_friends' : state.board.count_attack_pawns_friends(), 'attack_pawn_foes' : state.board.count_attack_pawns_foes(),
             'center_pawn_friends' : state.board.count_center_pawns_friends(), 'center_pawn_foes' : state.board.count_center_pawns_foes(),
             'center_king_friends' : state.board.count_center_kings_friends(), 'center_king_foes' : state.board.count_center_kings_foes(),

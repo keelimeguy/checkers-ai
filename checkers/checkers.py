@@ -5,9 +5,11 @@ from checkers.c.structs import *
 class Checkers:
 
     class CheckersState:
-        def __init__(self, player=None, board=Bitboard32State()):
+        def __init__(self, player=None, board=None):
             self.player = player
             self.board = board
+            if not self.board:
+                self.board = Bitboard32State()
 
         def terminal(self):
             return self.board.count_foes() == 0 or self.board.count_friends() == 0
@@ -34,7 +36,7 @@ class Checkers:
         if self.moves:
             for move in self.moves:
                 move.destroy()
-        self.gameState = self.CheckersState(self.server.connect(verbose), Bitboard32State())
+        self.gameState = self.CheckersState(self.server.connect(verbose))
         self.moves = []
         if self.gameState.player:
             self.tell_server("")
