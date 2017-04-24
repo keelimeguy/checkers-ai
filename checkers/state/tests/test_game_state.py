@@ -740,6 +740,89 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
         self.assertEqual(state.count_holes_friends(), 1)
         self.assertEqual(state.count_holes_foes(), 3)
 
+    def test_count_corner(self):
+        """Test the count corner heuristic functions
+        """
+        board_string = """
++b+b+b+b
+w+-+B+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+B
+-+B+w+w+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.pawn_corner_friends(), 1)
+        self.assertEqual(state.pawn_corner_foes(), 0)
+        self.assertEqual(state.king_corner_friends(), 0)
+        self.assertEqual(state.king_corner_foes(), 0)
+
+        board_string = """
++b+b+b+b
+w+-+B+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+B
+-+B+w+w+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.pawn_corner_friends(), 0)
+        self.assertEqual(state.pawn_corner_foes(), 1)
+        self.assertEqual(state.king_corner_friends(), 0)
+        self.assertEqual(state.king_corner_foes(), 0)
+
+        board_string = """
++b+b+b+W
+w+-+B+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+B
+-+B+w+w+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.pawn_corner_friends(), 0)
+        self.assertEqual(state.pawn_corner_foes(), 0)
+        self.assertEqual(state.king_corner_friends(), 0)
+        self.assertEqual(state.king_corner_foes(), 1)
+
+        board_string = """
++b+b+b+W
+w+-+B+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+B
+-+B+w+w+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.pawn_corner_friends(), 0)
+        self.assertEqual(state.pawn_corner_foes(), 0)
+        self.assertEqual(state.king_corner_friends(), 1)
+        self.assertEqual(state.king_corner_foes(), 0)
+
 
     def test_formation(self):
         """Test the formation heuristic functions
