@@ -503,46 +503,126 @@ class Bitboard32State(CheckersGameState):
         return state32_lib.count_bits(foes & 0x8cc66331 & self.c_board.contents.k)
 
     def count_loner_pawns_friends(self):
+        empty = ~(self.c_board.contents.b|self.c_board.contents.w)
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
+            friends = self.c_board.contents.w&~self.c_board.contents.k
         else:
-            friends = self.c_board.contents.b
-        pass
+            friends = self.c_board.contents.b&~self.c_board.contents.k
+        pos = 1
+        num_loner = 0
+        for i in range(1,33):
+            count = 0
+            if pos&friends&0x07e7e7e0:
+                if pos&0x0f0f0f0f:
+                    count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
+                else:
+                    count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
+                if count==0:
+                    num_loner+=1
+            pos = pos << 1
+        return num_loner
 
     def count_loner_pawns_foes(self):
+        empty = ~(self.c_board.contents.b|self.c_board.contents.w)
         if self.c_board.contents.plyr:
-            foes = self.c_board.contents.b
+            foes = self.c_board.contents.b&~self.c_board.contents.k
         else:
-            foes = self.c_board.contents.w
-        pass
+            foes = self.c_board.contents.w&~self.c_board.contents.k
+        pos = 1
+        num_loner = 0
+        for i in range(1,33):
+            count = 0
+            if pos&foes&0x07e7e7e0:
+                if pos&0x0f0f0f0f:
+                    count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
+                else:
+                    count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
+                if count==0:
+                    num_loner+=1
+            pos = pos << 1
+        return num_loner
 
     def count_loner_kings_friends(self):
+        empty = ~(self.c_board.contents.b|self.c_board.contents.w)
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
+            friends = self.c_board.contents.w&self.c_board.contents.k
         else:
-            friends = self.c_board.contents.b
-        pass
+            friends = self.c_board.contents.b&self.c_board.contents.k
+        pos = 1
+        num_loner = 0
+        for i in range(1,33):
+            count = 0
+            if pos&friends&0x07e7e7e0:
+                if pos&0x0f0f0f0f:
+                    count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
+                else:
+                    count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
+                if count==0:
+                    num_loner+=1
+            pos = pos << 1
+        return num_loner
 
     def count_loner_kings_foes(self):
+        empty = ~(self.c_board.contents.b|self.c_board.contents.w)
         if self.c_board.contents.plyr:
-            foes = self.c_board.contents.b
+            foes = self.c_board.contents.b&self.c_board.contents.k
         else:
-            foes = self.c_board.contents.w
-        pass
+            foes = self.c_board.contents.w&self.c_board.contents.k
+        pos = 1
+        num_loner = 0
+        for i in range(1,33):
+            count = 0
+            if pos&foes&0x07e7e7e0:
+                if pos&0x0f0f0f0f:
+                    count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
+                else:
+                    count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
+                if count==0:
+                    num_loner+=1
+            pos = pos << 1
+        return num_loner
+
+    # hole: empty squares adjacent to at least three pieces of the same color.
 
     def count_holes_friends(self):
+        empty = ~(self.c_board.contents.b|self.c_board.contents.w)
         if self.c_board.contents.plyr:
             friends = self.c_board.contents.w
         else:
             friends = self.c_board.contents.b
-        pass
+        pos = 1
+        num_holes = 0
+        for i in range(1,33):
+            count = 0
+            if pos&empty&0x07e7e7e0:
+                if pos&0x0f0f0f0f:
+                    count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&friends])
+                else:
+                    count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&friends])
+                if count>=3:
+                    num_holes+=1
+            pos = pos << 1
+        return num_holes
 
     def count_holes_foes(self):
+        empty = ~(self.c_board.contents.b|self.c_board.contents.w)
         if self.c_board.contents.plyr:
             foes = self.c_board.contents.b
         else:
             foes = self.c_board.contents.w
-        pass
+        pos = 1
+        num_holes = 0
+        for i in range(1,33):
+            count = 0
+            if pos&empty&0x07e7e7e0:
+                if pos&0x0f0f0f0f:
+                    count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&foes])
+                else:
+                    count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&foes])
+                if count>=3:
+                    num_holes+=1
+            pos = pos << 1
+        return num_holes
 
     def triangle_friends(self):
         if self.c_board.contents.plyr:
