@@ -365,24 +365,18 @@ class Bitboard32State(CheckersGameState):
         return dist
 
     def count_unoccupied_promotion_friends(self):
+        every = self.c_board.contents.b|self.c_board.contents.w
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
-            foes = self.c_board.contents.b
-            return state32_lib.count_bits(foes & ~0x0000000f)
+            return 4 - state32_lib.count_bits(every & 0x0000000f)
         else:
-            friends = self.c_board.contents.b
-            foes = self.c_board.contents.w
-            return state32_lib.count_bits(foes & ~0xf0000000)
+            return 4 - state32_lib.count_bits(every & 0xf0000000)
 
     def count_unoccupied_promotion_foes(self):
+        every = self.c_board.contents.b|self.c_board.contents.w
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
-            foes = self.c_board.contents.b
-            return state32_lib.count_bits(friends & ~0x0000000f)
+            return 4 - state32_lib.count_bits(every & 0xf0000000)
         else:
-            friends = self.c_board.contents.b
-            foes = self.c_board.contents.w
-            return state32_lib.count_bits(friends & ~0xf0000000)
+            return 4 - state32_lib.count_bits(every & 0x0000000f)
 
     def count_defender_pieces_friends(self):
         if self.c_board.contents.plyr:
@@ -402,18 +396,18 @@ class Bitboard32State(CheckersGameState):
 
     def count_attack_pawns_friends(self):
         if self.c_board.contents.plyr:
-            friends = self.c_board.contents.w
+            friends = self.c_board.contents.w&~self.c_board.contents.k
             return state32_lib.count_bits(friends & 0x00000fff)
         else:
-            friends = self.c_board.contents.b
+            friends = self.c_board.contents.b&~self.c_board.contents.k
             return state32_lib.count_bits(friends & 0xfff00000)
 
     def count_attack_pawns_foes(self):
         if self.c_board.contents.plyr:
-            foes = self.c_board.contents.b
+            foes = self.c_board.contents.b&~self.c_board.contents.k
             return state32_lib.count_bits(foes & 0xfff00000)
         else:
-            foes = self.c_board.contents.w
+            foes = self.c_board.contents.w&~self.c_board.contents.k
             return state32_lib.count_bits(foes & 0x00000fff)
 
     def count_center_pawns_friends(self):
@@ -449,14 +443,14 @@ class Bitboard32State(CheckersGameState):
             friends = self.c_board.contents.w
         else:
             friends = self.c_board.contents.b
-        return state32_lib.count_bits(friends & 0x88442211 & ~self.c_board.contents.k)
+        return state32_lib.count_bits(friends & 0x11224488 & ~self.c_board.contents.k)
 
     def count_diagonalmain_pawns_foes(self):
         if self.c_board.contents.plyr:
             foes = self.c_board.contents.b
         else:
             foes = self.c_board.contents.w
-        return state32_lib.count_bits(foes & 0x88442211 & ~self.c_board.contents.k)
+        return state32_lib.count_bits(foes & 0x11224488 & ~self.c_board.contents.k)
 
 
     def count_diagonalmain_kings_friends(self):
@@ -464,7 +458,7 @@ class Bitboard32State(CheckersGameState):
             friends = self.c_board.contents.w
         else:
             friends = self.c_board.contents.b
-        return state32_lib.count_bits(friends & 0x88442211 & self.c_board.contents.k)
+        return state32_lib.count_bits(friends & 0x11224488 & self.c_board.contents.k)
 
 
     def count_diagonalmain_kings_foes(self):
@@ -472,7 +466,7 @@ class Bitboard32State(CheckersGameState):
             foes = self.c_board.contents.b
         else:
             foes = self.c_board.contents.w
-        return state32_lib.count_bits(foes & 0x88442211 & self.c_board.contents.k)
+        return state32_lib.count_bits(foes & 0x11224488 & self.c_board.contents.k)
 
     def count_diagonaldouble_pawns_friends(self):
         if self.c_board.contents.plyr:
@@ -517,7 +511,7 @@ class Bitboard32State(CheckersGameState):
                     count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
                 else:
                     count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
-                if count==0:
+                if count==4:
                     num_loner+=1
             pos = pos << 1
         return num_loner
@@ -537,7 +531,7 @@ class Bitboard32State(CheckersGameState):
                     count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
                 else:
                     count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
-                if count==0:
+                if count==4:
                     num_loner+=1
             pos = pos << 1
         return num_loner
@@ -557,7 +551,7 @@ class Bitboard32State(CheckersGameState):
                     count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
                 else:
                     count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
-                if count==0:
+                if count==4:
                     num_loner+=1
             pos = pos << 1
         return num_loner
@@ -577,7 +571,7 @@ class Bitboard32State(CheckersGameState):
                     count = len([p for p in [pos>>4, pos>>3, pos<<4, pos<<5] if p&empty])
                 else:
                     count = len([p for p in [pos>>5, pos>>4, pos<<3, pos<<4] if p&empty])
-                if count==0:
+                if count==4:
                     num_loner+=1
             pos = pos << 1
         return num_loner
@@ -667,10 +661,10 @@ class Bitboard32State(CheckersGameState):
     def bridge_foes(self):
         if self.c_board.contents.plyr:
             foes = self.c_board.contents.b
-            return(state32_lib.count_bits(foes & 0x00000005) == 3)
+            return(state32_lib.count_bits(foes & 0x00000005) == 2)
         else:
             foes = self.c_board.contents.w
-            return(state32_lib.count_bits(foes & 0xa0000000) == 3)
+            return(state32_lib.count_bits(foes & 0xa0000000) == 2)
 
     def dog_friends(self):
         if self.c_board.contents.plyr:
@@ -686,11 +680,11 @@ class Bitboard32State(CheckersGameState):
         if self.c_board.contents.plyr:
             friends = self.c_board.contents.w
             foes = self.c_board.contents.b
-            return((state32_lib.count_bits(friends & 0x00000001) + state32_lib.count_bits(foes & 0x00000010)) == 2)
+            return((state32_lib.count_bits(friends & 0x00000010) + state32_lib.count_bits(foes & 0x00000001)) == 2)
         else:
             friends = self.c_board.contents.b
             foes = self.c_board.contents.w
-            return((state32_lib.count_bits(friends & 0x80000000) + state32_lib.count_bits(foes & 0x08000000)) == 2)
+            return((state32_lib.count_bits(friends & 0x08000000) + state32_lib.count_bits(foes & 0x80000000)) == 2)
 
     def pawn_corner_friends(self):
         if self.c_board.contents.plyr:

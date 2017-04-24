@@ -101,9 +101,8 @@ class Checkers:
         result = state.c_board.contents
         final = "\nUNKNOWN\n"
         if self.gameState.player and result.b or not self.gameState.player and result.w:
-            actions = state.actions()
-            if actions:
-                extra_move = next(actions)
+            extra_move = next(state.actions(), None)
+            if extra_move:
                 state = state.result(extra_move)
                 result = state.c_board.contents
                 if not self.gameState.player and result.b and state.actions() or self.gameState.player and result.w and state.actions():

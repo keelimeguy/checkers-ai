@@ -360,6 +360,471 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
         self.assertEqual(state.count_movable_friends_pawns(), 4)
         self.assertEqual(state.count_movable_foes_pawns(), 5)
 
+
+    def test_count_pieces(self):
+        """Test the count pieces heuristic functions
+        """
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_friends(), 12)
+        self.assertEqual(state.count_friends_pawns(), 8)
+        self.assertEqual(state.count_friends_kings(), 4)
+        self.assertEqual(state.count_foes(), 9)
+        self.assertEqual(state.count_foes_pawns(), 6)
+        self.assertEqual(state.count_foes_kings(), 3)
+
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_friends(), 9)
+        self.assertEqual(state.count_friends_pawns(), 6)
+        self.assertEqual(state.count_friends_kings(), 3)
+        self.assertEqual(state.count_foes(), 12)
+        self.assertEqual(state.count_foes_pawns(), 8)
+        self.assertEqual(state.count_foes_kings(), 4)
+
+    def test_count_safe_pieces(self):
+        """Test the count safe pieces heuristic functions
+        """
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_safe_friends_pawns(), 4)
+        self.assertEqual(state.count_safe_friends_kings(), 3)
+        self.assertEqual(state.count_safe_foes_pawns(), 2)
+        self.assertEqual(state.count_safe_foes_kings(), 2)
+
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_safe_friends_pawns(), 2)
+        self.assertEqual(state.count_safe_friends_kings(), 2)
+        self.assertEqual(state.count_safe_foes_pawns(), 4)
+        self.assertEqual(state.count_safe_foes_kings(), 3)
+
+
+    def test_aggregate_distance(self):
+        """Test the aggregate distance heuristic functions
+        """
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.aggregate_distance_promotion_friends(), 44)
+        self.assertEqual(state.aggregate_distance_promotion_foes(), 33)
+
+        board_string = """
++B+-+B+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.aggregate_distance_promotion_friends(), 33)
+        self.assertEqual(state.aggregate_distance_promotion_foes(), 44)
+
+
+    def test_count_unoccupied_promotion(self):
+        """Test the count unoccupied promotion heuristic functions
+        """
+        board_string = """
++B+-+-+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_unoccupied_promotion_friends(), 1)
+        self.assertEqual(state.count_unoccupied_promotion_foes(), 2)
+
+        board_string = """
++B+-+-+b
+b+b+W+b+
++b+-+b+b
+b+-+-+-+
++w+-+-+-
+w+-+w+B+
++-+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_unoccupied_promotion_friends(), 2)
+        self.assertEqual(state.count_unoccupied_promotion_foes(), 1)
+
+
+    def test_count_attacking_defending(self):
+        """Test the count attacking and count defending heuristic functions
+        """
+        board_string = """
++B+-+b+b
+b+b+W+b+
++b+w+b+b
+b+-+-+-+
++w+-+-+-
+w+b+w+B+
++b+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_defender_pieces_friends(), 6)
+        self.assertEqual(state.count_defender_pieces_foes(), 5)
+        self.assertEqual(state.count_attack_pawns_friends(), 2)
+        self.assertEqual(state.count_attack_pawns_foes(), 1)
+
+        board_string = """
++B+-+b+b
+b+b+W+b+
++b+w+b+b
+b+-+-+-+
++w+-+-+-
+w+b+w+B+
++b+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_defender_pieces_friends(), 5)
+        self.assertEqual(state.count_defender_pieces_foes(), 6)
+        self.assertEqual(state.count_attack_pawns_friends(), 1)
+        self.assertEqual(state.count_attack_pawns_foes(), 2)
+
+
+    def test_count_center_pieces(self):
+        """Test the count center pieces heuristic functions
+        """
+        board_string = """
++B+-+b+b
+b+b+W+b+
++b+w+b+b
+b+W+B+-+
++w+w+W+-
+w+b+w+B+
++b+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_center_pawns_friends(), 2)
+        self.assertEqual(state.count_center_pawns_foes(), 3)
+        self.assertEqual(state.count_center_kings_friends(), 1)
+        self.assertEqual(state.count_center_kings_foes(), 2)
+
+        board_string = """
++B+-+b+b
+b+b+W+b+
++b+w+b+b
+b+W+B+-+
++w+w+W+-
+w+b+w+B+
++b+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_center_pawns_friends(), 3)
+        self.assertEqual(state.count_center_pawns_foes(), 2)
+        self.assertEqual(state.count_center_kings_friends(), 2)
+        self.assertEqual(state.count_center_kings_foes(), 1)
+
+
+    def test_count_diagonal_pieces(self):
+        """Test the count diagonal pieces heuristic functions
+        """
+        board_string = """
++B+-+b+b
+b+b+W+b+
++b+w+b+b
+b+W+w+-+
++w+w+W+-
+w+b+w+B+
++b+w+w+W
+B+-+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_diagonalmain_pawns_friends(), 5)
+        self.assertEqual(state.count_diagonalmain_pawns_foes(), 2)
+        self.assertEqual(state.count_diagonalmain_kings_friends(), 1)
+        self.assertEqual(state.count_diagonalmain_kings_foes(), 0)
+        self.assertEqual(state.count_diagonaldouble_pawns_friends(), 3)
+        self.assertEqual(state.count_diagonaldouble_pawns_foes(), 5)
+        self.assertEqual(state.count_diagonaldouble_kings_friends(), 2)
+        self.assertEqual(state.count_diagonaldouble_kings_foes(), 4)
+
+        board_string = """
++B+-+b+b
+b+b+W+b+
++b+w+b+b
+b+W+w+-+
++w+w+W+-
+w+b+w+B+
++b+w+w+W
+B+-+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_diagonalmain_pawns_friends(), 2)
+        self.assertEqual(state.count_diagonalmain_pawns_foes(), 5)
+        self.assertEqual(state.count_diagonalmain_kings_friends(), 0)
+        self.assertEqual(state.count_diagonalmain_kings_foes(), 1)
+        self.assertEqual(state.count_diagonaldouble_pawns_friends(), 5)
+        self.assertEqual(state.count_diagonaldouble_pawns_foes(), 3)
+        self.assertEqual(state.count_diagonaldouble_kings_friends(), 4)
+        self.assertEqual(state.count_diagonaldouble_kings_foes(), 2)
+
+
+    def test_count_loners(self):
+        """Test the count loner pieces heuristic functions
+        """
+        board_string = """
++-+-+-+b
+b+b+W+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+-+B+
++-+-+b+-
+B+-+-+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_loner_pawns_friends(), 2)
+        self.assertEqual(state.count_loner_pawns_foes(), 1)
+        self.assertEqual(state.count_loner_kings_friends(), 0)
+        self.assertEqual(state.count_loner_kings_foes(), 2)
+
+        board_string = """
++-+-+-+b
+b+b+W+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+-+B+
++-+-+b+-
+B+-+-+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_loner_pawns_friends(), 1)
+        self.assertEqual(state.count_loner_pawns_foes(), 2)
+        self.assertEqual(state.count_loner_kings_friends(), 2)
+        self.assertEqual(state.count_loner_kings_foes(), 0)
+
+
+    def test_count_holes(self):
+        """Test the count hole heuristic functions
+        """
+        board_string = """
++-+-+-+b
+b+b+W+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+-+b+-
+B+B+-+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_holes_friends(), 3)
+        self.assertEqual(state.count_holes_foes(), 1)
+
+
+        board_string = """
++-+-+-+b
+b+b+W+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+-+b+-
+B+B+-+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.count_holes_friends(), 1)
+        self.assertEqual(state.count_holes_foes(), 3)
+
+
+    def test_formation(self):
+        """Test the formation heuristic functions
+        """
+        board_string = """
++-+b+b+b
+-+-+B+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+-
+B+B+w+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.triangle_friends(), False)
+        self.assertEqual(state.triangle_foes(), True)
+        self.assertEqual(state.oreo_friends(), True)
+        self.assertEqual(state.oreo_foes(), False)
+
+        board_string = """
++-+b+b+b
+-+-+B+-+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+-
+B+B+w+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.triangle_friends(), True)
+        self.assertEqual(state.triangle_foes(), False)
+        self.assertEqual(state.oreo_friends(), False)
+        self.assertEqual(state.oreo_foes(), True)
+
+        board_string = """
++-+b+-+b
+w+-+B+w+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+b
+B+w+-+W+
+
+White's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.bridge_friends(), True)
+        self.assertEqual(state.bridge_foes(), False)
+        self.assertEqual(state.dog_friends(), True)
+        self.assertEqual(state.dog_foes(), False)
+
+        board_string = """
++-+b+-+b
+w+-+B+w+
++-+-+-+-
+b+W+w+-+
++-+-+-+-
+w+b+b+B+
++-+w+w+b
+B+w+-+W+
+
+Black's move""".strip()  # strip() removes the initial newline # (which is just
+                         # for readability)
+
+        # hole: empty squares adjacent to at least three pieces of the same color.
+        state = self.state_class.from_string(self.state_class, board_string)
+        self.assertEqual(state.bridge_friends(), False)
+        self.assertEqual(state.bridge_foes(), True)
+        self.assertEqual(state.dog_friends(), False)
+        self.assertEqual(state.dog_foes(), True)
+
+
 class ParserHelperTestCase(unittest.TestCase):
     """Tests the thing that makes parsing boards easier"""
 
