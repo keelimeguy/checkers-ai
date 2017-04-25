@@ -1,84 +1,55 @@
+#!/usr/bin/env python3
+
 from checkers.state.bitboard_32_state import Bitboard32State
 from checkers.sam_server import SamServer
 from checkers.c.structs import *
 
-class Checkers:
+class McCartneyServerPlayer:
 
-    class CheckersState:
-        def __init__(self, player=None, board=None):
-            self.player = player
-            self.board = board
-            if not self.board:
-                self.board = Bitboard32State()
-
-        def terminal(self):
-            return self.board.count_foes() == 0 or self.board.count_friends() == 0
-
-        def result(self, move=None):
-            return Checkers().CheckersState(self.player, self.board.result(move))
-
-        def actions(self):
-            return self.board.actions()
-
-        def destroy(self):
-            return self.board.destroy()
-
-    def __init__(self, opponent=0, is_B_client=False):
-        self.gameState = self.CheckersState()
+    def __init__(self, opponent=0, is_B_client=False, verbose=False):
+        """Pass
+                opponent= SERVER_NUMBER
+                is_B_client = ... If you want client #6 instead of #5
+                verbose = if you want to hear the server complain
+        """
+        self.board = Bitboard32State()
         self.server = SamServer(opponent, is_B_client)
-        self.gameover = True
-        self.moves = []
 
-    def reset(self, verbose=False):
-        self.server.disconnect()
-        if self.gameState:
-            self.gameState.destroy()
-        if self.moves:
-            for move in self.moves:
-                move.destroy()
-        self.gameState = self.CheckersState(self.server.connect(verbose))
+        self.am_white = self.server.connect(verbose)  # 1 if white else 0
         self.moves = []
-        if self.gameState.player:
+        if self.am_white:
             self.tell_server("")
         self.gameover = False
 
-    def finished(self):
-        return self.gameover
+    def recv_move(self, move):
+        self.moves.append(move)
+        self.board = self.board.result(move)
+        # returns something based on whether error occurred
+        self.tell_server(str(move))
 
-    def actions(self):
-        return self.gameState.actions()
 
-    def result(self, move=None):
-        return self.gameState.result(move)
-
-    def play(self, move=None):
-        if move:
-            self.moves.append(move)
-            self.gameState.board = self.gameState.board.result(move)
-            # returns False if error occurred, else True
-            return self.tell_server(str(move))
-        else:
-            self.show_game()
-            print("Null move error!")
-            return True
-
-    def tell_server(self, move=""):
+    # TODO make this not block -- or we will super lose ;X
+    def tell_server(self, move):
         response = self.server.send_and_receive(move)
         if response:
             if "Result" in response:
-                self.gameover = True
                 self.server.disconnect()
-                return False
-            if "Error" in response:
-                self.gameover = True
+                if "Result:Black" in response:
+                    raise GameOver(result="Black")
+                elif "Result:White" in response:
+                    raise GameOver(result="White")
+                else:
+                    raise GameOver(result="Draw")
+                    
+            elif "Error" in response:
                 self.server.disconnect()
                 self.show_game()
                 print("Error detected:")
                 print(response)
                 return True
-            nextmove = self.gameState.board.move_from_string(response)
+            nextmove = self.board.move_from_string(response)
             self.moves.append(nextmove)
-            self.gameState.board = self.gameState.board.result(nextmove)
+            self.board = self.board.result(nextmove)
         else:
             self.gameover = True
             self.server.disconnect()
@@ -89,8 +60,9 @@ class Checkers:
 
     # We store a list of moves played throughout a game, and use this function to show the entire game at the end
     def show_game(self):
+        """If ya feel like running this after the game, go ahead"""
         state = Bitboard32State()
-        if self.gameState.player:
+        if self.am_white:
             print('Playing as White:\n')
         else:
             print('Playing as Black:\n')
@@ -100,13 +72,14 @@ class Checkers:
             print(state)
         result = state.c_board.contents
         final = "\nUNKNOWN\n"
-        if self.gameState.player and result.b or not self.gameState.player and result.w:
-            actions = state.actions()
-            if actions:
-                extra_move = next(actions)
+        if self.am_white and result.b or not self.am_white and result.w:
+            extra_move = next(state.actions(), None)
+            if extra_move:
                 state = state.result(extra_move)
                 result = state.c_board.contents
-                if not self.gameState.player and result.b and state.actions() or self.gameState.player and result.w and state.actions():
+                if (not self.am_white and result.b
+                    and state.actions() or self.am_white
+                    and result.w and state.actions()):
                     final = "\nDRAW!\n"
                 else:
                     self.moves.append(extra_move)

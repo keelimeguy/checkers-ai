@@ -12,37 +12,82 @@ import sys
 import os.path
 import gc
 
-CACHE_SIZE = 10001
+from checkers.checkers import Checkers as SomethingWithAReasonableName
+
+
+# class CheckersState:
+#     def __init__(self, player=None, board=None):
+#         self.player = player
+#         self.board = board
+#         if not self.board:
+#             self.board = Bitboard32State()
+
+#     def terminal(self):
+#         return self.board.count_foes() == 0 or self.board.count_friends() == 0
+
+#     def result(self, move=None):
+#         return Checkers().CheckersState(self.player, self.board.result(move))
+
+#     def actions(self):
+#         return self.board.actions()
+
+
 
 weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights_example.json")
 
 def paramLookup(state): #will be expanded later
-    return {'friend_count' : state.board.count_friends(), 'foe_count' : state.board.count_foes(),
-            'friend_kings' : state.board.count_friends_kings(), 'foe_kings' : state.board.count_foes_kings(),
-            'friend_pawns' : state.board.count_friends_pawns(), 'foe_pawns' : state.board.count_foes_pawns(),
-            'safe_friend_pawns': state.board.count_safe_friends_pawns(), 'safe_foe_pawns' : state.board.count_safe_foes_pawns(),
-            'safe_friend_kings' : state.board.count_safe_friends_kings(), 'safe_foe_kings' : state.board.count_safe_foes_kings(),
-            'movable_friend_pawns' : state.board.count_movable_friends_pawns(), 'movable_foe_pawns' : state.board.count_movable_foes_pawns(),
-            'movable_friend_kings' : state.board.count_movable_friends_kings(), 'movable_foe_kings' : state.board.count_safe_foes_kings(),
-            'friend_distance_promotion' : state.board.aggregate_distance_promotion_foes(), 'foe_distance_promotion' : state.board.aggregate_distance_promotion_foes(),
-            'unoccupied_promotion_friends' : state.board.count_unoccupied_promotion_friends(), 'unoccupied_promotion_foes' : state.board.count_unoccupied_promotion_foes(),
-            'defender_friends' : state.board.count_defender_pieces_friends(), 'defender_foes' : state.board.count_defender_pieces_foes(),
-            'attack_pawn_friends' : state.board.count_attack_pawns_friends(), 'attack_pawn_foes' : state.board.count_attack_pawns_foes(),
-            'center_pawn_friends' : state.board.count_center_pawns_friends(), 'center_pawn_foes' : state.board.count_center_pawns_foes(),
-            'center_king_friends' : state.board.count_center_kings_friends(), 'center_king_foes' : state.board.count_center_kings_foes(),
-            'diagonalmain_pawn_friends' : state.board.count_diagonalmain_pawns_friends(), 'diagonalmain_pawn_foes' : state.board.count_diagonalmain_pawns_foes(),
-            'diagonalmain_king_friends' : state.board.count_diagonalmain_kings_friends(), 'diagonalmain_king_foes' : state.board.count_diagonalmain_kings_foes(),
-            'diagonaldouble_pawn_friends' : state.board.count_diagonaldouble_pawns_friends(), 'diagonaldouble_pawn_foes' : state.board.count_diagonaldouble_pawns_foes(),
-            'diagonaldouble_king_friends' : state.board.count_diagonaldouble_kings_friends(), 'diagonaldouble_king_foes' : state.board.count_diagonaldouble_kings_foes(),
-            'loner_pawn_friends' : state.board.count_loner_pawns_friends(), 'loner_pawn_foes' : state.board.count_loner_pawns_foes(),
-            'loner_king_friends' : state.board.count_loner_kings_friends(), 'loner_king_foes' : state.board.count_loner_kings_foes(),
-            'holes_friends' : state.board.count_holes_friends(), 'holes_foes' : state.board.count_holes_foes(),
-            'triangle_friends' : state.board.triangle_friends(), 'triangle_foes' : state.board.triangle_foes(),
-            'oreo_friends' : state.board.oreo_friends(), 'oreo_foes': state.board.oreo_foes(),
-            'bridge_friends' : state.board.bridge_friends(), 'bridge_foes' : state.board.bridge_foes(),
-            'dog_friends' : state.board.dog_friends(), 'dog_foes' : state.board.dog_foes(),
-            'corner_pawn_friends' : state.board.pawn_corner_friends(), 'corner_pawn_foes' : state.board.pawn_corner_foes(),
-            'corner_king_friends' : state.board.king_corner_friends(), 'corner_king_foes' : state.board.king_corner_foes()}
+    return {'friend_count' : state.board.count_friends(),
+            'foe_count' : state.board.count_foes(),
+            'friend_kings' : state.board.count_friends_kings(),
+            'foe_kings' : state.board.count_foes_kings(),
+            'friend_pawns' : state.board.count_friends_pawns(),
+            'foe_pawns' : state.board.count_foes_pawns(),
+            'safe_friend_pawns': state.board.count_safe_friends_pawns(),
+            'safe_foe_pawns' : state.board.count_safe_foes_pawns(),
+            'safe_friend_kings' : state.board.count_safe_friends_kings(),
+            'safe_foe_kings' : state.board.count_safe_foes_kings(),
+            'movable_friend_pawns' : state.board.count_movable_friends_pawns(),
+            'movable_foe_pawns' : state.board.count_movable_foes_pawns(),
+            'movable_friend_kings' : state.board.count_movable_friends_kings(),
+            'movable_foe_kings' : state.board.count_safe_foes_kings(),
+            'friend_distance_promotion' : state.board.aggregate_distance_promotion_foes(),
+            'foe_distance_promotion' : state.board.aggregate_distance_promotion_foes(),
+            'unoccupied_promotion_friends' : state.board.count_unoccupied_promotion_friends(),
+            'unoccupied_promotion_foes' : state.board.count_unoccupied_promotion_foes(),
+            'defender_friends' : state.board.count_defender_pieces_friends(),
+            'defender_foes' : state.board.count_defender_pieces_foes(),
+            'attack_pawn_friends' : state.board.count_attack_pawns_friends(),
+            'attack_pawn_foes' : state.board.count_attack_pawns_foes(),
+            'center_pawn_friends' : state.board.count_center_pawns_friends(),
+            'center_pawn_foes' : state.board.count_center_pawns_foes(),
+            'center_king_friends' : state.board.count_center_kings_friends(),
+            'center_king_foes' : state.board.count_center_kings_foes(),
+            'diagonalmain_pawn_friends' : state.board.count_diagonalmain_pawns_friends(),
+            'diagonalmain_pawn_foes' : state.board.count_diagonalmain_pawns_foes(),
+            'diagonalmain_king_friends' : state.board.count_diagonalmain_kings_friends(),
+            'diagonalmain_king_foes' : state.board.count_diagonalmain_kings_foes(),
+            'diagonaldouble_pawn_friends' : state.board.count_diagonaldouble_pawns_friends(),
+            'diagonaldouble_pawn_foes' : state.board.count_diagonaldouble_pawns_foes(),
+            'diagonaldouble_king_friends' : state.board.count_diagonaldouble_kings_friends(),
+            'diagonaldouble_king_foes' : state.board.count_diagonaldouble_kings_foes(),
+            'loner_pawn_friends' : state.board.count_loner_pawns_friends(),
+            'loner_pawn_foes' : state.board.count_loner_pawns_foes(),
+            'loner_king_friends' : state.board.count_loner_kings_friends(),
+            'loner_king_foes' : state.board.count_loner_kings_foes(),
+            'holes_friends' : state.board.count_holes_friends(),
+            'holes_foes' : state.board.count_holes_foes(),
+            'triangle_friends' : state.board.triangle_friends(),
+            'triangle_foes' : state.board.triangle_foes(),
+            'oreo_friends' : state.board.oreo_friends(),
+            'oreo_foes': state.board.oreo_foes(),
+            'bridge_friends' : state.board.bridge_friends(),
+            'bridge_foes' : state.board.bridge_foes(),
+            'dog_friends' : state.board.dog_friends(),
+            'dog_foes' : state.board.dog_foes(),
+            'corner_pawn_friends' : state.board.pawn_corner_friends(),
+            'corner_pawn_foes' : state.board.pawn_corner_foes(),
+            'corner_king_friends' : state.board.king_corner_friends(),
+            'corner_king_foes' : state.board.king_corner_foes()}
 
 def eval(state):
     score = 0
