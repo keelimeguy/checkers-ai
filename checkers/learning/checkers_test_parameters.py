@@ -1,7 +1,7 @@
 import json
 import os
 import subprocess
-
+import sys
 #Tests various weights on parameters. Results are stored in learning_weights.json
 #Recognition for other parameters will be added next.
 
@@ -11,42 +11,58 @@ run_dir = os.path.realpath(os.path.join(current_dir, os.pardir, os.pardir))
 outfile = os.path.join(current_dir, "weights_temp.json")
 checkers_path = os.path.realpath(os.path.join(current_dir, os.pardir, "checkers_player.py"))
 
-weight_tests = json.load(open(os.path.join(current_dir,"learning_weights.json"),"r"))
+with open(os.path.join(current_dir,"learning_weights.json"),"r") as f:
+    weight_tests = json.load(f)
+
+def run_sp_game(weight_file=None):
+    weight_file = weight_file or outfile
+
+    return subprocess.check_output(
+        "python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
+        stderr=sys.stderr,  # subprocess.STDOUT,
+        shell=True)
+
+def perror(*args, **kwargs):
+    kwargs["file"] = sys.stderr
+    print(*args, **kwargs)
 
 for parameter in weight_tests:
     for weight in weight_tests[parameter]:
         weight = int(weight)
-        active_weights = json.load(open(os.path.join(parent_dir, "weights_example.json"), "r"))
+        with open(os.path.join(parent_dir, "weights_example.json"), "r") as f:
+            active_weights = json.load(f)
         if parameter in active_weights:
             active_weights[parameter]["weight"] = weight
         else:
             active_weights[parameter] = {"weight" : weight, "wins" : 0, "total" : 0}
-        json.dump(active_weights, open(outfile,"w"))
+        with open(outfile, "w") as f:
+            json.dump(active_weights, f)
 
-        #This is horrible code, but everything else that I can think of does not work due to memory leak.
+        # This is horrible code, but everything else that I can think of does
+        # not work due to memory leak.
         os.chdir(run_dir)
         try:
-            result = subprocess.check_output("python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
-                                             stderr=subprocess.STDOUT, shell=True)
+            result = run_sp_game()
         except subprocess.CalledProcessError as e:
-            print("Failed first attempt:")
-            print(e.output)
+            perror("Failed first attempt:")
+            perror(e.output)
             try:
-                result = subprocess.check_output("python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
-                                                stderr=subprocess.STDOUT, shell=True)
+                result = run_sp_game()
             except subprocess.CalledProcessError as e:
-                print("Failed")
-                print(e.output)
+                perror("Failed second attempt:")
+                perror(e.output)
                 break
         os.chdir(current_dir)
-        for line in result.split('\n'):
-            if line and line.split()[0] == "Stats:":
+        for line in result.split(b'\n'):
+            if line and line.split()[0] == b"Stats:":
                 result_line =  line.split()[1]
-                results = result_line.split(':')
+                results = result_line.split(b':')
                 wins = int(results[0][0])
                 draws = int(results[1][0])
                 losses = int(results[2][0])
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
         weight_tests[parameter][str(weight)][0] += wins
         weight_tests[parameter][str(weight)][1] += wins + draws + losses
-json.dump(weight_tests, open("learning_weights.json","w"))
+
+with open("learning_weights.json", "w") as f:
+    json.dump(weight_tests, f)

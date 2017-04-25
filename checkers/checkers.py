@@ -20,8 +20,8 @@ class Checkers:
         def actions(self):
             return self.board.actions()
 
-        def destroy(self):
-            return self.board.destroy()
+        # def destroy(self):
+        #     return self.board.destroy()
 
     def __init__(self, opponent=0, is_B_client=False):
         self.gameState = self.CheckersState()
@@ -31,11 +31,12 @@ class Checkers:
 
     def reset(self, verbose=False):
         self.server.disconnect()
-        if self.gameState:
-            self.gameState.destroy()
-        if self.moves:
-            for move in self.moves:
-                move.destroy()
+        # if self.gameState:  # GARBAGE COLLECT MOTHERFUCKER
+        #     # self.gameState.destroy()
+        #     self.gameState = None
+        # if self.moves:
+        #     for move in self.moves:
+        #         move.destroy()
         self.gameState = self.CheckersState(self.server.connect(verbose))
         self.moves = []
         if self.gameState.player:
@@ -51,6 +52,7 @@ class Checkers:
     def result(self, move=None):
         return self.gameState.result(move)
 
+    # The recv_move of ServerPlayer should call this TODO
     def play(self, move=None):
         if move:
             self.moves.append(move)
@@ -62,6 +64,7 @@ class Checkers:
             print("Null move error!")
             return True
 
+    # TODO make this not block
     def tell_server(self, move=""):
         response = self.server.send_and_receive(move)
         if response:

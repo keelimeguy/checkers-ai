@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-from checkers.checkers import Checkers
-
 import argparse
 import functools
 import random
@@ -12,51 +10,84 @@ import sys
 import os.path
 import gc
 
+from checkers.checkers import Checkers
+
+
+
 CACHE_SIZE = 10001
 
-weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights_example.json")
+weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "weights_example.json")
 
-def paramLookup(state): #will be expanded later
-    return {'friend_count' : state.board.count_friends(), 'foe_count' : state.board.count_foes(),
-            'friend_kings' : state.board.count_friends_kings(), 'foe_kings' : state.board.count_foes_kings(),
-            'friend_pawns' : state.board.count_friends_pawns(), 'foe_pawns' : state.board.count_foes_pawns(),
-            'safe_friend_pawns': state.board.count_safe_friends_pawns(), 'safe_foe_pawns' : state.board.count_safe_foes_pawns(),
-            'safe_friend_kings' : state.board.count_safe_friends_kings(), 'safe_foe_kings' : state.board.count_safe_foes_kings(),
-            'movable_friend_pawns' : state.board.count_movable_friends_pawns(), 'movable_foe_pawns' : state.board.count_movable_foes_pawns(),
-            'movable_friend_kings' : state.board.count_movable_friends_kings(), 'movable_foe_kings' : state.board.count_safe_foes_kings(),
-            'friend_distance_promotion' : state.board.aggregate_distance_promotion_foes(), 'foe_distance_promotion' : state.board.aggregate_distance_promotion_foes(),
-            'unoccupied_promotion_friends' : state.board.count_unoccupied_promotion_friends(), 'unoccupied_promotion_foes' : state.board.count_unoccupied_promotion_foes(),
-            'defender_friends' : state.board.count_defender_pieces_friends(), 'defender_foes' : state.board.count_defender_pieces_foes(),
-            'attack_pawn_friends' : state.board.count_attack_pawns_friends(), 'attack_pawn_foes' : state.board.count_attack_pawns_foes(),
-            'center_pawn_friends' : state.board.count_center_pawns_friends(), 'center_pawn_foes' : state.board.count_center_pawns_foes(),
-            'center_king_friends' : state.board.count_center_kings_friends(), 'center_king_foes' : state.board.count_center_kings_foes(),
-            'diagonalmain_pawn_friends' : state.board.count_diagonalmain_pawns_friends(), 'diagonalmain_pawn_foes' : state.board.count_diagonalmain_pawns_foes(),
-            'diagonalmain_king_friends' : state.board.count_diagonalmain_kings_friends(), 'diagonalmain_king_foes' : state.board.count_diagonalmain_kings_foes(),
-            'diagonaldouble_pawn_friends' : state.board.count_diagonaldouble_pawns_friends(), 'diagonaldouble_pawn_foes' : state.board.count_diagonaldouble_pawns_foes(),
-            'diagonaldouble_king_friends' : state.board.count_diagonaldouble_kings_friends(), 'diagonaldouble_king_foes' : state.board.count_diagonaldouble_kings_foes(),
-            'loner_pawn_friends' : state.board.count_loner_pawns_friends(), 'loner_pawn_foes' : state.board.count_loner_pawns_foes(),
-            'loner_king_friends' : state.board.count_loner_kings_friends(), 'loner_king_foes' : state.board.count_loner_kings_foes(),
-            'holes_friends' : state.board.count_holes_friends(), 'holes_foes' : state.board.count_holes_foes(),
-            'triangle_friends' : state.board.triangle_friends(), 'triangle_foes' : state.board.triangle_foes(),
-            'oreo_friends' : state.board.oreo_friends(), 'oreo_foes': state.board.oreo_foes(),
-            'bridge_friends' : state.board.bridge_friends(), 'bridge_foes' : state.board.bridge_foes(),
-            'dog_friends' : state.board.dog_friends(), 'dog_foes' : state.board.dog_foes(),
-            'corner_pawn_friends' : state.board.pawn_corner_friends(), 'corner_pawn_foes' : state.board.pawn_corner_foes(),
-            'corner_king_friends' : state.board.king_corner_friends(), 'corner_king_foes' : state.board.king_corner_foes()}
+def paramLookup(board):
+    return {'friend_count' : board.count_friends(),
+            'foe_count' : board.count_foes(),
+            'friend_kings' : board.count_friends_kings(),
+            'foe_kings' : board.count_foes_kings(),
+            'friend_pawns' : board.count_friends_pawns(),
+            'foe_pawns' : board.count_foes_pawns(),
+            'safe_friend_pawns': board.count_safe_friends_pawns(),
+            'safe_foe_pawns' : board.count_safe_foes_pawns(),
+            'safe_friend_kings' : board.count_safe_friends_kings(),
+            'safe_foe_kings' : board.count_safe_foes_kings(),
+            'movable_friend_pawns' : board.count_movable_friends_pawns(),
+            'movable_foe_pawns' : board.count_movable_foes_pawns(),
+            'movable_friend_kings' : board.count_movable_friends_kings(),
+            'movable_foe_kings' : board.count_safe_foes_kings(),
+            'friend_distance_promotion' : board.aggregate_distance_promotion_foes(),
+            'foe_distance_promotion' : board.aggregate_distance_promotion_foes(),
+            'unoccupied_promotion_friends' : board.count_unoccupied_promotion_friends(),
+            'unoccupied_promotion_foes' : board.count_unoccupied_promotion_foes(),
+            'defender_friends' : board.count_defender_pieces_friends(),
+            'defender_foes' : board.count_defender_pieces_foes(),
+            'attack_pawn_friends' : board.count_attack_pawns_friends(),
+            'attack_pawn_foes' : board.count_attack_pawns_foes(),
+            'center_pawn_friends' : board.count_center_pawns_friends(),
+            'center_pawn_foes' : board.count_center_pawns_foes(),
+            'center_king_friends' : board.count_center_kings_friends(),
+            'center_king_foes' : board.count_center_kings_foes(),
+            'diagonalmain_pawn_friends' : board.count_diagonalmain_pawns_friends(),
+            'diagonalmain_pawn_foes' : board.count_diagonalmain_pawns_foes(),
+            'diagonalmain_king_friends' : board.count_diagonalmain_kings_friends(),
+            'diagonalmain_king_foes' : board.count_diagonalmain_kings_foes(),
+            'diagonaldouble_pawn_friends' : board.count_diagonaldouble_pawns_friends(),
+            'diagonaldouble_pawn_foes' : board.count_diagonaldouble_pawns_foes(),
+            'diagonaldouble_king_friends' : board.count_diagonaldouble_kings_friends(),
+            'diagonaldouble_king_foes' : board.count_diagonaldouble_kings_foes(),
+            'loner_pawn_friends' : board.count_loner_pawns_friends(),
+            'loner_pawn_foes' : board.count_loner_pawns_foes(),
+            'loner_king_friends' : board.count_loner_kings_friends(),
+            'loner_king_foes' : board.count_loner_kings_foes(),
+            'holes_friends' : board.count_holes_friends(),
+            'holes_foes' : board.count_holes_foes(),
+            'triangle_friends' : board.triangle_friends(),
+            'triangle_foes' : board.triangle_foes(),
+            'oreo_friends' : board.oreo_friends(),
+            'oreo_foes': board.oreo_foes(),
+            'bridge_friends' : board.bridge_friends(),
+            'bridge_foes' : board.bridge_foes(),
+            'dog_friends' : board.dog_friends(),
+            'dog_foes' : board.dog_foes(),
+            'corner_pawn_friends' : board.pawn_corner_friends(),
+            'corner_pawn_foes' : board.pawn_corner_foes(),
+            'corner_king_friends' : board.king_corner_friends(),
+            'corner_king_foes' : board.king_corner_foes(),
+    }
 
 def eval(state):
     score = 0
-    param_values = paramLookup(state)
+    param_values = paramLookup(state.board)
     for parameter in weights:
         weight = weights[parameter]["weight"]
         score += weight * param_values[parameter]
-    #score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
+
     if state.board.c_board.contents.plyr == state.player:
         return score
     return -score
 
 # Simple alpha-beta minimax search
-@functools.lru_cache(CACHE_SIZE)
+# @functools.lru_cache(CACHE_SIZE)
+# no, use a cache for more than the root of the computation tree
 def alphabeta_search(node):
     return alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
@@ -89,7 +120,8 @@ if __name__ == "__main__":
     parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
     parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
     parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
-    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
+    parser.add_argument('-v', '--verbose', default=False, action="store_true",
+                        help='display each message sent between the client and server')
     args = parser.parse_args()
     game = Checkers(args.opponent, args.user==6)
     final = ""
@@ -128,10 +160,10 @@ if __name__ == "__main__":
                 index = random.randint(0, len(move_list)-1)
                 error = game.play(move_list[index])
                 if error:
-                    break;
+                    break
             else:
                 error = True
-                break;
+                break
         if not error:
             final = game.show_game()
             if final == "DRAW!":
