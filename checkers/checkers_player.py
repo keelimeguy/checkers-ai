@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-from checkers.checkers import Checkers
-
 import argparse
 import functools
 import random
@@ -12,11 +10,22 @@ import sys
 import os.path
 import gc
 
+from checkers.checkers import Checkers
+
+
+
 CACHE_SIZE = 10001
 
+<<<<<<< HEAD
 weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights_example.json")
 
 def paramLookup(board): #will be expanded later
+=======
+weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                            "weights_example.json")
+
+def paramLookup(board):
+>>>>>>> f7bae6450b910450cd464c42721ee2d54246b310
     return {'friend_count' : board.count_friends(),
             'foe_count' : board.count_foes(),
             'friend_kings' : board.count_friends_kings(),
@@ -68,7 +77,12 @@ def paramLookup(board): #will be expanded later
             'corner_pawn_friends' : board.pawn_corner_friends(),
             'corner_pawn_foes' : board.pawn_corner_foes(),
             'corner_king_friends' : board.king_corner_friends(),
+<<<<<<< HEAD
             'corner_king_foes' : board.king_corner_foes()}
+=======
+            'corner_king_foes' : board.king_corner_foes(),
+    }
+>>>>>>> f7bae6450b910450cd464c42721ee2d54246b310
 
 def eval(state):
     score = 0
@@ -76,13 +90,14 @@ def eval(state):
     for parameter in weights:
         weight = weights[parameter]["weight"]
         score += weight * param_values[parameter]
-    #score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
+
     if state.board.c_board.contents.plyr == state.player:
         return score
     return -score
 
 # Simple alpha-beta minimax search
-@functools.lru_cache(CACHE_SIZE)
+# @functools.lru_cache(CACHE_SIZE)
+# no, use a cache for more than the root of the computation tree
 def alphabeta_search(node):
     return alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
@@ -115,7 +130,8 @@ if __name__ == "__main__":
     parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
     parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
     parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
-    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
+    parser.add_argument('-v', '--verbose', default=False, action="store_true",
+                        help='display each message sent between the client and server')
     args = parser.parse_args()
     game = Checkers(args.opponent, args.user==6)
     final = ""
@@ -154,10 +170,10 @@ if __name__ == "__main__":
                 index = random.randint(0, len(move_list)-1)
                 error = game.play(move_list[index])
                 if error:
-                    break;
+                    break
             else:
                 error = True
-                break;
+                break
         if not error:
             final = game.show_game()
             if final == "DRAW!":
