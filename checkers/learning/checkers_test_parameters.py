@@ -2,10 +2,7 @@ import json
 import os
 import subprocess
 import sys
-<<<<<<< HEAD
 
-=======
->>>>>>> f7bae6450b910450cd464c42721ee2d54246b310
 #Tests various weights on parameters. Results are stored in learning_weights.json
 #Recognition for other parameters will be added next.
 
@@ -42,8 +39,7 @@ for parameter in weight_tests:
         with open(outfile, "w") as f:
             json.dump(active_weights, f)
 
-        # This is horrible code, but everything else that I can think of does
-        # not work due to memory leak.
+        #This is horrible code, but everything else that I can think of does not work due to memory leak.
         os.chdir(run_dir)
         try:
             result = run_sp_game()
@@ -51,7 +47,8 @@ for parameter in weight_tests:
             perror("Failed first attempt:")
             perror(e.output)
             try:
-                result = run_sp_game()
+                result = subprocess.check_output("python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
+                                                stderr=subprocess.STDOUT, shell=True)
             except subprocess.CalledProcessError as e:
                 perror("Failed second attempt:")
                 perror(e.output)
@@ -61,15 +58,9 @@ for parameter in weight_tests:
             if line and line.split()[0] == b"Stats:":
                 result_line =  line.split()[1]
                 results = result_line.split(b':')
-<<<<<<< HEAD
                 wins = int(results[0][0]) - 48
                 draws = int(results[1][0]) - 48
                 losses = int(results[2][0]) - 48
-=======
-                wins = int(results[0][0])
-                draws = int(results[1][0])
-                losses = int(results[2][0])
->>>>>>> f7bae6450b910450cd464c42721ee2d54246b310
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
         weight_tests[parameter][str(weight)][0] += wins
         weight_tests[parameter][str(weight)][1] += wins + draws + losses
