@@ -16,7 +16,7 @@ CACHE_SIZE = 10001
 
 weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights_example.json")
 
-def paramLookup(board): #will be expanded later
+def paramLookup(board):
     return {'friend_count' : board.count_friends(),
             'foe_count' : board.count_foes(),
             'friend_kings' : board.count_friends_kings(),
@@ -76,7 +76,6 @@ def eval(state):
     for parameter in weights:
         weight = weights[parameter]["weight"]
         score += weight * param_values[parameter]
-    #score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
     if state.board.c_board.contents.plyr == state.player:
         return score
     return -score
@@ -154,10 +153,10 @@ if __name__ == "__main__":
                 index = random.randint(0, len(move_list)-1)
                 error = game.play(move_list[index])
                 if error:
-                    break;
+                    break
             else:
                 error = True
-                break;
+                break
         if not error:
             final = game.show_game()
             if final == "DRAW!":

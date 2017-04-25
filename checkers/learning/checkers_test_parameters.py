@@ -47,8 +47,7 @@ for parameter in weight_tests:
             perror("Failed first attempt:")
             perror(e.output)
             try:
-                result = subprocess.check_output("python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
-                                                stderr=subprocess.STDOUT, shell=True)
+                result = run_sp_game()
             except subprocess.CalledProcessError as e:
                 perror("Failed second attempt:")
                 perror(e.output)
