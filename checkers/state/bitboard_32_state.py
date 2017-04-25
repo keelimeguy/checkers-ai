@@ -29,7 +29,7 @@ class Bitboard32State(CheckersGameState):
             state32_lib.free(ptr)
             return string
 
-        def destroy(self):
+        def __del__(self):
             state32_lib.Move_destroy(self.move)
 
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
@@ -48,7 +48,7 @@ class Bitboard32State(CheckersGameState):
         state32_lib.free(ptr)
         return string
 
-    def destroy(self):
+    def __del__(self):
         state32_lib.Board_destroy(self.c_board)
 
     def from_string(self, board_string=FRESH_BOARD_REPR):
