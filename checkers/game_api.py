@@ -12,9 +12,6 @@ class GameOver(Exception):
         super.__init__(*args, **kwargs)
         self.winner = winner
 
-
-
-
 # class ChoosyCheckersGame(CheckersGame):
 
 #     def __init__(self, *args, choosy_player=None,

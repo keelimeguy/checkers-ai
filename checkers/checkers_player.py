@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 
 import sys
-from checkers.checkers import Checkers
-
 import argparse
 import functools
 import random
@@ -91,17 +89,18 @@ def paramLookup(state): #will be expanded later
 
 def eval(state):
     score = 0
-    param_values = paramLookup(state)
+    param_values = paramLookup(state.board)
     for parameter in weights:
         weight = weights[parameter]["weight"]
         score += weight * param_values[parameter]
-    #score = state.board.count_friends() - state.board.count_foes() + 3*state.board.count_friends_kings() - 3*state.board.count_foes_kings()
+
     if state.board.c_board.contents.plyr == state.player:
         return score
     return -score
 
 # Simple alpha-beta minimax search
-@functools.lru_cache(CACHE_SIZE)
+# @functools.lru_cache(CACHE_SIZE)
+# no, use a cache for more than the root of the computation tree
 def alphabeta_search(node):
     return alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
@@ -134,7 +133,8 @@ if __name__ == "__main__":
     parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
     parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
     parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
-    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
+    parser.add_argument('-v', '--verbose', default=False, action="store_true",
+                        help='display each message sent between the client and server')
     args = parser.parse_args()
     game = Checkers(args.opponent, args.user==6)
     final = ""
@@ -173,10 +173,10 @@ if __name__ == "__main__":
                 index = random.randint(0, len(move_list)-1)
                 error = game.play(move_list[index])
                 if error:
-                    break;
+                    break
             else:
                 error = True
-                break;
+                break
         if not error:
             final = game.show_game()
             if final == "DRAW!":
