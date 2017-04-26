@@ -1,1 +1,1 @@
-{"center_king_friends": {"total": 0, "weight": -4, "wins": 0}, "foe_kings": {"total": 0, "weight": -3, "wins": 0}, "foe_count": {"total": 0, "weight": -1, "wins": 0}, "friend_count": {"total": 0, "weight": 1, "wins": 0}, "friend_kings": {"total": 0, "weight": 3, "wins": 0}}
+{"foe_count": {"total": 0, "wins": 0, "weight": -1}, "friend_count": {"total": 0, "wins": 0, "weight": 1}, "foe_kings": {"total": 0, "wins": 0, "weight": -3}, "friend_kings": {"total": 0, "wins": 0, "weight": 3}, "diagonalmain_king_friends": {"total": 0, "wins": 0, "weight": -5}}
