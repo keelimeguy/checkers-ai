@@ -1,6 +1,8 @@
 from .state_superclass import CheckersGameState
 from checkers.c.structs import *
 
+import functools
+
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
 +b+b+b+b
@@ -15,6 +17,7 @@ Black's move"""
 class Bitboard32State(CheckersGameState):
     """Uses 32-slot representation of checkerboards."""
 
+    @functools.total_ordering
     class Move:
         def __init__(self, p_move=None):
             if p_move:
@@ -31,6 +34,12 @@ class Bitboard32State(CheckersGameState):
 
         def __del__(self):
             state32_lib.Move_destroy(self.move)
+
+        def __eq__(self, other):
+            return self.move.contents.length == other.move.contents.length
+
+        def __gt__(self, other):
+            return self.move.contents.length > other.move.contents.length
 
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board

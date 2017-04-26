@@ -20,6 +20,9 @@ class Checkers:
         def actions(self):
             return self.board.actions()
 
+        def list_actions(self):
+            return self.board.list_actions()
+
     def __init__(self, opponent=0, is_B_client=False):
         self.gameState = self.CheckersState()
         self.server = SamServer(opponent, is_B_client)
@@ -36,6 +39,9 @@ class Checkers:
 
     def finished(self):
         return self.gameover
+
+    def list_actions(self):
+        return self.gameState.list_actions()
 
     def actions(self):
         return self.gameState.actions()
