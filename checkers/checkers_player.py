@@ -14,7 +14,7 @@ import gc
 
 CACHE_SIZE = 10001
 
-weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights_example.json")
+weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights.json")
 
 def paramLookup(board):
     return {'friend_count' : board.count_friends(),
