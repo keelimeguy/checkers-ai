@@ -842,10 +842,10 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
 
         # hole: empty squares adjacent to at least three pieces of the same color.
         state = self.state_class.from_string(self.state_class, board_string)
-        self.assertEqual(state.triangle_friends(), False)
-        self.assertEqual(state.triangle_foes(), True)
-        self.assertEqual(state.oreo_friends(), True)
-        self.assertEqual(state.oreo_foes(), False)
+        self.assertEqual(state.triangle_friends(), 0)
+        self.assertEqual(state.triangle_foes(), 1)
+        self.assertEqual(state.oreo_friends(), 1)
+        self.assertEqual(state.oreo_foes(), 0)
 
         board_string = """
 +-+b+b+b
@@ -862,10 +862,10 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
 
         # hole: empty squares adjacent to at least three pieces of the same color.
         state = self.state_class.from_string(self.state_class, board_string)
-        self.assertEqual(state.triangle_friends(), True)
-        self.assertEqual(state.triangle_foes(), False)
-        self.assertEqual(state.oreo_friends(), False)
-        self.assertEqual(state.oreo_foes(), True)
+        self.assertEqual(state.triangle_friends(), 1)
+        self.assertEqual(state.triangle_foes(), 0)
+        self.assertEqual(state.oreo_friends(), 0)
+        self.assertEqual(state.oreo_foes(), 1)
 
         board_string = """
 +-+b+-+b
@@ -882,10 +882,10 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
 
         # hole: empty squares adjacent to at least three pieces of the same color.
         state = self.state_class.from_string(self.state_class, board_string)
-        self.assertEqual(state.bridge_friends(), True)
-        self.assertEqual(state.bridge_foes(), False)
-        self.assertEqual(state.dog_friends(), True)
-        self.assertEqual(state.dog_foes(), False)
+        self.assertEqual(state.bridge_friends(), 1)
+        self.assertEqual(state.bridge_foes(), 0)
+        self.assertEqual(state.dog_friends(), 1)
+        self.assertEqual(state.dog_foes(), 0)
 
         board_string = """
 +-+b+-+b
@@ -902,10 +902,10 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
 
         # hole: empty squares adjacent to at least three pieces of the same color.
         state = self.state_class.from_string(self.state_class, board_string)
-        self.assertEqual(state.bridge_friends(), False)
-        self.assertEqual(state.bridge_foes(), True)
-        self.assertEqual(state.dog_friends(), False)
-        self.assertEqual(state.dog_foes(), True)
+        self.assertEqual(state.bridge_friends(), 0)
+        self.assertEqual(state.bridge_foes(), 1)
+        self.assertEqual(state.dog_friends(), 0)
+        self.assertEqual(state.dog_foes(), 1)
 
 
 class ParserHelperTestCase(unittest.TestCase):

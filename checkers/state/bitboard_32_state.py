@@ -412,8 +412,8 @@ class Bitboard32State(CheckersGameState):
 
     def triangle_check(self, plyr):
         if plyr:
-            return(state32_lib.count_bits(self.c_board.contents.w & 0xc4000000) == 3)
-        return(state32_lib.count_bits(self.c_board.contents.b & 0x00000023) == 3)
+            return(1 if (self.c_board.contents.w & 0xc4000000 == 0xc4000000) else 0)
+        return(1 if (self.c_board.contents.b & 0x00000023 == 0x00000023) else 0)
 
     def triangle_friends(self):
         return self.triangle_check(self.c_board.contents.plyr)
@@ -424,8 +424,8 @@ class Bitboard32State(CheckersGameState):
 
     def oreo_check(self, plyr):
         if plyr:
-            return(state32_lib.count_bits(self.c_board.contents.w & 0x62000000) == 3)
-        return(state32_lib.count_bits(self.c_board.contents.b & 0x00000046) == 3)
+            return(1 if (self.c_board.contents.w & 0x62000000 == 0x62000000) else 0)
+        return(1 if (self.c_board.contents.b & 0x00000046 == 0x00000046) else 0)
 
     def oreo_friends(self):
         return self.oreo_check(self.c_board.contents.plyr)
@@ -436,8 +436,8 @@ class Bitboard32State(CheckersGameState):
 
     def bridge_check(self, plyr):
         if plyr:
-            return(state32_lib.count_bits(self.c_board.contents.w & 0xa0000000) == 2)
-        return(state32_lib.count_bits(self.c_board.contents.b & 0x00000005) == 2)
+            return(1 if (self.c_board.contents.w & 0xa0000000 == 0xa0000000) else 0)
+        return(1 if (self.c_board.contents.b & 0x00000005 == 0x00000005) else 0)
 
     def bridge_friends(self):
         return self.bridge_check(self.c_board.contents.plyr)
@@ -448,8 +448,8 @@ class Bitboard32State(CheckersGameState):
 
     def dog_check(self, plyr):
         if plyr:
-            return((state32_lib.count_bits(self.c_board.contents.w & 0x80000000) + state32_lib.count_bits(self.c_board.contents.b & 0x08000000)) == 2)
-        return((state32_lib.count_bits(self.c_board.contents.w & 0x00000010) + state32_lib.count_bits(self.c_board.contents.b & 0x00000001)) == 2)
+            return(1 if (self.c_board.contents.w & 0x80000000 and self.c_board.contents.b & 0x08000000) else 0)
+        return(1 if (self.c_board.contents.w & 0x00000010 and self.c_board.contents.b & 0x00000001) else 0)
 
     def dog_friends(self):
         return self.dog_check(self.c_board.contents.plyr)
