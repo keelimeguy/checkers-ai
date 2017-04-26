@@ -30,7 +30,7 @@ def perror(*args, **kwargs):
 for parameter in weight_tests:
     for weight in weight_tests[parameter]:
         weight = int(weight)
-        with open(os.path.join(parent_dir, "weights_example.json"), "r") as f:
+        with open(os.path.join(parent_dir, "weights.json"), "r") as f:
             active_weights = json.load(f)
         if parameter in active_weights:
             active_weights[parameter]["weight"] = weight
