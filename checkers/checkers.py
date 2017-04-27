@@ -7,7 +7,6 @@ import sys
 
 from checkers.state.bitboard_32_state import Bitboard32State
 from checkers.sam_server import SamServer
-# from checkers.c.structs import *  # terrifying but thankfully unnecessary
 
 from checkers.game_api import GameOver, CheckersServerBase
 
@@ -69,8 +68,6 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                 self._tell_server(self.queue_to_send.get(block=True)),
                 block=False)  # raise exception if queue is full
 
-
-
     def _tell_server(self, move):
         """tell the server the move and block while waiting for response"""
         response = self.server.send_and_receive(move)
@@ -83,7 +80,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                     return GameOver(result="White")
                 else:
                     return GameOver(result="Draw")
-                    
+
             elif "Error" in response:
                 self.server.disconnect()
                 self.show_game()
@@ -154,4 +151,3 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
     def run(self):
         while True:
             self.  # TODO
-

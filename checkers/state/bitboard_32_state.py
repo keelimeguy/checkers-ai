@@ -2,6 +2,7 @@ from .state_superclass import CheckersGameState
 from checkers.c.structs import *
 
 import warnings
+import functools
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
@@ -17,6 +18,7 @@ Black's move"""
 class Bitboard32State(CheckersGameState):
     """Uses 32-slot representation of checkerboards."""
 
+    @functools.total_ordering
     class Move:
         def __init__(self, p_move=None):
             if p_move:
@@ -43,6 +45,12 @@ class Bitboard32State(CheckersGameState):
             if not movestr:
                 raise ValueError(f"invalid move string: {repr(movestr)}")
             return cls(state32_lib.Move_from_string(movestr.encode("utf-8")))
+
+        def __eq__(self, other):
+            return self.move.contents.length == other.move.contents.length
+
+        def __gt__(self, other):
+            return self.move.contents.length > other.move.contents.length
 
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board
@@ -427,8 +435,8 @@ class Bitboard32State(CheckersGameState):
 
     def triangle_check(self, plyr):
         if plyr:
-            return(state32_lib.count_bits(self.c_board.contents.w & 0xc4000000) == 3)
-        return(state32_lib.count_bits(self.c_board.contents.b & 0x00000023) == 3)
+            return(1 if (self.c_board.contents.w & 0xc4000000 == 0xc4000000) else 0)
+        return(1 if (self.c_board.contents.b & 0x00000023 == 0x00000023) else 0)
 
     def triangle_friends(self):
         return self.triangle_check(self.c_board.contents.plyr)
@@ -439,8 +447,8 @@ class Bitboard32State(CheckersGameState):
 
     def oreo_check(self, plyr):
         if plyr:
-            return(state32_lib.count_bits(self.c_board.contents.w & 0x62000000) == 3)
-        return(state32_lib.count_bits(self.c_board.contents.b & 0x00000046) == 3)
+            return(1 if (self.c_board.contents.w & 0x62000000 == 0x62000000) else 0)
+        return(1 if (self.c_board.contents.b & 0x00000046 == 0x00000046) else 0)
 
     def oreo_friends(self):
         return self.oreo_check(self.c_board.contents.plyr)
@@ -451,8 +459,8 @@ class Bitboard32State(CheckersGameState):
 
     def bridge_check(self, plyr):
         if plyr:
-            return(state32_lib.count_bits(self.c_board.contents.w & 0xa0000000) == 2)
-        return(state32_lib.count_bits(self.c_board.contents.b & 0x00000005) == 2)
+            return(1 if (self.c_board.contents.w & 0xa0000000 == 0xa0000000) else 0)
+        return(1 if (self.c_board.contents.b & 0x00000005 == 0x00000005) else 0)
 
     def bridge_friends(self):
         return self.bridge_check(self.c_board.contents.plyr)
@@ -463,8 +471,8 @@ class Bitboard32State(CheckersGameState):
 
     def dog_check(self, plyr):
         if plyr:
-            return((state32_lib.count_bits(self.c_board.contents.w & 0x80000000) + state32_lib.count_bits(self.c_board.contents.b & 0x08000000)) == 2)
-        return((state32_lib.count_bits(self.c_board.contents.w & 0x00000010) + state32_lib.count_bits(self.c_board.contents.b & 0x00000001)) == 2)
+            return(1 if (self.c_board.contents.w & 0x80000000 and self.c_board.contents.b & 0x08000000) else 0)
+        return(1 if (self.c_board.contents.w & 0x00000010 and self.c_board.contents.b & 0x00000001) else 0)
 
     def dog_friends(self):
         return self.dog_check(self.c_board.contents.plyr)

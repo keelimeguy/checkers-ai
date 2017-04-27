@@ -1,0 +1,252 @@
+{
+    "friend_count" : {
+        "weight" : 1,
+        "wins" : 14,
+        "total" : 15
+    },
+    "foe_count" : {
+        "weight" : -1,
+        "wins" : 12,
+        "total" : 15
+    },
+    "friend_kings" : {
+        "weight" : 3,
+        "wins" : 15,
+        "total" : 15
+    },
+    "foe_kings" : {
+        "weight" : -3,
+        "wins" : 14,
+        "total" : 15
+    },
+    "center_king_foes" : {
+        "weight" : -1,
+        "wins" : 1,
+        "total" : 1
+    },
+    "defender_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "loner_pawn_foes" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "holes_friends" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "loner_pawn_friends" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "loner_king_foes" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "safe_friend_kings" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "diagonaldouble_pawn_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "holes_foes" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "movable_foe_kings" : {
+        "weight" : -1,
+        "wins" : 1,
+        "total" : 1
+    },
+    "safe_friend_pawns" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "diagonaldouble_king_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "dog_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "center_pawn_foes" : {
+        "weight" : -1,
+        "wins" : 1,
+        "total" : 1
+    },
+    "attack_pawn_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "triangle_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "center_king_friends" : {
+        "weight" : 1,
+        "wins" : 1,
+        "total" : 1
+    },
+    "movable_foe_pawns" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "corner_king_friends" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "movable_friend_pawns" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "oreo_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "diagonalmain_pawn_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "corner_pawn_friends" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "diagonaldouble_pawn_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "unoccupied_promotion_friends" : {
+        "weight" : -1,
+        "wins" : 1,
+        "total" : 1
+    },
+    "bridge_friends" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "triangle_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "foe_distance_promotion" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "movable_friend_kings" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "corner_pawn_foes" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "diagonalmain_king_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "attack_pawn_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "diagonalmain_king_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "corner_king_foes" : {
+        "weight" : 0,
+        "wins" : 0,
+        "total" : 0
+    },
+    "dog_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "diagonalmain_pawn_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "loner_king_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "oreo_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "safe_foe_pawns" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "bridge_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "unoccupied_promotion_foes" : {
+        "weight" : 1,
+        "wins" : 1,
+        "total" : 1
+    },
+    "safe_foe_kings" : {
+        "weight" : 1,
+        "wins" : 0,
+        "total" : 0
+    },
+    "friend_distance_promotion" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "defender_friends" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "diagonaldouble_king_foes" : {
+        "weight" : 0,
+        "wins" : 1,
+        "total" : 1
+    },
+    "center_pawn_friends" : {
+        "weight" : 1,
+        "wins" : 1,
+        "total" : 1
+    }
+}

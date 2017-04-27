@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import sys
+
 #Tests various weights on parameters. Results are stored in learning_weights.json
 #Recognition for other parameters will be added next.
 
@@ -29,7 +30,7 @@ def perror(*args, **kwargs):
 for parameter in weight_tests:
     for weight in weight_tests[parameter]:
         weight = int(weight)
-        with open(os.path.join(parent_dir, "weights_example.json"), "r") as f:
+        with open(os.path.join(parent_dir, "weights.json"), "r") as f:
             active_weights = json.load(f)
         if parameter in active_weights:
             active_weights[parameter]["weight"] = weight
@@ -38,8 +39,7 @@ for parameter in weight_tests:
         with open(outfile, "w") as f:
             json.dump(active_weights, f)
 
-        # This is horrible code, but everything else that I can think of does
-        # not work due to memory leak.
+        #This is horrible code, but everything else that I can think of does not work due to memory leak.
         os.chdir(run_dir)
         try:
             result = run_sp_game()
@@ -57,9 +57,9 @@ for parameter in weight_tests:
             if line and line.split()[0] == b"Stats:":
                 result_line =  line.split()[1]
                 results = result_line.split(b':')
-                wins = int(results[0][0])
-                draws = int(results[1][0])
-                losses = int(results[2][0])
+                wins = int(results[0][0]) - 48
+                draws = int(results[1][0]) - 48
+                losses = int(results[2][0]) - 48
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
         weight_tests[parameter][str(weight)][0] += wins
         weight_tests[parameter][str(weight)][1] += wins + draws + losses
