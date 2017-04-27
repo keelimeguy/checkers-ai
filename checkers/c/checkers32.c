@@ -153,7 +153,7 @@ Move* Move_from_string(char* str) {
     unsigned short temp_pos[10]; // Max move should be 9 jumps.. I think
     temp_pos[0] = (7-row_start)*4+1 + col_start/2;
 
-    int index = 5;
+    unsigned int index = 5;
     while (index<len && str[index]==':') {
         index+=2;
 

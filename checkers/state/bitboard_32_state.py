@@ -1,6 +1,8 @@
 from .state_superclass import CheckersGameState
 from checkers.c.structs import *
 
+import warnings
+
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
 +b+b+b+b
@@ -32,6 +34,16 @@ class Bitboard32State(CheckersGameState):
         def __del__(self):
             state32_lib.Move_destroy(self.move)
 
+        @classmethod
+        def from_string(cls, movestr):
+            """Convert a move to a string.
+
+            e.g. Move.from_string("(1:3):(3:1)") or whatever
+            """
+            if not movestr:
+                raise ValueError(f"invalid move string: {repr(movestr)}")
+            return cls(state32_lib.Move_from_string(movestr.encode("utf-8")))
+
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board
         if not self.c_board:
@@ -55,10 +67,13 @@ class Bitboard32State(CheckersGameState):
         new_board = state32_lib.Board_from_string(create_string_buffer(board_string.encode("utf-8")))
         return Bitboard32State(0, 0, 0, False, new_board)
 
-    def move_from_string(self, movestr=None):
+    @classmethod
+    def move_from_string(cls, movestr=None):
+        warnings.warn(f"Should use {cls}.Move.from_string instead.",
+                      category=DeprecationWarning)
         if not movestr:
             return None
-        return self.Move(state32_lib.Move_from_string(movestr.encode("utf-8")))
+        return cls.Move(state32_lib.Move_from_string(movestr.encode("utf-8")))
 
     def actions(self):
         return iter(self.list_actions())

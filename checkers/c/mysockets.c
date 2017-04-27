@@ -111,7 +111,7 @@ int SockaddrToString (char *string, struct sockaddr_in *ss) {
 
 static int mySocket, isVerbose;
 static struct sockaddr_in destAddr, myAddr;
-static int sizeofmyAddr, sizeofdestAddr;
+static unsigned int sizeofmyAddr, sizeofdestAddr;
 static char inbuf[BUFSIZE], msgbuf[BUFSIZE], addrbuf[BUFSIZE], saddrbuf[BUFSIZE];
 
 void end_connection(){
@@ -123,7 +123,7 @@ int setup(int isB, int opponent, int verbose) {
     if ((mySocket = socket(AF_INET,SOCK_STREAM,0)) < 0)
         die("couldn't allocate socket");
 
-    sprintf(addrbuf, "%s-%d", SVR_ADDR, SVR_PORT);
+    snprintf(addrbuf, BUFSIZE, "%s-%d", SVR_ADDR, SVR_PORT);
     StringToSockaddr (addrbuf, &destAddr);
     if (connect(mySocket,(struct sockaddr *) &destAddr,sizeof(destAddr)) < 0)
         die("failed to connect to server");
@@ -158,8 +158,8 @@ int setup(int isB, int opponent, int verbose) {
     if (isVerbose) printf("<< %s\n", inbuf);
 
     // Write the client username to the socket
-    if (isB) sprintf(msgbuf,"%d\r\n", USERNUM_B);
-    else sprintf(msgbuf,"%d\r\n", USERNUM_A);
+    if (isB) snprintf(msgbuf, BUFSIZE, "%d\r\n", USERNUM_B);
+    else snprintf(msgbuf, BUFSIZE, "%d\r\n", USERNUM_A);
     send(mySocket, msgbuf, strlen(msgbuf), 0);
     if (isVerbose) printf(">> %s\n", msgbuf);
 
@@ -169,8 +169,8 @@ int setup(int isB, int opponent, int verbose) {
     if (isVerbose) printf("<< %s\n", inbuf);
 
     // Write the client password to the socket
-    if (isB) sprintf(msgbuf,"%d\r\n", PASSWORD_B);
-    else sprintf(msgbuf,"%d\r\n", PASSWORD_A);
+    if (isB) snprintf(msgbuf, BUFSIZE, "%d\r\n", PASSWORD_B);
+    else snprintf(msgbuf, BUFSIZE, "%d\r\n", PASSWORD_A);
     send(mySocket, msgbuf, strlen(msgbuf), 0);
     if (isVerbose) printf(">> %s\n", msgbuf);
 
@@ -180,7 +180,7 @@ int setup(int isB, int opponent, int verbose) {
     if (isVerbose) printf("<< %s\n", inbuf);
 
     // Write the opponent to the socket
-    sprintf(msgbuf,"%d\r\n", opponent);
+    snprintf(msgbuf, BUFSIZE, "%d\r\n", opponent);
     send(mySocket, msgbuf, strlen(msgbuf), 0);
     if (isVerbose) printf(">> %s\n", msgbuf);
 
@@ -218,7 +218,7 @@ char* send_move(char* move, int* error) {
         }
 
         // Write the move to the socket
-        sprintf(msgbuf,"%s\r\n", move);
+        snprintf(msgbuf, BUFSIZE, "%s\r\n", move);
         send(mySocket, msgbuf, strlen(msgbuf), 0);
         if (isVerbose) printf(">> %s\n", msgbuf);
 
@@ -274,7 +274,7 @@ char* send_move(char* move, int* error) {
     int len = strstr(substr, "\n") - substr;
     substr[len] = (char)0;
     char* response = malloc((len+1)*sizeof(char));
-    sprintf(response, "%s", substr);
+    snprintf(response, BUFSIZE, "%s", substr);
     free(substr);
     return response;
 }

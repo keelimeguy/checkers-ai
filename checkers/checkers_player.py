@@ -9,8 +9,12 @@ import json
 import sys
 import os.path
 import gc
+from collections import namedtuple
+from math import inf            # `pip install math`, keelin
 
-from checkers.checkers import Checkers as SomethingWithAReasonableName
+from checkers.game_api import CheckersClientBase
+
+# from checkers.checkers import Checkers as SomethingWithAReasonableName
 
 
 # class CheckersState:
@@ -101,29 +105,54 @@ def eval(state):
 # Simple alpha-beta minimax search
 # @functools.lru_cache(CACHE_SIZE)
 # no, use a cache for more than the root of the computation tree
-def alphabeta_search(node):
-    return alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True)
+# def alphabeta_search(node):
+#     return alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
-def alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True):
+SearchCacheEntry = namedtuple("SearchCacheEntry",
+                              ("board", "maximum",
+                               # Note: if alpha/beta are as received as parameters,
+                               # don't cache them.  ... i think just val needed?
+                               # "alpha"=None, "beta"=None, # also bad syntax here
+                               "val",  # not a guaranteed value but a value for AB pruning
+                               depth))
+
+
+def alphabeta_dfs(node, depth=7, alpha=float('-inf'), beta=float('inf'),
+                  maximum=True, cache=None, evaluator=None):
+    """This is a work in progress. Beware. Committed at 2 AM."""
+    if cache and (node, maximum) in cache:
+        entry = cache[(node, maximum)]
+        if entry.depth <= depth:
+            entry = None  # This could be omitted for more zealous pruning
+    else:
+        entry = None
+    # cache_alpha = None
+    # cache_beta = None  # we shouldn't cache alpha/beta values computed above
+    # this node of the search tree
+
     # TODO make unit tests for this
     if depth == 0 or node.terminal():
-        return eval(node)
+        return evaluator(node)
     if maximum:
-        val = float('-inf')
+        val = entry.val if entry else float('-inf')
         choose = max
     else:
-        val = float('inf')
+        val = entry.val if entry else float('inf')
         choose = min
     for action in node.actions():
-        child = node.result(action)
-        val = choose(val, alphabeta(child, depth=(depth-1), alpha=alpha,
-                                    beta=beta, maximum=(not maximum)))
-        if maximum:
-            alpha = choose(alpha, val)
-        else:
-            beta = choose(beta, val)
         if beta <= alpha:
             break
+        child = node.result(action)
+        val = choose(val, alphabeta_dfs(child, depth=(depth-1), alpha=alpha,
+                                        beta=beta, maximum=(not maximum),
+                                        cache=cache, evaluator=evaluator))
+        if maximum:
+            alpha = choose(alpha, val)
+            # if cache_alpha
+        else:
+            beta = choose(beta, val)
+
+    # I guess cache val as either alpha or beta, no?
     return val
 
 if __name__ == "__main__":

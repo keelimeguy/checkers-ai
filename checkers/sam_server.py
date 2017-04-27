@@ -46,16 +46,3 @@ class SamServer:
                 return cast(response, c_char_p).value.decode("utf-8")
             else:
                 return None
-
-    def send_and_delay_receive(self, msg="", call_with_result=None):
-        return Receiver
-
-class ReceiverDude(Thread):
-    def __init__(self, server, *args, call_with_result=None, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-        # self.result = None  # this is for WEAKLINGS
-
-    def run(self):
-        # Do something awesome
-        self.call_with_result(server.send_and_receive(*self.args, **self.kwargs))

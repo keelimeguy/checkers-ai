@@ -23,7 +23,7 @@ class GameOver(Exception):
 #         else:
 #             super().__init__(state, other_player, choosy_player, **kwargs)
 
-class CheckersGame:
+class CheckersGame(Thread):
 
     # class GameEndedByPlayer(Exception):
     #     pass
@@ -33,9 +33,10 @@ class CheckersGame:
         of the board and whose move it is.
         """
         # self.state = state
-        # super().__init__()  # just preparing for the conversion to Thread
+        super().__init__()  # just preparing for the conversion to Thread
         self.next_player = player1  # this, we'll be switching around
         self.benchwarmer_player = player2
+        self.result = None
 
     def step(self):
         move = self.next_player.make_move() # the blocking part of the loop
@@ -52,29 +53,47 @@ class CheckersGame:
                 self.step()
             except GameOver as g:
                 #  maybe tell both players who won and how
-                return g.result
+                self.result = g.result
+                return
 
 
-# class CheckersPlayerBase:
-#     pass
+class CheckersPlayerBase(object):
+    """This is essentially an interface. See https://pymotw.com/3/abc/
 
-# Maybe make clear(er) the fact that some players are servers and some are client, 
-class McCartneyServerPlayer:
-    NotImplemented
+    Checkers players should be subclasses of this.
+    """
+    __metaclass__ = abc.ABCMeta  # don't worry about this
 
-class HumanTypingFranticallyClientPlayer:
-    NotImplemented
+    @abc.abstractmethod
+    def recv_move(self, move):
+        """Receive a move played by the opponent"""
 
-class HumanTypingFranticallyServerPlayer:
-    """You thought it couldn't get worse, did you?"""
-    NotImplemented
+    @abc.abstractmethod
+    def make_move(self):
+        """Return a real zinger of a move"""
 
-class MinMaxClientPlayer:
-    NotImplemented
+class CheckersServerBase(CheckersPlayerBase):
+    """Checkers servers choose who goes first"""
 
-class LocalServerPlayer:
+    @abc.abstractmethod
+    def going_first(self):
+        """Return True if the (remote) opponent will be Black (go first)"""
+
+class CheckersClientBase(CheckersPlayerBase):
+    """Clients need to find out who's going first.  It's better to find this
+    out before you need to play a move so you don't pre-compute openings for
+    the wrong player."""
+
+    @abc.abstractmethod
+    def set_going_first(self, go_first):
+        """Pass True if this client has the first move"""
+
+
+
+
+class LocalServerPlayer(CheckersServerBase):
     """We learn by playing against this jerk"""
     NotImplemented
 
-class CoarseLearningPlayer:
+class CoarseLearningPlayer(CheckersClientBase):
     NotImplemented
