@@ -82,7 +82,6 @@ def eval(state):
         return score
     return -score
 
-@functools.lru_cache(CACHE_SIZE)
 def alphabeta_search(node):
     ## Simple alpha-beta minimax search
     ## Stats out of 10 games, depth = 4:
@@ -92,13 +91,18 @@ def alphabeta_search(node):
     ##   min=   6.533s
     # return alphabeta(node, depth=4, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
+    ## Improved alpha-beta minimax search?
+    return alphabeta_dfs(node, depth=4, alpha=float('-inf'), beta=float('inf'),
+                  maximum=True, cache=None, evaluator=eval)
+
     ## Iterative deepening using informed move order in deeper searches
     ## Stats out of 10 games, start_depth=2, end_depth=4:
     ##   9w:1d:0l
     ##   avg=  14.606s
     ##   max=  38.865s
     ##   min=   9.277s
-    return alphabeta_iterative_search(node, 4, 6)
+    # return alphabeta_iterative_search(node, 4, 6)
+
 
 def alphabeta_iterative_search(node, start_depth, end_depth):
     actions = node.actions()
@@ -153,7 +157,6 @@ def alphabeta_iterative_deepening(node, actions, depth=7, alpha=float('-inf'), b
     return (val, ordered_actions)
 
 
-@functools.lru_cache(CACHE_SIZE)
 def alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True):
     # TODO make unit tests for this
     if depth == 0 or node.terminal():
@@ -175,6 +178,55 @@ def alphabeta(node, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=Tru
         if beta <= alpha:
             break
     return val
+
+# SearchCacheEntry = namedtuple("SearchCacheEntry",
+#                               ("board", "maximum",
+#                                # Note: if alpha/beta are as received as parameters,
+#                                # don't cache them.  ... i think just val needed?
+#                                # "alpha"=None, "beta"=None, # also bad syntax here
+#                                "val",  # not a guaranteed value but a value for AB pruning
+#                                depth))
+
+
+def alphabeta_dfs(node, depth=7, alpha=float('-inf'), beta=float('inf'),
+                  maximum=True, cache=None, evaluator=None):
+    """This is a work in progress. Beware. Committed at 2 AM."""
+    if cache and (node, maximum) in cache:
+        entry = cache[(node, maximum)]
+        if entry.depth <= depth:
+            entry = None  # This could be omitted for more zealous pruning
+    else:
+        entry = None
+    # cache_alpha = None
+    # cache_beta = None  # we shouldn't cache alpha/beta values computed above
+    # this node of the search tree
+
+    # TODO make unit tests for this
+    if depth == 0 or node.terminal():
+        return evaluator(node)
+    if maximum:
+        val = entry.val if entry else float('-inf')
+        choose = max
+    else:
+        val = entry.val if entry else float('inf')
+        choose = min
+    for action in node.actions():
+        if beta <= alpha:
+            break
+        child = node.result(action)
+        val = choose(val, alphabeta_dfs(child, depth=(depth-1), alpha=alpha,
+                                        beta=beta, maximum=(not maximum),
+                                        cache=cache, evaluator=evaluator))
+        if maximum:
+            alpha = choose(alpha, val)
+            # if cache_alpha
+        else:
+            beta = choose(beta, val)
+
+    # I guess cache val as either alpha or beta, no?
+    return val
+
+
 
 if __name__ == "__main__":
     random.seed(time.time())
@@ -250,7 +302,5 @@ if __name__ == "__main__":
         count-=1
         gc.collect()
 
-    print("alphabeta_search cache: ", alphabeta_search.cache_info())
-    print("alphabeta cache: ", alphabeta.cache_info())
     print("eval cache: ", eval.cache_info())
     print("Stats: {}w:{}d:{}l\navg time = {}s\nmax time = {}s\nmin time = {}s".format(wins, draws, losses, total_time/num, max_time, min_time))
