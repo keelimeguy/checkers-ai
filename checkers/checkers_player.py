@@ -86,17 +86,27 @@ def eval(state):
         return score
     return -score
 
+def alphabeta_search(node):
+    ## Simple alpha-beta minimax search
+    ## Stats out of 10 games, depth = 4:
+    ##   9w:1d:0l
+    ##   avg=  25.403s
+    ##   max= 124.753s
+    ##   min=   6.533s
+    # return alphabeta(node, depth=4, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
-## no, use a cache for more than the root of the computation tree
-## @functools.lru_cache(CACHE_SIZE)
-# def alphabeta_search(node):
-#     ## Simple alpha-beta minimax search
-#     ## Stats out of 10 games, depth = 4:
-#     ##   9w:1d:0l
-#     ##   avg=  25.403s
-#     ##   max= 124.753s
-#     ##   min=   6.533s
-#     # return alphabeta(node, depth=4, alpha=float('-inf'), beta=float('inf'), maximum=True)
+    ## Improved alpha-beta minimax search?
+    return alphabeta_dfs(node, depth=4, alpha=float('-inf'), beta=float('inf'),
+                  maximum=True, cache=None, evaluator=eval)
+
+    ## Iterative deepening using informed move order in deeper searches
+    ## Stats out of 10 games, start_depth=2, end_depth=4:
+    ##   9w:1d:0l
+    ##   avg=  14.606s
+    ##   max=  38.865s
+    ##   min=   9.277s
+    # return alphabeta_iterative_search(node, 4, 6)
+
 
 #     ## Iterative deepening using informed move order in deeper searches
 #     ## Stats out of 10 games, start_depth=2, end_depth=4:
@@ -157,7 +167,6 @@ def eval(state):
 #             break
 #     return (val, ordered_actions)
 
-
 SearchCacheEntry = namedtuple("SearchCacheEntry",
                               ("board", "maximum",
                                # Note: if alpha/beta are as received as parameters,
@@ -204,6 +213,8 @@ def alphabeta_dfs(node, depth=7, alpha=float('-inf'), beta=float('inf'),
 
     # I guess cache val as either alpha or beta, no?
     return val
+
+
 
 if __name__ == "__main__":
     random.seed(time.time())
