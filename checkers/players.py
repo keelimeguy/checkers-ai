@@ -11,6 +11,7 @@ from checkers.sam_server import SamServer
 from checkers.heuristics import BoardEvaluator
 from checkers.alphabeta import AlphaBeta
 
+
 from checkers.game_api import GameOver, CheckersServerBase, CheckersClientBase
 
 class McCartneyServerPlayer(Thread, CheckersServerBase):
@@ -32,7 +33,6 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self.queue_to_send = queue.Queue(1)  # moves to send to the server
         self.queue_replies = queue.Queue(1)  # moves the server sends to us
 
-        self.gameover = False  # not used for anything
 
     def recv_move(self, move):
         self.moves.append(move)  # not thread safe, but okay for correct use
@@ -104,8 +104,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             self.gameover = True
             self.server.disconnect()
             self.show_game()
-            print("Unknown Error!", file=sys.stderr)
-            print(repr(response), file=sys.stderr)
+            print("Unknown Error: No Response", file=sys.stderr)
             return GameOver(result=None)
 
 
@@ -176,7 +175,6 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._inbox.put(move,
                         block=False)  # useful error if queue is Full
 
-
     def run(self):
         # wait to be told who is going first
         go_first = self._go_first_q.get(block=True)
@@ -202,8 +200,6 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
 
             self._outbox.put(move, block=False)
             self._state = self._state.result(move)
-
-
 
     def _precompute(self):
         # modifies self._responses with snappy answers to moves we expected
@@ -249,6 +245,30 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 best_yet = act
         return best_yet
 
-    # key=(lambda a: self._search_engine.ab_dfs(
-    #     state, 
         
+
+class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
+    def __init__(self, opponent=0, is_B_client=False, verbose=False):
+        super().__init__(opponent, is_B_client, verbose)
+
+    def recv_move(self, move):
+        self.moves.append(move)  # not thread safe, but okay for correct use
+        self.board = self.board.result(move)
+        # The sequence
+        #   get a move from server (and enqueue)
+        #   dequeue that move (and feed to client player)
+        #   recv a move from the client player
+        # should never be broken.  (Unless we pipeline our messages for
+        # sequences of forced jumps, but that would fail unless the other team
+        # did the same optimization! Please don't do that!)
+        # Thus this exception:
+        if self.queue_replies.qsize() != 0:
+            raise RuntimeError(  # see note above before commenting this out
+                f"recv_move ({str(move)}) called on a {type(self)} with "
+                "nonzero pending messages from server")
+
+        # This version does not use the queue and threading, meant to directly make and recieve moves
+        # ..hence "Simple"
+        return self._tell_server(str(move))
+        # self.queue_to_send.put(str(move), block=False)
+

@@ -18,8 +18,10 @@ with open(os.path.join(current_dir,"learning_weights.json"),"r") as f:
 def run_sp_game(weight_file=None):
     weight_file = weight_file or outfile
 
+    # Note: python 3.6 is required to run
     return subprocess.check_output(
         "python3 -m checkers.heuristics -c 1 -w {}".format(outfile),
+        # "python3.6 -m checkers.heuristics -c 1 -w {}".format(outfile),
         stderr=sys.stderr,  # subprocess.STDOUT,
         shell=True)
 
