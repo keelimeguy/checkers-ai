@@ -15,7 +15,7 @@ from math import inf
 from threading import Thread
 
 from checkers.game_api import GameOver, CheckersClientBase
-from checkers.players import McCartneyServerPlayer
+from checkers.players import SimpleMcCartneyServerPlayer
 
 
 CACHE_SIZE = 65536
@@ -139,7 +139,7 @@ def alphabeta_search(node, player):
     # return alphabeta(node, depth=4, alpha=-inf, beta=inf, maximum=True)
 
     ## Improved alpha-beta minimax search?
-    return alphabeta_dfs(node, player, depth=4, alpha=-inf, beta=inf,
+    return alphabeta_dfs(node, player, depth=2, alpha=-inf, beta=inf,
                   maximum=True, cache=None, evaluator=eval)
 
     ## Iterative deepening using informed move order in deeper searches
@@ -288,7 +288,7 @@ if __name__ == "__main__":
     while not error and count>0:
         start_time = time.time()
         print("Start {}:".format(count))
-        game = McCartneyServerPlayer(args.opponent, args.user==6, 1 if args.verbose else 0)
+        game = SimpleMcCartneyServerPlayer(args.opponent, args.user==6, 1 if args.verbose else 0)
         try:
             # game.start()
             while True:

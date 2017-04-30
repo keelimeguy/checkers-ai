@@ -48,8 +48,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                 f"recv_move ({str(move)}) called on a {type(self)} with "
                 "nonzero pending messages from server")
 
-        return self._tell_server(str(move))
-        # self.queue_to_send.put(str(move), block=False)
+        self.queue_to_send.put(str(move), block=False)
 
     def make_move(self):
         """Make a move (blocking)"""
@@ -137,6 +136,32 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             print(move)
         print(final)
         return final.strip()
+
+
+class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
+    def __init__(self, opponent=0, is_B_client=False, verbose=False):
+        super().__init__(opponent, is_B_client, verbose)
+
+    def recv_move(self, move):
+        self.moves.append(move)  # not thread safe, but okay for correct use
+        self.board = self.board.result(move)
+        # The sequence
+        #   get a move from server (and enqueue)
+        #   dequeue that move (and feed to client player)
+        #   recv a move from the client player
+        # should never be broken.  (Unless we pipeline our messages for
+        # sequences of forced jumps, but that would fail unless the other team
+        # did the same optimization! Please don't do that!)
+        # Thus this exception:
+        if self.queue_replies.qsize() != 0:
+            raise RuntimeError(  # see note above before commenting this out
+                f"recv_move ({str(move)}) called on a {type(self)} with "
+                "nonzero pending messages from server")
+
+        # This version does not use the queue and threading, meant to directly make and recieve moves
+        # ..hence "Simple"
+        return self._tell_server(str(move))
+        # self.queue_to_send.put(str(move), block=False)
 
 
 # class MinMaxClientPlayer(Thread, CheckersClientBase):
