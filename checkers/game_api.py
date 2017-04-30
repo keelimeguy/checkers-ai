@@ -10,7 +10,7 @@ class GameOver(Exception):
 
     def __init__(self, *args, result=None, **kwargs):
         # result should be "Black" "White" or "Draw"
-        super.__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.winner = winner
 
 # class ChoosyCheckersGame(CheckersGame):

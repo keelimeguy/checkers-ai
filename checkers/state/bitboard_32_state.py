@@ -52,6 +52,11 @@ class Bitboard32State(CheckersGameState):
         def __gt__(self, other):
             return self.move.contents.length > other.move.contents.length
 
+        def __hash__(self):
+            assert isinstance(self.move.contents.length, int)
+            return sum(self.move.contents.route[i] * 3**i
+                       for i in range(self.move.contents.length))
+
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board
         if not self.c_board:

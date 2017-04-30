@@ -103,7 +103,7 @@ class BoardEvaluator:
     my_board_value = be(my_board)  #  invokes the __call__ method
     my_other_board_value = be(my_other_board)
     """
-    def __init__(self, weights, cache_size=100):
+    def __init__(self, weights, cache_size=100, sanity_check=True):
         """weights: should map names of functions to weights on those functions.
         (Functions with weight 0 are optimized away.)
 
@@ -112,12 +112,17 @@ class BoardEvaluator:
         """
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
-        if not self._weights:
+        if not self._weights and sanity_check:
             print(f"{type(self)} instantiated with no nonzero weights",
                   file=sys.stderr)
         # note this is an instance property, cache included
         @functools.lru_cache(cache_size)
         def _evaluate(board):
+            # return +/- infinity if the game is over
+            if board.count_friends() == 0:
+                return -inf
+            elif board.count_foes() == 0:
+                return inf
             return sum(weights[param] * getattr(board, param)()
                        for param in self._weights)
         self._evaluate = _evaluate
