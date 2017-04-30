@@ -339,6 +339,8 @@ if __name__ == "__main__":
         print("Finished in {}s\n".format(time_diff))
         num+=1
         count-=1
+
+        game = None
         gc.collect()
 
     print("eval cache: ", eval.cache_info())

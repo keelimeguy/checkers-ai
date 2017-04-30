@@ -91,12 +91,7 @@ class Bitboard32State(CheckersGameState):
         movelist = pointer(pointer(MOVE()))
         numMoves = c_int(0)
         movelist = state32_lib.actions(self.c_board, byref(numMoves))
-        # moves = []
-        # this way should actually be faster
         moves = [Bitboard32State.Move(movelist[i]) for i in range(numMoves.value)]
-        # for i in range(0, numMoves.value):
-        #     newMove = Bitboard32State.Move(movelist[i])
-        #     moves.append(newMove)
         state32_lib.Move_list_destroy(movelist, numMoves.value)
         return moves
 
@@ -107,6 +102,7 @@ class Bitboard32State(CheckersGameState):
         return Bitboard32State(0, 0, 0, False, new_board)
 
     def player(self):
+        # Returns player whose turn it is next, not the starting player of a client
         ptr = state32_lib.player(self.c_board)
         string = cast(ptr, c_char_p).value.decode("utf-8")
         state32_lib.free(ptr)
