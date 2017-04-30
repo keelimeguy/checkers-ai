@@ -7,6 +7,7 @@ import sys
 
 from checkers.state.bitboard_32_state import Bitboard32State
 from checkers.sam_server import SamServer
+from checkers.checkers_player import BoardEvaluator
 
 from checkers.game_api import GameOver, CheckersServerBase
 
@@ -141,13 +142,32 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
 
 class MinMaxClientPlayer(Thread, CheckersClientBase):
 
-    def __init__(self, state=None):
+    def __init__(self, state=None, weights=None):
+        """You'd better pass in a dictionary of weights"""
         super().__init__()
         # self.evaluate = evaluation_function  # better make a subclass instead
         self.state = BitBoard32State()
-        self.inbox = queue.Queue()
-        self.outbox = queue.Queue()
+        self.inbox = queue.Queue(1)
+        self.search_engine = AlphaBeta(
+        self.go_first_q = queue.Queue(1)
+        self.outbox = queue.Queue(1)
+        # going_first = None  # None if unset, False later
+        self._responses = {}  # dict of move -> move
+
+    def set_going_first(self, go_first):
+        """Must be called to tell the player whether to go first"""
+        self.go_first_q.put(go_first, block=False)
+
+    def recv_move(self, move):
+        self.inbox.put(move,
+                       block=False)  # useful error if queue is Full
+
 
     def run(self):
+        # wait to be told who is going first
+        go_first = self.go_first_q.get(block=True)
+
+        if go_first:
+            
         while True:
-            self.  # TODO
+            self.outbox.put(

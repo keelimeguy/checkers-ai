@@ -71,9 +71,10 @@ class Bitboard32State(CheckersGameState):
     def __del__(self):
         state32_lib.Board_destroy(self.c_board)
 
-    def from_string(self, board_string=FRESH_BOARD_REPR):
+    @classmethod
+    def from_string(cls, board_string=FRESH_BOARD_REPR):
         new_board = state32_lib.Board_from_string(create_string_buffer(board_string.encode("utf-8")))
-        return Bitboard32State(0, 0, 0, False, new_board)
+        return cls(0, 0, 0, False, new_board)
 
     @classmethod
     def move_from_string(cls, movestr=None):
@@ -84,16 +85,18 @@ class Bitboard32State(CheckersGameState):
         return cls.Move(state32_lib.Move_from_string(movestr.encode("utf-8")))
 
     def actions(self):
-        return iter(self.list_actions())
+        yield from self.list_actions()
 
     def list_actions(self):
         movelist = pointer(pointer(MOVE()))
         numMoves = c_int(0)
         movelist = state32_lib.actions(self.c_board, byref(numMoves))
-        moves = []
-        for i in range(0, numMoves.value):
-            newMove = Bitboard32State.Move(movelist[i])
-            moves.append(newMove)
+        # moves = []
+        # this way should actually be faster
+        moves = [Bitboard32State.Move(movelist[i]) for i in range(numMoves.value)]
+        # for i in range(0, numMoves.value):
+        #     newMove = Bitboard32State.Move(movelist[i])
+        #     moves.append(newMove)
         state32_lib.Move_list_destroy(movelist, numMoves.value)
         return moves
 

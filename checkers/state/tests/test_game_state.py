@@ -44,7 +44,7 @@ class CheckersGameStateTestCase(unittest.TestCase):
         """If only to facilitate testing, it's nice to parse the string version
         of a board into an actual board.
         """
-        self.assertEqual(str(self.state_class.from_string(self.state_class, FRESH_BOARD_REPR)),
+        self.assertEqual(str(self.state_class.from_string(FRESH_BOARD_REPR)),
                          FRESH_BOARD_REPR)
 
     def test_initial_state_player(self):
@@ -112,7 +112,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                         "(5:3):(3:1):(1:3):(3:5):(1:7)",
                         "(5:3):(3:5):(1:7)",
                         "(5:3):(3:5):(1:3):(3:1):(5:3)"])
-        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        acts = self.state_class.from_string(board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
@@ -138,7 +138,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
         moves = sorted(["(2:6):(0:4)",
                         "(2:4):(0:2)",
                         "(2:4):(0:6)"])
-        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        acts = self.state_class.from_string(board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
@@ -163,7 +163,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
         moves = sorted(["(4:6):(2:4)",
                         "(4:4):(2:2)",
                         "(4:4):(2:6)"])
-        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        acts = self.state_class.from_string(board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
@@ -193,7 +193,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                         "(1:5):(0:4)",
                         "(1:5):(0:6)",
                         "(1:1):(2:2)"])
-        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        acts = self.state_class.from_string(board_string).actions()
         # The lists (which have both been sorted lexicographically) should be
         # the same
         self.assertEqual(sorted([str(act) for act in acts]),
@@ -229,7 +229,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        start_state = self.state_class.from_string(self.state_class, board_string)
+        start_state = self.state_class.from_string(board_string)
         acts = start_state.actions()
         self.assertEqual(str(start_state.result(list(acts)[0])),
                          result_string)
@@ -265,7 +265,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         moves = sorted(["(4:0):(2:2):(0:0)"])
-        start_state = self.state_class.from_string(self.state_class, board_string)
+        start_state = self.state_class.from_string(board_string)
         acts = start_state.actions()
         self.assertEqual(str(start_state.result(list(acts)[0])),
                          result_string)
@@ -293,7 +293,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
         moves = sorted(["(5:1):(4:0)", "(5:3):(4:4)", "(5:5):(4:4)", "(5:5):(4:6)", "(5:7):(4:6)",
             "(4:2):(3:3)", "(3:1):(2:2)", "(2:0):(1:1)", "(3:5):(2:4)", "(3:5):(2:6)", "(1:3):(0:2)",
             "(1:3):(0:4)", "(1:5):(0:4)", "(1:5):(0:6)", "(1:5):(2:4)", "(1:5):(2:6)"])
-        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        acts = self.state_class.from_string(board_string).actions()
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
@@ -315,7 +315,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         moves = sorted(["(0:0):(2:2)", "(4:0):(2:2)"])
-        acts = self.state_class.from_string(self.state_class, board_string).actions()
+        acts = self.state_class.from_string(board_string).actions()
         self.assertEqual(sorted([str(act) for act in acts]),
                          moves)
 
@@ -335,7 +335,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_movable_friends_pawns(), 5)
         self.assertEqual(state.count_movable_foes_pawns(), 4)
         self.assertEqual(state.count_movable_friends_kings(), 3)
@@ -354,7 +354,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string2)
+        state = self.state_class.from_string(board_string2)
         self.assertEqual(state.count_movable_friends_kings(), 2)
         self.assertEqual(state.count_movable_foes_kings(), 3)
         self.assertEqual(state.count_movable_friends_pawns(), 4)
@@ -377,7 +377,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_friends(), 12)
         self.assertEqual(state.count_friends_pawns(), 8)
         self.assertEqual(state.count_friends_kings(), 4)
@@ -398,7 +398,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_friends(), 9)
         self.assertEqual(state.count_friends_pawns(), 6)
         self.assertEqual(state.count_friends_kings(), 3)
@@ -422,7 +422,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_safe_friends_pawns(), 4)
         self.assertEqual(state.count_safe_friends_kings(), 3)
         self.assertEqual(state.count_safe_foes_pawns(), 2)
@@ -441,7 +441,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_safe_friends_pawns(), 2)
         self.assertEqual(state.count_safe_friends_kings(), 2)
         self.assertEqual(state.count_safe_foes_pawns(), 4)
@@ -464,9 +464,10 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.aggregate_distance_promotion_friends(), 44)
         self.assertEqual(state.aggregate_distance_promotion_foes(), 33)
+        
 
         board_string = """
 +B+-+B+b
@@ -481,9 +482,14 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.aggregate_distance_promotion_friends(), 33)
         self.assertEqual(state.aggregate_distance_promotion_foes(), 44)
+
+        state = self.state_class.from_string(
+            board_string.replace("White", "Black"))
+        self.assertEqual(state.aggregate_distance_promotion_friends(), 44)
+        self.assertEqual(state.aggregate_distance_promotion_foes(), 33)
 
 
     def test_count_unoccupied_promotion(self):
@@ -502,7 +508,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_unoccupied_promotion_friends(), 1)
         self.assertEqual(state.count_unoccupied_promotion_foes(), 2)
 
@@ -519,7 +525,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_unoccupied_promotion_friends(), 2)
         self.assertEqual(state.count_unoccupied_promotion_foes(), 1)
 
@@ -540,7 +546,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_defender_pieces_friends(), 6)
         self.assertEqual(state.count_defender_pieces_foes(), 5)
         self.assertEqual(state.count_attack_pawns_friends(), 2)
@@ -559,7 +565,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_defender_pieces_friends(), 5)
         self.assertEqual(state.count_defender_pieces_foes(), 6)
         self.assertEqual(state.count_attack_pawns_friends(), 1)
@@ -582,7 +588,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_center_pawns_friends(), 2)
         self.assertEqual(state.count_center_pawns_foes(), 3)
         self.assertEqual(state.count_center_kings_friends(), 1)
@@ -601,7 +607,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_center_pawns_friends(), 3)
         self.assertEqual(state.count_center_pawns_foes(), 2)
         self.assertEqual(state.count_center_kings_friends(), 2)
@@ -624,7 +630,7 @@ B+-+w+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_diagonalmain_pawns_friends(), 5)
         self.assertEqual(state.count_diagonalmain_pawns_foes(), 2)
         self.assertEqual(state.count_diagonalmain_kings_friends(), 1)
@@ -647,7 +653,7 @@ B+-+w+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_diagonalmain_pawns_friends(), 2)
         self.assertEqual(state.count_diagonalmain_pawns_foes(), 5)
         self.assertEqual(state.count_diagonalmain_kings_friends(), 0)
@@ -674,7 +680,7 @@ B+-+-+W+
 Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_loner_pawns_friends(), 2)
         self.assertEqual(state.count_loner_pawns_foes(), 1)
         self.assertEqual(state.count_loner_kings_friends(), 0)
@@ -693,7 +699,7 @@ B+-+-+W+
 White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_loner_pawns_friends(), 1)
         self.assertEqual(state.count_loner_pawns_foes(), 2)
         self.assertEqual(state.count_loner_kings_friends(), 2)
@@ -717,7 +723,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_holes_friends(), 3)
         self.assertEqual(state.count_holes_foes(), 1)
 
@@ -736,7 +742,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.count_holes_friends(), 1)
         self.assertEqual(state.count_holes_foes(), 3)
 
@@ -757,7 +763,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.pawn_corner_friends(), 1)
         self.assertEqual(state.pawn_corner_foes(), 0)
         self.assertEqual(state.king_corner_friends(), 0)
@@ -777,7 +783,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.pawn_corner_friends(), 0)
         self.assertEqual(state.pawn_corner_foes(), 1)
         self.assertEqual(state.king_corner_friends(), 0)
@@ -797,7 +803,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.pawn_corner_friends(), 0)
         self.assertEqual(state.pawn_corner_foes(), 0)
         self.assertEqual(state.king_corner_friends(), 0)
@@ -817,7 +823,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.pawn_corner_friends(), 0)
         self.assertEqual(state.pawn_corner_foes(), 0)
         self.assertEqual(state.king_corner_friends(), 1)
@@ -841,7 +847,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.triangle_friends(), 0)
         self.assertEqual(state.triangle_foes(), 1)
         self.assertEqual(state.oreo_friends(), 1)
@@ -861,7 +867,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.triangle_friends(), 1)
         self.assertEqual(state.triangle_foes(), 0)
         self.assertEqual(state.oreo_friends(), 0)
@@ -881,7 +887,7 @@ White's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.bridge_friends(), 1)
         self.assertEqual(state.bridge_foes(), 0)
         self.assertEqual(state.dog_friends(), 1)
@@ -901,7 +907,7 @@ Black's move""".strip()  # strip() removes the initial newline # (which is just
                          # for readability)
 
         # hole: empty squares adjacent to at least three pieces of the same color.
-        state = self.state_class.from_string(self.state_class, board_string)
+        state = self.state_class.from_string(board_string)
         self.assertEqual(state.bridge_friends(), 0)
         self.assertEqual(state.bridge_foes(), 1)
         self.assertEqual(state.dog_friends(), 0)
