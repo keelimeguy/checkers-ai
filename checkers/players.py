@@ -207,7 +207,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._responses.clear()  # clear responses to old moves
         options = sorted(self._state.actions(),
                          key=(lambda board: - self._evaluator(board)))
-        
+
         def check_inbox():
             if self._inbox.qsize() > 0:
                 raise self.StopPrecomputation()
@@ -245,11 +245,11 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 best_yet = act
         return best_yet
 
-        
-
 class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
     def __init__(self, opponent=0, is_B_client=False, verbose=False):
         super().__init__(opponent, is_B_client, verbose)
+        if self.client_is_white:
+            self._tell_server("")
 
     def recv_move(self, move):
         self.moves.append(move)  # not thread safe, but okay for correct use
