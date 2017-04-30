@@ -10,7 +10,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 parent_dir = os.path.realpath(os.path.join(current_dir, os.pardir))
 run_dir = os.path.realpath(os.path.join(current_dir, os.pardir, os.pardir))
 outfile = os.path.join(current_dir, "weights_temp.json")
-checkers_path = os.path.realpath(os.path.join(current_dir, os.pardir, "checkers_player.py"))
+checkers_path = os.path.realpath(os.path.join(current_dir, os.pardir, "heuristics.py"))
 
 with open(os.path.join(current_dir,"learning_weights.json"),"r") as f:
     weight_tests = json.load(f)
