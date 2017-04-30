@@ -19,7 +19,7 @@ def run_sp_game(weight_file=None):
     weight_file = weight_file or outfile
 
     return subprocess.check_output(
-        "python3 -m checkers.checkers_player -c 1 -w {}".format(outfile),
+        "python3 -m checkers.heuristics -c 1 -w {}".format(outfile),
         stderr=sys.stderr,  # subprocess.STDOUT,
         shell=True)
 

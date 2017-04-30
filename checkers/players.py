@@ -5,9 +5,9 @@ import queue
 
 import sys
 
-from checkers.state.bitboard_32_state import Bitboard32State
+from checkers.state import Bitboard32State
 from checkers.sam_server import SamServer
-from checkers.checkers_player import BoardEvaluator
+from checkers.heuristics import BoardEvaluator
 
 from checkers.game_api import GameOver, CheckersServerBase
 

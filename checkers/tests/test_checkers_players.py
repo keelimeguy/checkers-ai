@@ -1,6 +1,6 @@
 import unittest
 
-from checkers.checkers_player import BoardEvaluator
+from checkers.heuristics import BoardEvaluator
 from checkers.state import Bitboard32State as BoardState
 
 ENDGAME_BOARD = """+-+-+-+-
