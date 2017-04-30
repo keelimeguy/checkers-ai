@@ -84,7 +84,7 @@ def eval(state):
         if parameter == "Probability of Win": #This field used to track fitness of weight set
             continue
         weight = int(weights[parameter]["weight"])
-        score += weight * param_values[parameter]
+        score += weight * param_values[parameter]()
 
     if state.board.c_board.contents.plyr == state.player:
         return score
