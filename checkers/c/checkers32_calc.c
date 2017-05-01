@@ -254,7 +254,7 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
     // Start iterating through masks from 1st bit
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2]; // Will hold masks for the starting position of the piece before it moved
-    char outstr[999] = {0}; // Used to construct the list of available moves which will be returned through the argument str_moves
+    char outstr[OUTSTR_SIZE] = {0}; // Used to construct the list of available moves which will be returned through the argument str_moves
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         for (unsigned short t = 0; t < 3; t++) {
@@ -288,22 +288,22 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
                     if (j[n]>0 && j[n]<=32) {
                         if ((1<<(j[n]-1))&start_moves[0]) { // If there is a piece at the starting position and it is friendly
                             if (strlen(outstr)!=0)
-                                sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
-                            else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                snprintf(outstr, OUTSTR_SIZE, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                            else snprintf(outstr, OUTSTR_SIZE, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                         }
                     }
             }
         }
         pos = pos<<1;
     }
-    sprintf(str_moves, "%s", outstr);
+    snprintf(str_moves, OUTSTR_SIZE, "%s", outstr);
     return (king_moves[0]|normal_moves[0]|king_moves[1]);
 }
 
 static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, unsigned int k, unsigned int* k_moves, unsigned int* n_moves, char* previous_moves, unsigned short plyr) {
     unsigned int pos = 0x00000001;
     unsigned int start_moves[2];
-    char outstr[999] = {0};
+    char outstr[OUTSTR_SIZE] = {0};
     // Iterate over 32 bits
     for (unsigned short i = 1; i <= 32; i++) {
         for(unsigned short t = 0; t < 3; t++) {
@@ -356,22 +356,22 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                                 next_n_moves[0]&=~(friend&~(1<<(i-1)));
                                 next_jumps&=~(friend&~(1<<(i-1)));
                                 if ((t!=2 && next_jumps) || (t==2 && next_n_moves[0])) {
-                                    char newstr[999] = {0};
+                                    char newstr[OUTSTR_SIZE] = {0};
                                     if (previous_moves!=0 && strlen(previous_moves)!=0)
-                                        sprintf(newstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
+                                        snprintf(newstr, OUTSTR_SIZE, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
                                     else
-                                        sprintf(newstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                        snprintf(newstr, OUTSTR_SIZE, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                                     if(t==2)jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), k&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr, plyr);
                                     else jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|((1<<(i-1))&~(1<<(jumped_pos-1))), next_k_moves, next_n_moves, newstr, plyr);
                                 } else {
                                     if (previous_moves!=0 && strlen(previous_moves)!=0) {
                                         if (strlen(outstr)!=0)
-                                            sprintf(outstr, "%s, %s:(%hu:%hu)", outstr, previous_moves, pos_to_row(i), pos_to_col(i));
-                                        else sprintf(outstr, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
+                                            snprintf(outstr, OUTSTR_SIZE, "%s, %s:(%hu:%hu)", outstr, previous_moves, pos_to_row(i), pos_to_col(i));
+                                        else snprintf(outstr, OUTSTR_SIZE, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
                                     } else {
                                         if (strlen(outstr)!=0)
-                                            sprintf(outstr, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
-                                        else sprintf(outstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                            snprintf(outstr, OUTSTR_SIZE, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                        else snprintf(outstr, OUTSTR_SIZE, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                                     }
                                 }
                             }
@@ -383,10 +383,10 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
     }
     if (str_moves!=0 && strlen(str_moves)!=0) {
         if (outstr!=0 && strlen(outstr)!=0)
-            sprintf(str_moves, "%s, %s", str_moves, outstr);
+            snprintf(str_moves, OUTSTR_SIZE, "%s, %s", str_moves, outstr);
         else
-            sprintf(str_moves, "%s", str_moves);
+            snprintf(str_moves, OUTSTR_SIZE, "%s", str_moves);
     }
     else
-        sprintf(str_moves, "%s", outstr);
+        snprintf(str_moves, OUTSTR_SIZE, "%s", outstr);
 }

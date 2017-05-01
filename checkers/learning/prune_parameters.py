@@ -89,7 +89,7 @@ def generate_new_weightset_iter(weights_dict, dict_keys, product, output_dict):
 
 def generate_new_weightset(weights_dict):
     """Uses naive bayes algorithm to generate a new default set of weights
-    
+
     p(win|weights) = p(win) * product from i=0 to n of p(weight_i | win)/p(weight_i)"""
     result_product, result_output = generate_new_weightset_iter(weights_dict, list(weights_dict.keys()), 1, {})
     final_product = prob_win_total * result_product

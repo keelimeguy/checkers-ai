@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define OUTSTR_SIZE 999
+
 // Function prototypes
 unsigned short count_bits(unsigned int bits);
 void print_board(unsigned int b, unsigned int w, unsigned int k);

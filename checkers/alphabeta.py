@@ -31,7 +31,6 @@ class AlphaBeta(object):
     def ab_dfs(self, node, depth=None, alpha=-inf, beta=inf, maximum=True,
                side_effect=None):
         """Alpha beta DFS from the given node and return its value.
-
         If cache_quality_fudge is greater than zero, the answer is not
         guaranteed correct.
         """

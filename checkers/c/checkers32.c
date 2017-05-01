@@ -179,15 +179,15 @@ Move* Move_from_string(char* str) {
 char* player(Board* b) {
     char* str = malloc(6*sizeof(char));
     if (b->plyr)
-        sprintf(str, "White");
+        snprintf(str, 6, "White");
     else
-        sprintf(str, "Black");
+        snprintf(str, 6, "Black");
     str[5] = (char)0;
     return str;
 }
 
 Move** actions(Board* b, int* length) {
-    char moveStr[999]; // Sorry...
+    char moveStr[OUTSTR_SIZE]; // Sorry...
     moveStr[0] = 0; // Just in case...
 
     if (b->plyr)
