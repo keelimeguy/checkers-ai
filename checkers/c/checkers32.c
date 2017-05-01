@@ -179,9 +179,9 @@ Move* Move_from_string(char* str) {
 char* player(Board* b) {
     char* str = malloc(6*sizeof(char));
     if (b->plyr)
-        snprintf(str, 6, "White");
+        sprintf(str, "White");
     else
-        snprintf(str, 6, "Black");
+        sprintf(str, "Black");
     str[5] = (char)0;
     return str;
 }

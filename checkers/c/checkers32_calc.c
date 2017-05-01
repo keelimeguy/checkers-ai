@@ -288,7 +288,7 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
                     if (j[n]>0 && j[n]<=32) {
                         if ((1<<(j[n]-1))&start_moves[0]) { // If there is a piece at the starting position and it is friendly
                             if (strlen(outstr)!=0)
-                                snprintf(outstr, OUTSTR_SIZE, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                snprintf(outstr + strlen(outstr), OUTSTR_SIZE- strlen(outstr), ", (%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                             else snprintf(outstr, OUTSTR_SIZE, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                         }
                     }
@@ -366,11 +366,11 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                                 } else {
                                     if (previous_moves!=0 && strlen(previous_moves)!=0) {
                                         if (strlen(outstr)!=0)
-                                            snprintf(outstr, OUTSTR_SIZE, "%s, %s:(%hu:%hu)", outstr, previous_moves, pos_to_row(i), pos_to_col(i));
+                                            snprintf(outstr + strlen(outstr), OUTSTR_SIZE - strlen(outstr), ", %s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
                                         else snprintf(outstr, OUTSTR_SIZE, "%s:(%hu:%hu)", previous_moves, pos_to_row(i), pos_to_col(i));
                                     } else {
                                         if (strlen(outstr)!=0)
-                                            snprintf(outstr, OUTSTR_SIZE, "%s, (%hu:%hu):(%hu:%hu)", outstr, pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
+                                            snprintf(outstr + strlen(outstr), OUTSTR_SIZE - strlen(outstr), ", (%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                                         else snprintf(outstr, OUTSTR_SIZE, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                                     }
                                 }
@@ -383,10 +383,7 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
     }
     if (str_moves!=0 && strlen(str_moves)!=0) {
         if (outstr!=0 && strlen(outstr)!=0)
-            snprintf(str_moves, OUTSTR_SIZE, "%s, %s", str_moves, outstr);
-        else
-            snprintf(str_moves, OUTSTR_SIZE, "%s", str_moves);
-    }
-    else
+            snprintf(str_moves + strlen(str_moves), OUTSTR_SIZE - strlen(str_moves), ", %s", outstr);
+    } else
         snprintf(str_moves, OUTSTR_SIZE, "%s", outstr);
 }
