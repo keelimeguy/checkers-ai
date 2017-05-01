@@ -10,7 +10,6 @@ from threading import Thread
 
 from checkers.game_api import GameOver, CheckersClientBase
 
-
 CACHE_SIZE = 65536
 
 def param_lookup(board): #will be expanded later
@@ -121,9 +120,6 @@ class BoardEvaluator:
 
     def __call__(self, board):
         return self._evaluate(board)
-
-
-
 
 def alphabeta_search(node, player):
     ## Simple alpha-beta minimax search
