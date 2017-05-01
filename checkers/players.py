@@ -2,7 +2,7 @@
 
 from threading import Thread
 import queue
-from math import inf
+# from math import inf
 
 import sys
 
@@ -227,7 +227,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         if state is None:
             state = self._state
 
-        alpha = -inf
+        alpha = float('-inf')
         best_yet = None
         for act in sorted(state.actions(),
                           # lowest value for opponent first
@@ -248,7 +248,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
 class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
     def __init__(self, opponent=0, is_B_client=False, verbose=False):
         super().__init__(opponent, is_B_client, verbose)
-        if self.client_is_white:
+        if self._client_is_white:
             self._tell_server("")
 
     def recv_move(self, move):

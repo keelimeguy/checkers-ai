@@ -5,11 +5,12 @@ import os.path
 import random
 import time
 
-from math import inf
+# from math import inf
 
 from checkers.game_api import GameOver
 from checkers.players import SimpleMcCartneyServerPlayer
 
+weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights.json")
 
 if __name__ == "__main__":
     random.seed(time.time())
@@ -45,7 +46,7 @@ if __name__ == "__main__":
             # game.start()
             while True:
                 actions = game.board.list_actions()
-                bestScore = -inf
+                bestScore = float('-inf')
                 move_list = []
                 if len(actions) != 0:
                     if len(actions) == 1:
@@ -54,7 +55,7 @@ if __name__ == "__main__":
                             raise result
                     else:
                         for act in actions:
-                            score = alphabeta_search(game.board.result(act), game.client_is_white)
+                            score = alphabeta_search(game.board.result(act), game._client_is_white)
                             if float(score) > bestScore:
                                 bestScore = score
                                 move_list = [act]
@@ -74,9 +75,9 @@ if __name__ == "__main__":
                 game.show_game()
                 if inst.result == "Draw":
                     draws+=1
-                elif inst.result == ("White" if game.client_is_white else "Black"):
+                elif inst.result == ("White" if game._client_is_white else "Black"):
                     wins+=1
-                elif inst.result == ("Black" if game.client_is_white else "White"):
+                elif inst.result == ("Black" if game._client_is_white else "White"):
                     losses+=1
                 else:
                     print("Unknown result? : " + inst.result)
