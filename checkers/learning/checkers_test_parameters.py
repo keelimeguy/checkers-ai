@@ -34,10 +34,6 @@ for parameter in weight_tests:
         with open(os.path.join(parent_dir, "weights.json"), "r") as f:
             active_weights = json.load(f)
         active_weights[parameter] = weight
-        # if parameter in active_weights:
-            # active_weights[parameter]["weight"] = weight
-        # else:
-            # active_weights[parameter] = {"weight" : weight, "wins" : 0, "total" : 0}
         with open(outfile, "w") as f:
             json.dump(active_weights, f)
 
@@ -73,8 +69,8 @@ for parameter in weight_tests:
                     if result_line == b"False":
                         losses = 1
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
-        # weight_tests[parameter][str(weight)][0] += wins
-        # weight_tests[parameter][str(weight)][1] += wins + draws + losses
+        weight_tests[parameter][str(weight)][0] += wins
+        weight_tests[parameter][str(weight)][1] += wins + draws + losses
 
         break
 
