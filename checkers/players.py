@@ -234,12 +234,12 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                     print("stopped precomputing", file=sys.stderr)
                 # block if necessary because that would mean we finished
                 # precomputation before our opponent made a move
-                print("waiting for them", file=sys.stderr)
+                # print("waiting for them", file=sys.stderr)
                 # while True:
                 enemy_move = self.safe_get_queue_blocking(self._inbox).copy()
 
-                print("Done waiting!", file=sys.stderr)
-                print(enemy_move, file=sys.stderr)
+                # print("Done waiting!", file=sys.stderr)
+                # print(enemy_move, file=sys.stderr)
                 self._state = self._state.result(enemy_move)
                 if enemy_move in self._responses:
                     move = self._responses[enemy_move]
@@ -258,7 +258,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 return some_queue.get(block=True, timeout=0.5)
             except queue.Empty:
                 if self._game_over_event.is_set():
-                    print("{} ending soon!".format(self.name), file=sys.stderr)
+                    # print("{} ending soon!".format(self.name), file=sys.stderr)
                     raise self.StopThreadExecution()
 
     def make_move(self):
@@ -293,7 +293,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         for act in sorted(state.actions(),
                           # lowest value for opponent first
                           key=(lambda a: self._evaluator(state.result(a)))):
-            print("Considering {}".format(str(act)), file=sys.stderr)
+            # print("Considering {}".format(str(act)), file=sys.stderr)
             if best_yet is None:
                 # almost redundant, but keeps us from stalling if we're losing
                 best_yet = [act]
@@ -308,9 +308,10 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 best_yet.append(act)
         index = random.randint(0, len(best_yet)-1) if best_yet is not None and len(best_yet)>1 else 0
         chosen = best_yet[index] if best_yet is not None else None
-        print("Chose a move {}".format(chosen))
+        # print("Chose a move {}".format(chosen))
         if not chosen:
-            print(state.actions())
+            print(next(state.actions(), None), file=sys.stderr)
+            raise ValueError("No actions: ", str(state))
         return chosen
 
 class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
@@ -406,6 +407,8 @@ class LocalServerPlayer(CheckersServerBase):
             result= "Black" if self._board.player() == "White" else "White"
         elif foes is 0:
             result = self._board.player()
+        elif not next(self._board.actions(), None):
+            result= "Black" if self._color == "White" else "White"
         elif self._moves_since_piece_taken >= 100:
             result = "Draw"
 

@@ -23,7 +23,7 @@ if __name__ == '__main__':
                      "count_foes_kings" : -5}
 
     # server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
-    server = LocalServerPlayer(color="Black", verbose=args.verbose, weights=weights_teach, depth=5)
+    server = LocalServerPlayer(color="Black", verbose=args.verbose, weights=weights_teach, depth=2)
     client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
     # client = MinMaxClientPlayer(weights=weights_learn, depth=2)
 
