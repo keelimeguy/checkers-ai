@@ -59,14 +59,19 @@ class CheckersGame(Thread):
                 self.step()
             except GameOver as g:
                 #  maybe tell both players who won and how
+                self.cleanup()
                 self.result = g.result
-            finally:
-                for player in [self.benchwarmer_player, self.next_player]:
-                    if isinstance(player, CheckersClientBase):
-                        # make it stop executing
-                        player.tell_game_over()
                 return
+            except:
+                self._cleanup()
+                raise
 
+    def _cleanup(self):
+        """Make everybody stop executing"""
+        for player in [self.benchwarmer_player, self.next_player]:
+            if isinstance(player, CheckersClientBase):
+                # make it stop executing
+                player.tell_game_over()
 
 class CheckersPlayerBase(object):
     """This is essentially an interface. See https://pymotw.com/3/abc/
