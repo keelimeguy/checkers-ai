@@ -28,6 +28,7 @@ class Bitboard32State(CheckersGameState):
                 state32_lib.Move_init(self.move, 0)
 
         def __str__(self):
+            assert isinstance(self.move, POINTER(MOVE))
             ptr = state32_lib.Move_to_string(self.move)
             string = cast(ptr, c_char_p).value.decode("utf-8")
             state32_lib.free(ptr)
@@ -35,6 +36,9 @@ class Bitboard32State(CheckersGameState):
 
         def __del__(self):
             state32_lib.Move_destroy(self.move)
+
+        def copy(self):
+            return type(self)(p_move=state32_lib.Move_copy(self.move))
 
         @classmethod
         def from_string(cls, movestr):
@@ -51,6 +55,11 @@ class Bitboard32State(CheckersGameState):
 
         def __gt__(self, other):
             return self.move.contents.length > other.move.contents.length
+
+        def __hash__(self):
+            assert isinstance(self.move.contents.length, int)
+            return sum(self.move.contents.route[i] * 3**i
+                       for i in range(self.move.contents.length))
 
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board
@@ -70,6 +79,19 @@ class Bitboard32State(CheckersGameState):
 
     def __del__(self):
         state32_lib.Board_destroy(self.c_board)
+
+    def __eq__(self, other):
+        return (self.c_board.contents.w == other.c_board.contents.w
+                and self.c_board.contents.b == other.c_board.contents.b
+                and self.c_board.contents.k == other.c_board.contents.k
+                and self.c_board.contents.plyr == other.c_board.contents.plyr)
+
+    def __hash__(self):
+        # return (((self.c_board.contents.w ^ self.c_board.contents.b)<<32)
+        #         | (self.c_board.contents.k ^ self.c_board.contents.plyr))
+        return (((self.c_board.contents.w % (self.c_board.contents.b | 3))
+                 ^ (self.c_board.contents.b % (self.c_board.contents.w | 3)))
+                + self.c_board.contents.k + self.c_board.contents.plyr)
 
     @classmethod
     def from_string(cls, board_string=FRESH_BOARD_REPR):
@@ -95,9 +117,9 @@ class Bitboard32State(CheckersGameState):
         state32_lib.Move_list_destroy(movelist, numMoves.value)
         return moves
 
-    def result(self, move=None):
+    def result(self, move):
         if not move:
-            return self
+            raise ValueError("Not a move: {}".format(move))
         new_board = state32_lib.result(self.c_board, move.move)
         return Bitboard32State(0, 0, 0, False, new_board)
 

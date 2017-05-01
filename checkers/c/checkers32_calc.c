@@ -10,8 +10,8 @@
 // (probably a way to combine white and black specific functions together, as they are incredibly similar)
 static void white_moves_helper(unsigned int* moves, unsigned int w_mask, unsigned int k_mask);
 static void white_double_moves(unsigned int* moves, unsigned int w_mask, unsigned int k_mask);
-static unsigned int black_moves_helper(unsigned int* moves, unsigned int b_mask, unsigned int k_mask);
-static unsigned int black_double_moves(unsigned int* moves, unsigned int b_mask, unsigned int k_mask);
+static void black_moves_helper(unsigned int* moves, unsigned int b_mask, unsigned int k_mask);
+static void black_double_moves(unsigned int* moves, unsigned int b_mask, unsigned int k_mask);
 static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigned int friend, unsigned int k, unsigned short jump_detect_only, unsigned int* k_moves, unsigned int* n_moves, unsigned short plyr);
 static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, unsigned int k, unsigned int* k_moves, unsigned int* n_moves, char* previous_moves, unsigned short plyr);
 
@@ -149,7 +149,7 @@ static void white_double_moves(unsigned int* moves, unsigned int w_mask, unsigne
     moves[1] |=  (w_mask & k_mask & 0x00777777)<<9; // 0x00777777 masks positions that move double diagonal down-right
 }
 
-static unsigned int black_moves_helper(unsigned int* moves, unsigned int b_mask, unsigned int k_mask) {
+static void black_moves_helper(unsigned int* moves, unsigned int b_mask, unsigned int k_mask) {
     // In 32-bit array representation, for odd numbered rows:
     // diagonal down-left is +4 positions and down-right is +5 positions.
     moves[0] =  (b_mask & 0x0f0f0f0f)<<4; // 0x0f0f0f0f masks odd-row positions that move diagonal down-left
@@ -169,7 +169,7 @@ static unsigned int black_moves_helper(unsigned int* moves, unsigned int b_mask,
     moves[1] |=  (b_mask & k_mask & 0xf0f0f0f0)>>4; // 0xf0f0f0f0 masks even-row positions that move diagonal up-right
 }
 
-static unsigned int black_double_moves(unsigned int* moves, unsigned int b_mask, unsigned int k_mask) {
+static void black_double_moves(unsigned int* moves, unsigned int b_mask, unsigned int k_mask) {
     // In 32-bit array representation:
     // diagonal down-left is +7 positions and down-right is +9 positions.
     moves[0] =  (b_mask & 0x00eeeeee)<<7; // 0x00eeeeee masks positions that move double diagonal down-left
@@ -362,7 +362,7 @@ static void jump_handle(char* str_moves, unsigned int foe, unsigned int friend, 
                                     else
                                         sprintf(newstr, "(%hu:%hu):(%hu:%hu)", pos_to_row(j[n]), pos_to_col(j[n]), pos_to_row(i), pos_to_col(i));
                                     if(t==2)jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), k&~(1<<(jumped_pos-1)), (unsigned int[2]){0,0}, next_n_moves, newstr, plyr);
-                                    else jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|(1<<(i-1))&~(1<<(jumped_pos-1)), next_k_moves, next_n_moves, newstr, plyr);
+                                    else jump_handle(str_moves, foe&~(1<<(jumped_pos-1)), (friend&~(1<<(j[n]-1)))|(1<<(i-1)), (k&~(1<<(j[n]-1)))|((1<<(i-1))&~(1<<(jumped_pos-1))), next_k_moves, next_n_moves, newstr, plyr);
                                 } else {
                                     if (previous_moves!=0 && strlen(previous_moves)!=0) {
                                         if (strlen(outstr)!=0)

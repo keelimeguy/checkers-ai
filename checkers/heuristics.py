@@ -1,15 +1,10 @@
 #!/usr/bin/env python3
 
 import sys
-import argparse
 import functools
-import random
-import time
-import json
-import sys
-import os.path
-import gc
+import os
 import queue
+
 from collections import namedtuple
 from threading import Thread
 
@@ -19,70 +14,11 @@ except ImportError:
     inf = float('inf')
 
 from checkers.game_api import GameOver, CheckersClientBase
-from checkers.players import SimpleMcCartneyServerPlayer
-
 
 CACHE_SIZE = 65536
 
-weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights.json")
-
-def param_lookup(board): #will be expanded later
-    # I have a better plan, I think.  TODO delete this
-    return {'friend_count' : board.count_friends,
-            'foe_count' : board.count_foes,
-            'friend_kings' : board.count_friends_kings,
-            'foe_kings' : board.count_foes_kings,
-            'friend_pawns' : board.count_friends_pawns,
-            'foe_pawns' : board.count_foes_pawns,
-            'safe_friend_pawns': board.count_safe_friends_pawns,
-            'safe_foe_pawns' : board.count_safe_foes_pawns,
-            'safe_friend_kings' : board.count_safe_friends_kings,
-            'safe_foe_kings' : board.count_safe_foes_kings,
-            'movable_friend_pawns' : board.count_movable_friends_pawns,
-            'movable_foe_pawns' : board.count_movable_foes_pawns,
-            'movable_friend_kings' : board.count_movable_friends_kings,
-            'movable_foe_kings' : board.count_safe_foes_kings,
-            'friend_distance_promotion' : board.aggregate_distance_promotion_foes,
-            'foe_distance_promotion' : board.aggregate_distance_promotion_foes,
-            'unoccupied_promotion_friends' : board.count_unoccupied_promotion_friends,
-            'unoccupied_promotion_foes' : board.count_unoccupied_promotion_foes,
-            'defender_friends' : board.count_defender_pieces_friends,
-            'defender_foes' : board.count_defender_pieces_foes,
-            'attack_pawn_friends' : board.count_attack_pawns_friends,
-            'attack_pawn_foes' : board.count_attack_pawns_foes,
-            'center_pawn_friends' : board.count_center_pawns_friends,
-            'center_pawn_foes' : board.count_center_pawns_foes,
-            'center_king_friends' : board.count_center_kings_friends,
-            'center_king_foes' : board.count_center_kings_foes,
-            'diagonalmain_pawn_friends' : board.count_diagonalmain_pawns_friends,
-            'diagonalmain_pawn_foes' : board.count_diagonalmain_pawns_foes,
-            'diagonalmain_king_friends' : board.count_diagonalmain_kings_friends,
-            'diagonalmain_king_foes' : board.count_diagonalmain_kings_foes,
-            'diagonaldouble_pawn_friends' : board.count_diagonaldouble_pawns_friends,
-            'diagonaldouble_pawn_foes' : board.count_diagonaldouble_pawns_foes,
-            'diagonaldouble_king_friends' : board.count_diagonaldouble_kings_friends,
-            'diagonaldouble_king_foes' : board.count_diagonaldouble_kings_foes,
-            'loner_pawn_friends' : board.count_loner_pawns_friends,
-            'loner_pawn_foes' : board.count_loner_pawns_foes,
-            'loner_king_friends' : board.count_loner_kings_friends,
-            'loner_king_foes' : board.count_loner_kings_foes,
-            'holes_friends' : board.count_holes_friends,
-            'holes_foes' : board.count_holes_foes,
-            'triangle_friends' : board.triangle_friends,
-            'triangle_foes' : board.triangle_foes,
-            'oreo_friends' : board.oreo_friends,
-            'oreo_foes': board.oreo_foes,
-            'bridge_friends' : board.bridge_friends,
-            'bridge_foes' : board.bridge_foes,
-            'dog_friends' : board.dog_friends,
-            'dog_foes' : board.dog_foes,
-            'corner_pawn_friends' : board.pawn_corner_friends,
-            'corner_pawn_foes' : board.pawn_corner_foes,
-            'corner_king_friends' : board.king_corner_friends,
-            'corner_king_foes' : board.king_corner_foes}
-
-@functools.lru_cache(CACHE_SIZE)
-def eval(board, player):
+# @functools.lru_cache(CACHE_SIZE)
+def eval(board, player, weights):
     score = 0
     param_values = param_lookup(board)
     for parameter in weights:
@@ -108,7 +44,7 @@ class BoardEvaluator:
     my_board_value = be(my_board)  #  invokes the __call__ method
     my_other_board_value = be(my_other_board)
     """
-    def __init__(self, weights, cache_size=100):
+    def __init__(self, weights, cache_size=100, sanity_check=True):
         """weights: should map names of functions to weights on those functions.
         (Functions with weight 0 are optimized away.)
 
@@ -117,12 +53,17 @@ class BoardEvaluator:
         """
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
-        if not self._weights:
+        if not self._weights and sanity_check:
             print("{} instantiated with no nonzero weights".format(type(self)),
                   file=sys.stderr)
         # note this is an instance property, cache included
         @functools.lru_cache(cache_size)
         def _evaluate(board):
+            # return +/- infinity if the game is over
+            if board.count_friends() == 0:
+                return -inf
+            elif board.count_foes() == 0:
+                return inf
             return sum(weights[param] * getattr(board, param)()
                        for param in self._weights)
         self._evaluate = _evaluate
@@ -130,10 +71,7 @@ class BoardEvaluator:
     def __call__(self, board):
         return self._evaluate(board)
 
-
-
-
-def alphabeta_search(node, player):
+def alphabeta_search(node, player, weights):
     ## Simple alpha-beta minimax search
     ## Stats out of 10 games, depth = 4:
     ##   9w:1d:0l
@@ -143,7 +81,7 @@ def alphabeta_search(node, player):
     # return alphabeta(node, depth=4, alpha=-inf, beta=inf, maximum=True)
 
     ## Improved alpha-beta minimax search?
-    return alphabeta_dfs(node, player, depth=2, alpha=-inf, beta=inf,
+    return alphabeta_dfs(node, player, weights, depth=2, alpha=-inf, beta=inf,
                   maximum=True, cache=None, evaluator=eval)
 
     ## Iterative deepening using informed move order in deeper searches
@@ -223,7 +161,7 @@ def alphabeta_search(node, player):
 #                                "depth"))
 
 
-def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
+def alphabeta_dfs(node, player, weights, depth=7, alpha=-inf, beta=inf,
                   maximum=True, cache=None, evaluator=None):
     """This is a work in progress. Beware. Committed at 2 AM."""
     if cache and (node, maximum) in cache:
@@ -238,7 +176,7 @@ def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
 
     # TODO make unit tests for this
     if depth == 0 or node.count_friends() == 0 or node.count_foes() == 0:
-        return evaluator(node, player)
+        return evaluator(node, player, weights)
     if maximum:
         val = entry.val if entry else -inf
         choose = max
@@ -249,7 +187,7 @@ def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
         if beta <= alpha:
             break
         child = node.result(action)
-        val = choose(val, alphabeta_dfs(child, player, depth=(depth-1), alpha=alpha,
+        val = choose(val, alphabeta_dfs(child, player, weights, depth=(depth-1), alpha=alpha,
                                         beta=beta, maximum=(not maximum),
                                         cache=cache, evaluator=evaluator))
         if maximum:
@@ -260,92 +198,3 @@ def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
 
     # I guess cache val as either alpha or beta, no?
     return val
-
-
-
-if __name__ == "__main__":
-    random.seed(time.time())
-    parser = argparse.ArgumentParser(description='Plays a given number of games with a given opponent using the given user number.')
-    parser.add_argument('-o', '--opponent', type=int, default=0, help='The opponent user number.')
-    parser.add_argument('-u', '--user', type=int, default=5, help='Your user number (5 or 6).')
-    parser.add_argument('-c', '--count', type=int, default=1, help='Number of consecutive games to play.')
-    parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
-    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
-    args = parser.parse_args()
-    final = ""
-    error = False
-    wins = 0
-    losses = 0
-    draws = 0
-    num = 0
-    total_time = 0
-    max_time = 0
-    min_time = 0
-
-    # How many times to run a game
-    count = args.count
-
-    global weights
-    weights = json.load(open(args.weights, 'r'))
-
-    error = False
-    while not error and count>0:
-        start_time = time.time()
-        print("Start {}:".format(count))
-        game = SimpleMcCartneyServerPlayer(args.opponent, args.user==6, 1 if args.verbose else 0)
-        try:
-            # game.start()
-            while True:
-                actions = game.board.list_actions()
-                bestScore = -inf
-                move_list = []
-                if len(actions) != 0:
-                    if len(actions) == 1:
-                        result = game.recv_move(actions[0])
-                        if isinstance(result, GameOver):
-                            raise result
-                    else:
-                        for act in actions:
-                            score = alphabeta_search(game.board.result(act), game.client_is_white)
-                            if float(score) > bestScore:
-                                bestScore = score
-                                move_list = [act]
-                            elif score == bestScore:
-                                move_list.append(act)
-                        index = random.randint(0, len(move_list)-1)
-                        result = game.recv_move(move_list[index])
-                        if isinstance(result, GameOver):
-                            raise result
-                else:
-                    error = True
-                    print("Error: No actions available.")
-                    break
-        except GameOver as inst:
-            print("GameOver Exception: ", inst.result, file=sys.stderr)
-            if inst.result:
-                game.show_game()
-                if inst.result == "Draw":
-                    draws+=1
-                elif inst.result == ("White" if game.client_is_white else "Black"):
-                    wins+=1
-                elif inst.result == ("Black" if game.client_is_white else "White"):
-                    losses+=1
-                else:
-                    print("Unknown result? : " + inst.result)
-            else:
-                error = True
-        time_diff = time.time() - start_time
-        if time_diff > max_time:
-            max_time = time_diff
-        if time_diff < min_time or num == 0:
-            min_time = time_diff
-        total_time+=time_diff
-        print("Finished in {}s\n".format(time_diff))
-        num+=1
-        count-=1
-
-        game = None
-        gc.collect()
-
-    print("eval cache: ", eval.cache_info())
-    print("Stats: {}w:{}d:{}l\navg time = {}s\nmax time = {}s\nmin time = {}s".format(wins, draws, losses, total_time/num, max_time, min_time))

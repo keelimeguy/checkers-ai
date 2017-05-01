@@ -3,7 +3,7 @@
 """Unit tests for game state representations"""
 from __future__ import print_function  # in case you're using python2
 import unittest
-
+import gc
 
 # put a line to import your game state implementation here
 from ..bitboard_32_state import Bitboard32State
@@ -46,6 +46,46 @@ class CheckersGameStateTestCase(unittest.TestCase):
         """
         self.assertEqual(str(self.state_class.from_string(FRESH_BOARD_REPR)),
                          FRESH_BOARD_REPR)
+
+    def test_board_equality(self):
+        """Make sure boards are testable for equality"""
+        self.assertEqual(self.state_class.from_string(FRESH_BOARD_REPR),
+                         self.state_class.from_string(FRESH_BOARD_REPR))
+
+    def test_board_hashing(self):
+        initial = self.state_class.from_string(FRESH_BOARD_REPR)
+        self.assertEqual(hash(initial),
+                         hash(self.state_class.from_string(FRESH_BOARD_REPR)))
+
+        hashes = {hash(initial)}
+        count = 1
+        for move in initial.list_actions():
+            count += 1
+            hashes.add(hash(initial.result(move)))
+
+        self.assertEqual(count, len(hashes))
+
+    def test_move_hashing(self):
+        """Make sure moves are hashable and whatever"""
+        for move in self.state_class().actions():
+            self.assertIsInstance(hash(move), int)
+
+    def test_some_segfaults(self):
+        state = self.state_class()
+        for move in state.actions():
+            self.assertIsInstance(move, self.state_class.Move)
+            result = state.result(move)
+            state = None
+            gc.collect()
+            # self.assertIsInstance(state, self.state_class)
+            self.assertIsInstance(move, self.state_class.Move)
+            self.assertIsInstance(str(move), str)
+            self.assertIsInstance(result, self.state_class)
+            break  # loop fails after first iteration by design
+
+        state = self.state_class()
+        for move in sorted(state.actions(), key=hash):
+            self.assertIsInstance(str(move), str)
 
     def test_initial_state_player(self):
         """Black goes first"""
