@@ -60,6 +60,11 @@ class CheckersGame(Thread):
             except GameOver as g:
                 #  maybe tell both players who won and how
                 self.result = g.result
+            finally:
+                for player in [self.benchwarmer_player, self.next_player]:
+                    if isinstance(player, CheckersClientBase):
+                        # make it stop executing
+                        player.tell_game_over()
                 return
             except:
                 print("OTHER ERROR", file=sys.stderr)
@@ -81,6 +86,7 @@ class CheckersPlayerBase(object):
     def make_move(self):
         """Return a real zinger of a move"""
 
+
 class CheckersServerBase(CheckersPlayerBase):
     """Checkers servers choose who goes first"""
 
@@ -97,6 +103,9 @@ class CheckersClientBase(CheckersPlayerBase):
     def set_going_first(self, go_first):
         """Pass True if this client has the first move"""
 
+    @abc.abstractmethod
+    def tell_game_over(self):
+        """Call this when you want the thread to stop executing after the game"""
 
 
 
