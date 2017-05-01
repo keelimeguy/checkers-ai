@@ -187,9 +187,18 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         if go_first:
             print("This shit's happening", file=sys.stderr)
             move = self._choose_move()
+            print("asdfasdf", file=sys.stderr)
             self._outbox.put(move, block=False)
-            self._state = self._state.result(move)
-            print("move: {}".format(move), file=sys.stderr)
+            print("asdfasdfasdf", file=sys.stderr)
+            print(type(move), file=sys.stderr)
+            print(move.move, file=sys.stderr)
+            interim  = self._state.result(move)
+            print(move.move, file=sys.stderr)
+            print("again {}".format(type(move)))
+            self._state = interim
+            print("asdfasdfasdfasdf", file=sys.stderr)
+            print(type(move))  # segfaults
+            print("move: {}".format(str(move)), file=sys.stderr)
             print("But it wasn't the holdup", file=sys.stderr)
 
         while True:

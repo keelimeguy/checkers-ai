@@ -28,6 +28,7 @@ class Bitboard32State(CheckersGameState):
                 state32_lib.Move_init(self.move, 0)
 
         def __str__(self):
+            assert isinstance(self.move, POINTER(MOVE))
             ptr = state32_lib.Move_to_string(self.move)
             string = cast(ptr, c_char_p).value.decode("utf-8")
             state32_lib.free(ptr)
@@ -113,9 +114,9 @@ class Bitboard32State(CheckersGameState):
         state32_lib.Move_list_destroy(movelist, numMoves.value)
         return moves
 
-    def result(self, move=None):
+    def result(self, move):
         if not move:
-            return self
+            raise ValueError("Not a move: {}".format(move))
         new_board = state32_lib.result(self.c_board, move.move)
         return Bitboard32State(0, 0, 0, False, new_board)
 

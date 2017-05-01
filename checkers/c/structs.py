@@ -23,11 +23,13 @@ state32_lib.actions.restype = POINTER(POINTER(MOVE))
 state32_lib.result.restype = POINTER(BOARD)
 state32_lib.Board_alloc.restype = POINTER(BOARD)
 state32_lib.Move_alloc.restype = POINTER(MOVE)
+state32_lib.Move_copy.argtypes = [POINTER(MOVE)]
 state32_lib.Move_copy.restype = POINTER(MOVE)
 state32_lib.Board_from_string.restype = POINTER(BOARD)
 state32_lib.Move_from_string.restype = POINTER(MOVE)
 state32_lib.Board_to_string.restype = c_void_p
 state32_lib.Move_to_string.restype = c_void_p
 state32_lib.player.restype = c_void_p
+state32_lib.result.argtypes = [POINTER(BOARD), POINTER(MOVE)]
 
 samserver_lib.send_move.restype = c_void_p

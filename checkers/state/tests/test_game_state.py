@@ -3,7 +3,7 @@
 """Unit tests for game state representations"""
 from __future__ import print_function  # in case you're using python2
 import unittest
-
+import gc
 
 # put a line to import your game state implementation here
 from ..bitboard_32_state import Bitboard32State
@@ -69,6 +69,19 @@ class CheckersGameStateTestCase(unittest.TestCase):
         """Make sure moves are hashable and whatever"""
         for move in self.state_class().actions():
             self.assertIsInstance(hash(move), int)
+
+    def test_some_segfaults(self):
+        state = self.state_class()
+        for move in state.actions():
+            self.assertIsInstance(move, self.state_class.Move)
+            result = state.result(move)
+            state = None
+            gc.collect()
+            # self.assertIsInstance(state, self.state_class)
+            self.assertIsInstance(move, self.state_class.Move)
+            self.assertIsInstance(str(move), str)
+            self.assertIsInstance(result, self.state_class)
+            break  # loop fails after first iteration by design
 
     def test_initial_state_player(self):
         """Black goes first"""
