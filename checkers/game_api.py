@@ -66,9 +66,6 @@ class CheckersGame(Thread):
                         # make it stop executing
                         player.tell_game_over()
                 return
-            except:
-                print("OTHER ERROR", file=sys.stderr)
-                raise
 
 
 class CheckersPlayerBase(object):
