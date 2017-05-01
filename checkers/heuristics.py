@@ -73,8 +73,8 @@ def param_lookup(board): #will be expanded later
             'corner_king_friends' : board.king_corner_friends,
             'corner_king_foes' : board.king_corner_foes}
 
-@functools.lru_cache(CACHE_SIZE)
-def eval(board, player):
+# @functools.lru_cache(CACHE_SIZE)
+def eval(board, player, weights):
     score = 0
     param_values = param_lookup(board)
     for parameter in weights:
@@ -128,7 +128,7 @@ class BoardEvaluator:
     def __call__(self, board):
         return self._evaluate(board)
 
-def alphabeta_search(node, player):
+def alphabeta_search(node, player, weights):
     ## Simple alpha-beta minimax search
     ## Stats out of 10 games, depth = 4:
     ##   9w:1d:0l
@@ -138,7 +138,7 @@ def alphabeta_search(node, player):
     # return alphabeta(node, depth=4, alpha=-inf, beta=inf, maximum=True)
 
     ## Improved alpha-beta minimax search?
-    return alphabeta_dfs(node, player, depth=2, alpha=-inf, beta=inf,
+    return alphabeta_dfs(node, player, weights, depth=2, alpha=-inf, beta=inf,
                   maximum=True, cache=None, evaluator=eval)
 
     ## Iterative deepening using informed move order in deeper searches
@@ -218,7 +218,7 @@ def alphabeta_search(node, player):
 #                                "depth"))
 
 
-def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
+def alphabeta_dfs(node, player, weights, depth=7, alpha=-inf, beta=inf,
                   maximum=True, cache=None, evaluator=None):
     """This is a work in progress. Beware. Committed at 2 AM."""
     if cache and (node, maximum) in cache:
@@ -233,7 +233,7 @@ def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
 
     # TODO make unit tests for this
     if depth == 0 or node.count_friends() == 0 or node.count_foes() == 0:
-        return evaluator(node, player)
+        return evaluator(node, player, weights)
     if maximum:
         val = entry.val if entry else -inf
         choose = max
@@ -244,7 +244,7 @@ def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
         if beta <= alpha:
             break
         child = node.result(action)
-        val = choose(val, alphabeta_dfs(child, player, depth=(depth-1), alpha=alpha,
+        val = choose(val, alphabeta_dfs(child, player, weights, depth=(depth-1), alpha=alpha,
                                         beta=beta, maximum=(not maximum),
                                         cache=cache, evaluator=evaluator))
         if maximum:

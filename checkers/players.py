@@ -256,6 +256,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
 class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
     def __init__(self, opponent=0, is_B_client=False, verbose=False):
         super().__init__(opponent, is_B_client, verbose)
+        self._client_is_white = self.server.connect(verbose=self._server_verbose)
         if self._client_is_white:
             self._tell_server("")
 
