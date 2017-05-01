@@ -37,6 +37,9 @@ class Bitboard32State(CheckersGameState):
         def __del__(self):
             state32_lib.Move_destroy(self.move)
 
+        def copy(self):
+            return type(self)(p_move=state32_lib.Move_copy(self.move))
+
         @classmethod
         def from_string(cls, movestr):
             """Convert a move to a string.

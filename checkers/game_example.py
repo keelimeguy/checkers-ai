@@ -8,7 +8,7 @@ if __name__ == '__main__':
                "count_friends_kings" : 2,
                "count_foes_kings" : -2}
 
-    server = LocalServerPlayer(verbose=True, weights=weights, depth=2)
+    server = LocalServerPlayer(color="Black", verbose=True, weights=weights, depth=2)
     client = PoliteMinMaxClientPlayer(weights=weights, depth=2)
     server.start()
     client.start()

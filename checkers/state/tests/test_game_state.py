@@ -83,6 +83,10 @@ class CheckersGameStateTestCase(unittest.TestCase):
             self.assertIsInstance(result, self.state_class)
             break  # loop fails after first iteration by design
 
+        state = self.state_class()
+        for move in sorted(state.actions(), key=hash):
+            self.assertIsInstance(str(move), str)
+
     def test_initial_state_player(self):
         """Black goes first"""
         fresh_board = self.state_class()

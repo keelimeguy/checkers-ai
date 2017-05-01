@@ -3,6 +3,7 @@
 import queue
 import sys
 import random
+import time
 
 from threading import Thread
 
@@ -37,7 +38,6 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self.queue_to_send = queue.Queue(1)  # moves to send to the server
         self.queue_replies = queue.Queue(1)  # moves the server sends to us
 
-
     def recv_move(self, move):
         self.moves.append(move)  # not thread safe, but okay for correct use
         self.board = self.board.result(move)
@@ -54,15 +54,19 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                 "recv_move ({}) called on a {} with "
                 "nonzero pending messages from server".format(str(move), type(self)))
 
-        self.queue_to_send.put(str(move), block=False)
+        self.queue_to_send.put(str(move.copy()), block=False)
 
     def make_move(self):
         """Make a move (blocking)"""
         result = self.queue_replies.get(block=True)
         if isinstance(result, GameOver):
+            self._tell_thread_to_stop()
             raise result
         else:
             return result
+
+    def _tell_thread_to_stop(self):
+        pass  # TODO
 
     def going_first(self):
         if self._client_is_white is None:
@@ -79,7 +83,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
 
         while True:
             self.queue_replies.put(
-                self._tell_server(self.queue_to_send.get(block=True)),
+                self._tell_server(self.queue_to_send.get(block=True)).copy(),
                 block=False)  # raise exception if queue is full
 
     def _tell_server(self, move):
@@ -177,7 +181,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._go_first_q.put(go_first, block=False)
 
     def recv_move(self, move):
-        self._inbox.put(move,
+        self._inbox.put(move.copy(),
                         block=False)  # useful error if queue is Full
 
     def run(self):
@@ -185,21 +189,21 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         go_first = self._go_first_q.get(block=True)
 
         if go_first:
-            print("This shit's happening", file=sys.stderr)
+            # print("This shit's happening", file=sys.stderr)
             move = self._choose_move()
-            print("asdfasdf", file=sys.stderr)
-            self._outbox.put(move, block=False)
-            print("asdfasdfasdf", file=sys.stderr)
-            print(type(move), file=sys.stderr)
-            print(move.move, file=sys.stderr)
+            # print("asdfasdf", file=sys.stderr)
+            self._outbox.put(move.copy(), block=False)
+            # print("asdfasdfasdf", file=sys.stderr)
+            # print(type(move), file=sys.stderr)
+            # print(move.move, file=sys.stderr)
             interim  = self._state.result(move)
-            print(move.move, file=sys.stderr)
-            print("again {}".format(type(move)))
+            # print(move.move, file=sys.stderr)
+            # print("again {}".format(type(move)))
             self._state = interim
-            print("asdfasdfasdfasdf", file=sys.stderr)
-            print(type(move))  # segfaults
-            print("move: {}".format(str(move)), file=sys.stderr)
-            print("But it wasn't the holdup", file=sys.stderr)
+            # print("asdfasdfasdfasdf", file=sys.stderr)
+            # print(type(move))  # segfaults
+            # print("move: {}".format(str(move)), file=sys.stderr)
+            # print("But it wasn't the holdup", file=sys.stderr)
 
         while True:
             try:
@@ -209,14 +213,18 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
             # block if necessary because that would mean we finished
             # precomputation before our opponent made a move
             print("waiting for them", file=sys.stderr)
-            enemy_move = self._inbox.get(block=True)
+            # while True:
+            enemy_move = self._inbox.get(block=True).copy()
+            # if isinstance(enemy_move, 
+            print("Done waiting!", file=sys.stderr)
+            print(enemy_move, file=sys.stderr)
             self._state = self._state.result(enemy_move)
             if enemy_move in self._responses:
                 move = self._responses[enemy_move]
             else:
                 move = self._choose_move()
 
-            self._outbox.put(move, block=False)
+            self._outbox.put(move.copy(), block=False)
             self._state = self._state.result(move)
 
     def make_move(self):
@@ -250,7 +258,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         for act in sorted(state.actions(),
                           # lowest value for opponent first
                           key=(lambda a: self._evaluator(state.result(a)))):
-
+            print("Considering {}".format(str(act)), file=sys.stderr)
             if best_yet is None:
                 # almost redundant, but keeps us from stalling if we're losing
                 best_yet = act
@@ -261,6 +269,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
             if current_val > alpha:
                 alpha = current_val
                 best_yet = act
+        print("Chose a move {}".format(best_yet))
         return best_yet
 
 class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
@@ -307,9 +316,10 @@ class LocalServerPlayer(CheckersServerBase):
         self._board = state or Bitboard32State()
         self._secret_client = PoliteMinMaxClientPlayer(state=self._board,
                                                        **kwargs)
-        self._secret_client.start()
         self._color = color or random.choice(["Black", "White"])
         self._going_first = self._color == "Black"
+        time.sleep(0.01)
+        self._secret_client.start()
         self._secret_client.set_going_first(self._going_first)
 
     def start(self):
@@ -319,12 +329,23 @@ class LocalServerPlayer(CheckersServerBase):
         return self._going_first
 
     def _check_if_terminal(self):
+
+        friends = self._board.count_friends()
+        foes = self._board.count_foes()
+        if self._friend_count == friends and self._foe_count == foes:
+            self._moves_since_piece_taken += 1
+        else:
+            self._friend_count = friends
+            self._foe_count = foes
+            self._moves_since_piece_taken = 0
         # friend = "White" if self._board.plyr else "Black"
-        if self._board.count_friends() is 0:
+        if friends is 0:
             raise GameOver(  # pain in the neck
                 "Black" if self._board.player() == "White" else "White")
         elif self._board.count_foes() is 0:
             raise GameOver(result=self._board.player())
+        elif self._move_since_piece_take >= 100:
+            raise GameOver(result="Draw")
 
     def recv_move(self, move):
         self._show_move(f"client played: {str(move)}")
