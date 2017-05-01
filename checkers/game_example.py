@@ -11,6 +11,7 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='Example of playing a game with LocalServerPlayer and PoliteMinMaxClientPlayer.')
     parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
+    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
     args = parser.parse_args()
 
     with open(args.weights, 'r') as f:
@@ -21,8 +22,8 @@ if __name__ == '__main__':
                      "count_friends_kings" : 2,
                      "count_foes_kings" : -2}
 
-    server = LocalServerPlayer(color="Black", verbose=True, weights=weights_learn, depth=2)
-    # server = McCartneyServerPlayer(verbose=True)
+    # server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
+    server = LocalServerPlayer(color="Black", verbose=args.verbose, weights=weights_learn, depth=2)
     client = PoliteMinMaxClientPlayer(weights=weights_teach, depth=2)
 
     server.start()

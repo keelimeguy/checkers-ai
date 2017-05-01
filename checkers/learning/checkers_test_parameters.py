@@ -55,14 +55,23 @@ for parameter in weight_tests:
                 perror(e.output)
                 break
         os.chdir(current_dir)
+        draws = 0
+        wins = 0
+        losses = 0
         for line in result.split(b'\n'):
-            if line and line.split()[0] == b"Game result:":
-                result_line =  line.split()[1]
-                print("Learn: ", result_line)
-                print("(Unfinished code)")
+            if line:
+                rline = line.split(b':')
+                if rline[0] == b"Game result":
+                    result_line =  rline[1].split()[0]
+                    if result_line == b"Draw":
+                        draws = 1
+                    if result_line == b"White": # TODO: and we are white
+                        wins = 1
+                    if result_line == b"Black": # TODO: and we are black
+                        losses = 1
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
-        weight_tests[parameter][str(weight)][0] += wins
-        weight_tests[parameter][str(weight)][1] += wins + draws + losses
+        # weight_tests[parameter][str(weight)][0] += wins
+        # weight_tests[parameter][str(weight)][1] += wins + draws + losses
 
         break
 

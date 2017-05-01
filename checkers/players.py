@@ -21,6 +21,9 @@ from checkers.game_api import GameOver, CheckersServerBase, CheckersClientBase
 
 class McCartneyServerPlayer(Thread, CheckersServerBase):
 
+    class StopThreadExecution(Exception):
+        """Thrown when the server thread ought to stop completely"""
+
     def __init__(self, opponent=0, is_B_client=False, verbose=False):
         """Pass
                 opponent= SERVER_NUMBER
@@ -28,7 +31,6 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                 verbose = if you want to hear the server complain
         """
         super().__init__()
-        self.gameover = False
         self._server_verbose = verbose
         self.board = Bitboard32State()
         self.server = SamServer(opponent, is_B_client)
@@ -67,9 +69,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             return result
 
     def _tell_thread_to_stop(self):
-        print("I will stop")
-        self.gameover = True
-        # pass  # TODO
+        self.queue_to_send.put(self.StopThreadExecution())
 
     def going_first(self):
         if self._client_is_white is None:
@@ -81,20 +81,30 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self._client_is_white_q.put(
             self.server.connect(verbose=self._server_verbose),
             block=False) # 1 if white else 0
-        if not self._client_is_white:
+
+        # print(self._client_is_white) # needs this extra time..
+        time.sleep(0.001)
+
+        if self._client_is_white:
             self.queue_replies.put(self._tell_server(""),block=False)
 
-        while not self.gameover:
-            response = self._tell_server(self.queue_to_send.get(block=True))
-            if not isinstance(response, GameOver):
-                response = response.copy()
-            self.queue_replies.put(response,
-                block=False)  # raise exception if queue is full
-        print("McCartneyServerPlayer finished running",file=sys.stderr)
+        try:
+            while True:
+                response = self._tell_server(self.queue_to_send.get(block=True))
+                if not isinstance(response, GameOver):
+                    response = response.copy()
+                self.queue_replies.put(response,
+                    block=False)  # raise exception if queue is full
+        except self.StopThreadExecution:
+            print("McCartneyServerPlayer finished running",file=sys.stderr)
+            return
 
     def _tell_server(self, move):
         """tell the server the move and block while waiting for response"""
-        print("sending move: {}".format(move))
+
+        if isinstance(move, self.StopThreadExecution):
+            raise move
+
         response = self.server.send_and_receive(move)
         if response:
             if "Result" in response:
