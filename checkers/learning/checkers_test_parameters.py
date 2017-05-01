@@ -72,7 +72,5 @@ for parameter in weight_tests:
         weight_tests[parameter][str(weight)][0] += wins
         weight_tests[parameter][str(weight)][1] += wins + draws + losses
 
-        break
-
 with open("learning_weights.json", "w") as f:
     json.dump(weight_tests, f)
