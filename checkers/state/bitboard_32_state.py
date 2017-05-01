@@ -77,10 +77,17 @@ class Bitboard32State(CheckersGameState):
         state32_lib.Board_destroy(self.c_board)
 
     def __eq__(self, other):
-        return self.c_board.w == other.c_board.w and self.c_board.b == other.c_board.b and self.c_board.k == other.c_board.k and self.c_board.plyr == other.c_board.plyr
+        return (self.c_board.contents.w == other.c_board.contents.w
+                and self.c_board.contents.b == other.c_board.contents.b
+                and self.c_board.contents.k == other.c_board.contents.k
+                and self.c_board.contents.plyr == other.c_board.contents.plyr)
 
     def __hash__(self):
-        return ((self.c_board.w ^ self.c_board.b)<<32) | (self.c_board.k ^ self.c_board.plyr)
+        # return (((self.c_board.contents.w ^ self.c_board.contents.b)<<32)
+        #         | (self.c_board.contents.k ^ self.c_board.contents.plyr))
+        return (((self.c_board.contents.w % (self.c_board.contents.b | 3))
+                 ^ (self.c_board.contents.b % (self.c_board.contents.w | 3)))
+                + self.c_board.contents.k + self.c_board.contents.plyr)
 
     @classmethod
     def from_string(cls, board_string=FRESH_BOARD_REPR):

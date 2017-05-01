@@ -26,7 +26,7 @@ class AlphaBeta(object):
 
     # accept cache entries from searches of depth cache_quality_fudge less than
     # the current depth requirement:
-    cache_quality_fudge = 1  # experiment with this.  It could just be terrible
+    cache_quality_fudge = 0  # experiment with this.  It could just be terrible
 
     def ab_dfs(self, node, depth=None, alpha=-inf, beta=inf, maximum=True,
                side_effect=None):
@@ -62,16 +62,19 @@ class AlphaBeta(object):
         # ca = self.cache[(node, maximum)]
         if (node, maximum) in self.cache:
             ca = self.cache[(node, maximum)]
-            if ca.depth + self.cache_quality_fudge >= self.depth:
-                gamma = choice(gamma, ca.val)
-                if finished():
+            if ca.depth + self.cache_quality_fudge >= depth:
+                gamma = choice(gamma, ca.val)  # bonkers
+                if finished() or gamma in {-inf, inf}:
+                    # +/- inf in cache means somebody wins for real.
                     #  self.cache.touch((node, maximum)) # redundant (idea was
                     #  to mark value as recently used (without changing it,
                     #  *especially* to reflect the current search depth!))
                     return gamma
         # base case, finally.
-        if depth <= 0:
-            return choice(gamma, self.heuristic_eval(node) * sign)
+        if depth <= 0  or not node.count_friends() or not node.count_foes():
+            # return choice(gamma, self.heuristic_eval(node) * sign)
+            # Note: this checks if the node is terminal (and returns +/- inf)
+            return self.heuristic_eval(node) * sign
 
         # iterate through actions sorted from bestest to worstest
         for new_state in sorted((node.result(act) for act in node.actions()),
@@ -81,6 +84,7 @@ class AlphaBeta(object):
                 break  # prune away the rest of the search
             gamma = choice(gamma, recur(new_state, gamma))
 
-        self.cache[(node, maximum)] = self.SearchCacheEntry(val=gamma,
-                                                            depth=depth)
+        if finished() or gamma in {-inf, inf}:
+            self.cache[(node, maximum)] = self.SearchCacheEntry(
+                val=gamma, depth=depth)
         return gamma

@@ -52,6 +52,19 @@ class CheckersGameStateTestCase(unittest.TestCase):
         self.assertEqual(self.state_class.from_string(FRESH_BOARD_REPR),
                          self.state_class.from_string(FRESH_BOARD_REPR))
 
+    def test_board_hashing(self):
+        initial = self.state_class.from_string(FRESH_BOARD_REPR)
+        self.assertEqual(hash(initial),
+                         hash(self.state_class.from_string(FRESH_BOARD_REPR)))
+
+        hashes = {hash(initial)}
+        count = 1
+        for move in initial.list_actions():
+            count += 1
+            hashes.add(hash(initial.result(move)))
+
+        self.assertEqual(count, len(hashes))
+
     def test_move_hashing(self):
         """Make sure moves are hashable and whatever"""
         for move in self.state_class().actions():

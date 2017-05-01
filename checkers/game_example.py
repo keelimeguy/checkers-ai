@@ -1,13 +1,15 @@
-from checkers.players import McCartneyServerPlayer, MinMaxClientPlayer
+from checkers.players import * # McCartneyServerPlayer, MinMaxClientPlayer
 from checkers.game_api import CheckersGame
 
 if __name__ == '__main__':
 
-    server = McCartneyServerPlayer(verbose=True, is_B_client=True)
-    client = MinMaxClientPlayer(weights={"count_friends" : 5,
-                                         "count_foes" : -5,
-                                         "count_friends_kings" : 2,
-                                         "count_foes_kings" : -2})
+    weights = {"count_friends" : 5,
+               "count_foes" : -5,
+               "count_friends_kings" : 2,
+               "count_foes_kings" : -2}
+
+    server = LocalServerPlayer(verbose=True, weights=weights, depth=2)
+    client = PoliteMinMaxClientPlayer(weights=weights, depth=2)
     server.start()
     client.start()
     server_first = server.going_first()

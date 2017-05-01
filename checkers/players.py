@@ -2,6 +2,7 @@
 
 import queue
 import sys
+import random
 
 from threading import Thread
 
@@ -157,7 +158,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
     class StopPrecomputation(Exception):
         """Thrown when we receive a move and need to stop precomputing"""
 
-    def __init__(self, state=None, weights=None):
+    def __init__(self, state=None, weights=None, depth=7):
         """You'd better pass in a dictionary of weights"""
         super().__init__()
         # self.evaluate = evaluation_function  # better make a subclass instead
@@ -165,7 +166,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._inbox = queue.Queue(1)
         self._evaluator = BoardEvaluator(weights)
         self._search_engine = AlphaBeta(self._evaluator,
-                                        default_depth=7)
+                                        default_depth=depth)
         self._go_first_q = queue.Queue(1)
         self._outbox = queue.Queue(1)
         # going_first = None  # None if unset, False later
@@ -253,6 +254,11 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 best_yet = act
         return best_yet
 
+class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
+
+    def _precompute(self):
+        pass
+
 class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
     def __init__(self, opponent=0, is_B_client=False, verbose=False):
         super().__init__(opponent, is_B_client, verbose)
@@ -282,10 +288,44 @@ class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
         # self.queue_to_send.put(str(move), block=False)
 
 
-class LocalServerPlayer(Thread, CheckersServerBase):
+class LocalServerPlayer(CheckersServerBase):
 
-    def __init__(self, color=None, evaluator=None):
+    def __init__(self, state=None, color=None, verbose=False, **kwargs):
         """Pass a color, I guess.  For a change of pace or whatever."""
         super().__init__()
+        self._show_move = ((lambda m: print(m, file=sys.stderr)) if verbose
+                           else lambda x: None)
+        self._board = state or Bitboard32State()
+        self._secret_client = PoliteMinMaxClientPlayer(state=self._board,
+                                                       **kwargs)
+        self._secret_client.start()
+        self._color = color or random.choice(["Black", "White"])
+        self._going_first = self._color == "Black"
+        self._secret_client.set_going_first(self._going_first)
 
-        self.
+    def start(self):
+        pass
+
+    def going_first(self):
+        return self._going_first
+
+    def _check_if_terminal(self):
+        # friend = "White" if self._board.plyr else "Black"
+        if self._board.count_friends() is 0:
+            raise GameOver(  # pain in the neck
+                "Black" if self._board.player() == "White" else "White")
+        elif self._board.count_foes() is 0:
+            raise GameOver(result=self._board.player())
+
+    def recv_move(self, move):
+        self._show_move(f"client played: {str(move)}")
+        self._board = self._board.result(move)
+        self._check_if_terminal()
+        self._secret_client.recv_move(move)
+
+    def make_move(self):
+        move = self._secret_client.make_move()
+        self._show_move(f"server played: {str(move)}")
+        self._board = self._board.result(move)
+        self._check_if_terminal()
+        return move

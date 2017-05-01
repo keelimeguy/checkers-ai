@@ -50,16 +50,15 @@ class AlphaBetaTestCase(unittest.TestCase):
         # This next part fails if intermediate results are not in the cache.
         next_board = b.result(b.Move.from_string("(5:1):(6:0)"))
 
-        self.assertIn((next_board, False), searcher.cache)
-                      # msg="\n".join("{}, {}".format(*x)
-                      #               for x in searcher.cache.keys()))
+        self.assertIn((next_board, False), searcher.cache,
+                      msg="\n".join("{}, {}".format(*x)
+                                    for x in searcher.cache.keys()))
 
         self.assertEqual(searcher.ab_dfs(next_board,
                                          maximum=False,
                                          depth=0),
                          inf)
                          # msg=f"cache size: {len(searcher.cache)}")
-
 
 
     def test_no_win_in_6(self):
