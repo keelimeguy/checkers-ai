@@ -45,7 +45,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         # Thus this exception:
         if self.queue_replies.qsize() != 0:
             raise RuntimeError(  # see note above before commenting this out
-                f"recv_move ({str(move)}) called on a {type(self)} with "
+                "recv_move ({}) called on a {} with ".format(str(move), type(self)),
                 "nonzero pending messages from server")
 
         self.queue_to_send.put(str(move), block=False)
@@ -155,7 +155,7 @@ class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
         # Thus this exception:
         if self.queue_replies.qsize() != 0:
             raise RuntimeError(  # see note above before commenting this out
-                f"recv_move ({str(move)}) called on a {type(self)} with "
+                "recv_move ({}) called on a {} with ".format(str(move), type(self)),
                 "nonzero pending messages from server")
 
         # This version does not use the queue and threading, meant to directly make and recieve moves

@@ -11,8 +11,12 @@ import os.path
 import gc
 import queue
 from collections import namedtuple
-from math import inf
 from threading import Thread
+
+try:
+    from math import inf
+except ImportError:
+    inf = float('inf')
 
 from checkers.game_api import GameOver, CheckersClientBase
 from checkers.players import SimpleMcCartneyServerPlayer
@@ -114,7 +118,7 @@ class BoardEvaluator:
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
         if not self._weights:
-            print(f"{type(self)} instantiated with no nonzero weights",
+            print("{} instantiated with no nonzero weights".format(type(self)),
                   file=sys.stderr)
         # note this is an instance property, cache included
         @functools.lru_cache(cache_size)

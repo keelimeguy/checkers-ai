@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
 
-# import abc
-from math import inf
 import pylru  # lru cache in pure python
 
-def AlphaBeta(object):
+try:
+    from math import inf
+except ImportError:
+    inf = float('inf')
+
+from collections import namedtuple
+
+class AlphaBeta(object):
     # __metaclass__ = abc.ABCMeta
 
-    def __init__(self, heuristic, cache_size=10001):
+    def __init__(self, heuristic, cache_size=10001, default_depth=7):
         self.heuristic_eval = heuristic  # function to evaluate search nodes
         self.cache = pylru.lrucache(cache_size)
+        if default_depth is not None:  # 0 is valid, so check for None explicitly
+            self.default_depth = default_depth
 
     SearchCacheEntry = namedtuple("SearchCacheEntry",
                                   ("val",  # note because of pruning the
@@ -17,30 +24,32 @@ def AlphaBeta(object):
                                    "depth"))
 
 
-    default_depth = 7
     # accept cache entries from searches of depth cache_quality_fudge less than
     # the current depth requirement:
-    cache_quality_fudge = 2  # experiment with this.  It could just be terrible
+    cache_quality_fudge = 1  # experiment with this.  It could just be terrible
 
-    def ab_dfs(self, node, depth=None, alpha=-inf, beta=inf, maximum=True):
+    def ab_dfs(self, node, depth=None, alpha=-inf, beta=inf, maximum=True,
+               side_effect=None):
         """Alpha beta DFS from the given node and return its value.
-
         If cache_quality_fudge is greater than zero, the answer is not
         guaranteed correct.
         """
-        depth = depth or self.default_depth
+
+        if side_effect is not None:
+            side_effect()  # used to throw StopPrecomputation, for instance
+
+        if depth is None:
+            depth = self.default_depth
         gamma = alpha if maximum else beta  # one variable for "the relevant thing"
         choice = max if maximum else min
         sign = 1 if maximum else -1
         # val = gamma
-        if depth <= 0:
-            return self.heuristic_eval(node) * sign
         if maximum:
             def finished():  # gamma is alpha
-                return gamma <= beta
+                return gamma >= beta
         else:
             def finished():  # gamma is beta
-                return alpha <= gamma
+                return alpha >= gamma
 
         def recur(child, gamma):
             return self.ab_dfs(child, depth=(depth - 1),
@@ -49,7 +58,7 @@ def AlphaBeta(object):
                                maximum=(not maximum))
 
         # check the cache to see if we can prune extra
-        ca = self.cache[(node, maximum)]
+        # ca = self.cache[(node, maximum)]
         if (node, maximum) in self.cache:
             ca = self.cache[(node, maximum)]
             if ca.depth + self.cache_quality_fudge >= self.depth:
@@ -59,9 +68,12 @@ def AlphaBeta(object):
                     #  to mark value as recently used (without changing it,
                     #  *especially* to reflect the current search depth!))
                     return gamma
+        # base case, finally.
+        if depth <= 0:
+            return choice(gamma, self.heuristic_eval(node) * sign)
 
         # iterate through actions sorted from bestest to worstest
-        for new_state in sorted(node.result(act) for act in node.actions(),
+        for new_state in sorted((node.result(act) for act in node.actions()),
                                 key=(lambda m: sign * self.heuristic_eval(m))):
             if finished():
                 # return val
