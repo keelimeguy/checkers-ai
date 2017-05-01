@@ -43,7 +43,7 @@ class Bitboard32State(CheckersGameState):
             e.g. Move.from_string("(1:3):(3:1)") or whatever
             """
             if not movestr:
-                raise ValueError(f"invalid move string: {repr(movestr)}")
+                raise ValueError("invalid move string: {}".format(repr(movestr)))
             return cls(state32_lib.Move_from_string(movestr.encode("utf-8")))
 
         def __eq__(self, other):
@@ -83,7 +83,7 @@ class Bitboard32State(CheckersGameState):
 
     @classmethod
     def move_from_string(cls, movestr=None):
-        warnings.warn(f"Should use {cls}.Move.from_string instead.",
+        warnings.warn("Should use {}.Move.from_string instead.".format(cls),
                       category=DeprecationWarning)
         if not movestr:
             return None

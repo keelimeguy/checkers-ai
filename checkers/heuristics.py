@@ -5,7 +5,7 @@ import functools
 import os
 import queue
 from collections import namedtuple
-from math import inf
+# from math import inf
 from threading import Thread
 
 from checkers.game_api import GameOver, CheckersClientBase
@@ -106,16 +106,16 @@ class BoardEvaluator:
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
         if not self._weights and sanity_check:
-            print(f"{type(self)} instantiated with no nonzero weights",
+            print("{} instantiated with no nonzero weights".format(type(self)),
                   file=sys.stderr)
         # note this is an instance property, cache included
         @functools.lru_cache(cache_size)
         def _evaluate(board):
             # return +/- infinity if the game is over
             if board.count_friends() == 0:
-                return -inf
+                return float('-inf')
             elif board.count_foes() == 0:
-                return inf
+                return float('inf')
             return sum(weights[param] * getattr(board, param)()
                        for param in self._weights)
         self._evaluate = _evaluate
@@ -133,10 +133,10 @@ def alphabeta_search(node, player):
     ##   avg=  25.403s
     ##   max= 124.753s
     ##   min=   6.533s
-    # return alphabeta(node, depth=4, alpha=-inf, beta=inf, maximum=True)
+    # return alphabeta(node, depth=4, alpha=float('-inf'), beta=float('inf'), maximum=True)
 
     ## Improved alpha-beta minimax search?
-    return alphabeta_dfs(node, player, depth=2, alpha=-inf, beta=inf,
+    return alphabeta_dfs(node, player, depth=2, alpha=float('-inf'), beta=float('inf'),
                   maximum=True, cache=None, evaluator=eval)
 
     ## Iterative deepening using informed move order in deeper searches
@@ -169,7 +169,7 @@ def alphabeta_search(node, player):
 
 #     return score_action[0]
 
-# def alphabeta_iterative_deepening(node, actions, depth=7, alpha=-inf, beta=inf, maximum=True):
+# def alphabeta_iterative_deepening(node, actions, depth=7, alpha=float('-inf'), beta=float('inf'), maximum=True):
 #     """Returns a tuple (val, q), where:
 #         - val is the return value of the total alphabeta search
 #         - q is a priority queue of tuples: (score, action), for each action in actions ordered by lowest score first
@@ -184,10 +184,10 @@ def alphabeta_search(node, player):
 #     ordered_actions = queue.PriorityQueue()
 
 #     if maximum:
-#         val = -inf
+#         val = float('-inf')
 #         choose = max
 #     else:
-#         val = inf
+#         val = float('inf')
 #         choose = min
 #     actions = node.list_actions()
 #     for i in range(len(actions)):
@@ -203,7 +203,7 @@ def alphabeta_search(node, player):
 #         # Shouldn't ever be reached:
 #         if beta <= alpha:
 #             for act in actions[(i+1):]:
-#                 ordered_actions.put((-inf, act))
+#                 ordered_actions.put((float('-inf'), act))
 #             break
 #     return (val, ordered_actions)
 
@@ -216,7 +216,7 @@ def alphabeta_search(node, player):
 #                                "depth"))
 
 
-def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
+def alphabeta_dfs(node, player, depth=7, alpha=float('-inf'), beta=float('inf'),
                   maximum=True, cache=None, evaluator=None):
     """This is a work in progress. Beware. Committed at 2 AM."""
     if cache and (node, maximum) in cache:
@@ -233,10 +233,10 @@ def alphabeta_dfs(node, player, depth=7, alpha=-inf, beta=inf,
     if depth == 0 or node.count_friends() == 0 or node.count_foes() == 0:
         return evaluator(node, player)
     if maximum:
-        val = entry.val if entry else -inf
+        val = entry.val if entry else float('-inf')
         choose = max
     else:
-        val = entry.val if entry else inf
+        val = entry.val if entry else float('inf')
         choose = min
     for action in node.actions():
         if beta <= alpha:
