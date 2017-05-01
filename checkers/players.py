@@ -280,3 +280,11 @@ class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
         return self._tell_server(str(move))
         # self.queue_to_send.put(str(move), block=False)
 
+
+class LocalServerPlayer(Thread, CheckersServerBase):
+
+    def __init__(self, color=None, evaluator=None):
+        """Pass a color, I guess.  For a change of pace or whatever."""
+        super().__init__()
+
+        self.

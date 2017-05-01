@@ -19,6 +19,7 @@ CACHE_SIZE = 65536
 
 def param_lookup(board): #will be expanded later
     # I have a better plan, I think.  TODO delete this
+    print("Stop using param_lookup, motherfuckers", file=sys.stderr)
     return {'friend_count' : board.count_friends,
             'foe_count' : board.count_foes,
             'friend_kings' : board.count_friends_kings,
@@ -108,6 +109,7 @@ class BoardEvaluator:
         """
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
+
         if not self._weights and sanity_check:
             print("{} instantiated with no nonzero weights".format(type(self)),
                   file=sys.stderr)
