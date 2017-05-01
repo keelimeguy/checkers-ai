@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 
-from threading import Thread
 import queue
-# from math import inf
-
 import sys
+
+from threading import Thread
+
+try:
+    from math import inf
+except ImportError:
+    inf = float('inf')
 
 from checkers.state import Bitboard32State
 from checkers.sam_server import SamServer
 from checkers.heuristics import BoardEvaluator
 from checkers.alphabeta import AlphaBeta
-
 
 from checkers.game_api import GameOver, CheckersServerBase, CheckersClientBase
 
@@ -80,7 +83,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
 
     def _tell_server(self, move):
         """tell the server the move and block while waiting for response"""
-        print(f"sending move: {move}")
+        print("sending move: {}".format(move))
         response = self.server.send_and_receive(move)
         if response:
             if "Result" in response:

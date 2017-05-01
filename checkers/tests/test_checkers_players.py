@@ -2,7 +2,11 @@ import unittest
 
 from checkers.heuristics import BoardEvaluator
 from checkers.state import Bitboard32State as BoardState
-# from math import inf
+
+try:
+    from math import inf
+except ImportError:
+    inf = float('inf')
 
 ENDGAME_BOARD = """+-+-+-+-
 -+-+-+-+
@@ -41,14 +45,14 @@ class BoardEvaluatorTestCase(unittest.TestCase):
     def test_win_loss_values(self):
         black_lost = ENDGAME_BOARD.replace("+b", "+-").replace("+B", "+-")
         self.assertEqual(self.be(BoardState.from_string(black_lost)),
-                         float('-inf'))
+                         -inf)
         self.assertEqual(self.be(BoardState.from_string(black_lost.replace(
             "Black", "White"))),
-                         float('inf'))  # White won, rather than Black losing
+                         inf)  # White won, rather than Black losing
         black_won = black_lost.replace("W", "w").replace("w", "B")
         self.assertEqual(self.be(BoardState.from_string(black_won)),
-                         float('inf'))
+                         inf)
         self.assertEqual(self.be(BoardState.from_string(black_won.replace(
             "Black", "White"))),
-                         float('-inf'))
+                         -inf)
 

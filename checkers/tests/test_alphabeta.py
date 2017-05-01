@@ -68,7 +68,7 @@ class AlphaBetaTestCase(unittest.TestCase):
         searcher.default_depth = 6
         # don't find a win/loss in 6 moves
         self.assertNotIn(searcher.ab_dfs(BoardState()),
-                         {float('inf'), float('-inf')})
+                         {inf, -inf})
 
 if __name__ == '__main__':
     unittest.main()

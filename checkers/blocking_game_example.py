@@ -5,7 +5,10 @@ import os.path
 import random
 import time
 
-# from math import inf
+try:
+    from math import inf
+except ImportError:
+    inf = float('inf')
 
 from checkers.game_api import GameOver
 from checkers.players import SimpleMcCartneyServerPlayer
@@ -46,7 +49,7 @@ if __name__ == "__main__":
             # game.start()
             while True:
                 actions = game.board.list_actions()
-                bestScore = float('-inf')
+                bestScore = -inf
                 move_list = []
                 if len(actions) != 0:
                     if len(actions) == 1:

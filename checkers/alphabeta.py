@@ -2,7 +2,11 @@
 
 import pylru  # lru cache in pure python
 
-# from math import inf
+try:
+    from math import inf
+except ImportError:
+    inf = float('inf')
+
 from collections import namedtuple
 
 class AlphaBeta(object):
@@ -24,7 +28,7 @@ class AlphaBeta(object):
     # the current depth requirement:
     cache_quality_fudge = 1  # experiment with this.  It could just be terrible
 
-    def ab_dfs(self, node, depth=None, alpha=float('-inf'), beta=float('inf'), maximum=True,
+    def ab_dfs(self, node, depth=None, alpha=-inf, beta=inf, maximum=True,
                side_effect=None):
         """Alpha beta DFS from the given node and return its value.
 
