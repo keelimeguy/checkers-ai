@@ -2,7 +2,7 @@
 
 import pylru  # lru cache in pure python
 
-from math import inf
+# from math import inf
 from collections import namedtuple
 
 class AlphaBeta(object):
@@ -13,7 +13,6 @@ class AlphaBeta(object):
         self.cache = pylru.lrucache(cache_size)
         if default_depth is not None:  # 0 is valid, so check for None explicitly
             self.default_depth = default_depth
-        
 
     SearchCacheEntry = namedtuple("SearchCacheEntry",
                                   ("val",  # note because of pruning the
@@ -25,7 +24,7 @@ class AlphaBeta(object):
     # the current depth requirement:
     cache_quality_fudge = 1  # experiment with this.  It could just be terrible
 
-    def ab_dfs(self, node, depth=None, alpha=-inf, beta=inf, maximum=True,
+    def ab_dfs(self, node, depth=None, alpha=float('-inf'), beta=float('inf'), maximum=True,
                side_effect=None):
         """Alpha beta DFS from the given node and return its value.
 
