@@ -362,6 +362,8 @@ class LocalServerPlayer(CheckersServerBase):
 
     @_board.deleter
     def _(self):
+        print("Hot shit, the board got deleted in thread {}".format(self.name),
+              file=sys.stderr)
         del self.__board
 
     def going_first(self):
