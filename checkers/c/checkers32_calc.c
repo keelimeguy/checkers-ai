@@ -296,7 +296,7 @@ static unsigned int find_moves_helper(char* str_moves, unsigned int foe, unsigne
         }
         pos = pos<<1;
     }
-    snprintf(str_moves, , "%s", outstr);
+    snprintf(str_moves, OUTSTR_SIZE, "%s", outstr);
     return (king_moves[0]|normal_moves[0]|king_moves[1]);
 }
 
