@@ -348,14 +348,14 @@ class LocalServerPlayer(CheckersServerBase):
             raise GameOver(result="Draw")
 
     def recv_move(self, move):
-        self._show_move(f"client played: {str(move)}")
+        self._show_move("client played: {}".format(str(move)))
         self._board = self._board.result(move)
         self._check_if_terminal()
         self._secret_client.recv_move(move)
 
     def make_move(self):
         move = self._secret_client.make_move()
-        self._show_move(f"server played: {str(move)}")
+        self._show_move("server played: {}".format(str(move)))
         self._board = self._board.result(move)
         self._check_if_terminal()
         return move
