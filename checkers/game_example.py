@@ -17,14 +17,15 @@ if __name__ == '__main__':
     with open(args.weights, 'r') as f:
         weights_learn = json.load(f)
 
-    weights_teach = {"count_friends" : 5,
-                     "count_foes" : -5,
-                     "count_friends_kings" : 2,
-                     "count_foes_kings" : -2}
+    weights_teach = {"count_friends" : 3,
+                     "count_foes" : -3,
+                     "count_friends_kings" : 5,
+                     "count_foes_kings" : -5}
 
     # server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
-    server = LocalServerPlayer(color="Black", verbose=args.verbose, weights=weights_learn, depth=2)
-    client = PoliteMinMaxClientPlayer(weights=weights_teach, depth=2)
+    server = LocalServerPlayer(color="Black", verbose=args.verbose, weights=weights_teach, depth=5)
+    client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
+    # client = MinMaxClientPlayer(weights=weights_learn, depth=2)
 
     server.start()
     client.start()
@@ -37,3 +38,4 @@ if __name__ == '__main__':
     game.start()
     game.join()  # wait for game to end
     print("Game result: {}".format(game.result))
+    print("Client Win?: {}".format(game.client_win))

@@ -65,9 +65,12 @@ for parameter in weight_tests:
                     result_line =  rline[1].split()[0]
                     if result_line == b"Draw":
                         draws = 1
-                    if result_line == b"White": # TODO: and we are white
+                        break;
+                if rline[0] == b"Client Win?":
+                    result_line =  rline[1].split()[0]
+                    if result_line == b"True":
                         wins = 1
-                    if result_line == b"Black": # TODO: and we are black
+                    if result_line == b"False":
                         losses = 1
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
         # weight_tests[parameter][str(weight)][0] += wins

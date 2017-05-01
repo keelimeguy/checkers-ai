@@ -72,6 +72,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self.queue_to_send.put(self.StopThreadExecution())
 
     def going_first(self):
+        # The server goes first if the client is white
         if self._client_is_white is None:
             self._client_is_white = self._client_is_white_q.get(block=True)
         return self._client_is_white
@@ -81,11 +82,9 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self._client_is_white_q.put(
             self.server.connect(verbose=self._server_verbose),
             block=False) # 1 if white else 0
-
-        # print(self._client_is_white) # needs this extra time..
         time.sleep(0.001)
 
-        if self._client_is_white:
+        if self.going_first():
             self.queue_replies.put(self._tell_server(""),block=False)
 
         try:
@@ -110,28 +109,27 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             if "Result" in response:
                 self.server.disconnect()
                 if "Result:Black" in response:
-                    return GameOver(result="Black")
+                    return GameOver(result="Black", client_win=((not self.going_first()) == 1))
                 elif "Result:White" in response:
-                    return GameOver(result="White")
+                    return GameOver(result="White", client_win=(self.going_first() == 1))
                 else:
-                    return GameOver(result="Draw")
+                    return GameOver(result="Draw", client_win=False)
 
             elif "Error" in response:
                 self.server.disconnect()
                 self.show_game()
                 print("Error detected:", file=sys.stderr)
                 print(response, file=sys.stderr)
-                return GameOver(result=None)
+                return GameOver(result=None, client_win=None)
             nextmove = self.board.Move.from_string(response)
             self.moves.append(nextmove)
             self.board = self.board.result(nextmove)
             return self.board.move_from_string(response)
         else:
-            self.gameover = True
             self.server.disconnect()
             self.show_game()
             print("Unknown Error: No Response", file=sys.stderr)
-            return GameOver(result=None)
+            return GameOver(result=None, client_win=None)
 
 
     # We store a list of moves played throughout a game, and use this function to show the entire game at the end
@@ -298,16 +296,22 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
             print("Considering {}".format(str(act)), file=sys.stderr)
             if best_yet is None:
                 # almost redundant, but keeps us from stalling if we're losing
-                best_yet = act
+                best_yet = [act]
 
             current_val = self._search_engine.ab_dfs(
                 state.result(act), alpha=alpha, maximum=False,
                 **kwargs)
             if current_val > alpha:
                 alpha = current_val
-                best_yet = act
-        print("Chose a move {}".format(best_yet))
-        return best_yet
+                best_yet = [act]
+            elif current_val == alpha:
+                best_yet.append(act)
+        index = random.randint(0, len(best_yet)-1) if best_yet is not None and len(best_yet)>1 else 0
+        chosen = best_yet[index] if best_yet is not None else None
+        print("Chose a move {}".format(chosen))
+        if not chosen:
+            print(state.actions())
+        return chosen
 
 class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
 
@@ -405,9 +409,14 @@ class LocalServerPlayer(CheckersServerBase):
         elif self._moves_since_piece_taken >= 100:
             result = "Draw"
 
+        if result in ["White", "Black"]:
+            client_win = result != self._color
+        else:
+            client_win = False
+
         if result:
             self._secret_client.tell_game_over()
-            raise GameOver(result=result)
+            raise GameOver(result=result, client_win=client_win)
 
     def recv_move(self, move):
         self._show_move("client played: {}".format(str(move)))
