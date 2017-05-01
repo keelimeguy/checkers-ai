@@ -17,62 +17,6 @@ from checkers.game_api import GameOver, CheckersClientBase
 
 CACHE_SIZE = 65536
 
-def param_lookup(board): #will be expanded later
-    # I have a better plan, I think.  TODO delete this
-    print("Stop using param_lookup, motherfuckers", file=sys.stderr)
-    return {'friend_count' : board.count_friends,
-            'foe_count' : board.count_foes,
-            'friend_kings' : board.count_friends_kings,
-            'foe_kings' : board.count_foes_kings,
-            'friend_pawns' : board.count_friends_pawns,
-            'foe_pawns' : board.count_foes_pawns,
-            'safe_friend_pawns': board.count_safe_friends_pawns,
-            'safe_foe_pawns' : board.count_safe_foes_pawns,
-            'safe_friend_kings' : board.count_safe_friends_kings,
-            'safe_foe_kings' : board.count_safe_foes_kings,
-            'movable_friend_pawns' : board.count_movable_friends_pawns,
-            'movable_foe_pawns' : board.count_movable_foes_pawns,
-            'movable_friend_kings' : board.count_movable_friends_kings,
-            'movable_foe_kings' : board.count_safe_foes_kings,
-            'friend_distance_promotion' : board.aggregate_distance_promotion_foes,
-            'foe_distance_promotion' : board.aggregate_distance_promotion_foes,
-            'unoccupied_promotion_friends' : board.count_unoccupied_promotion_friends,
-            'unoccupied_promotion_foes' : board.count_unoccupied_promotion_foes,
-            'defender_friends' : board.count_defender_pieces_friends,
-            'defender_foes' : board.count_defender_pieces_foes,
-            'attack_pawn_friends' : board.count_attack_pawns_friends,
-            'attack_pawn_foes' : board.count_attack_pawns_foes,
-            'center_pawn_friends' : board.count_center_pawns_friends,
-            'center_pawn_foes' : board.count_center_pawns_foes,
-            'center_king_friends' : board.count_center_kings_friends,
-            'center_king_foes' : board.count_center_kings_foes,
-            'diagonalmain_pawn_friends' : board.count_diagonalmain_pawns_friends,
-            'diagonalmain_pawn_foes' : board.count_diagonalmain_pawns_foes,
-            'diagonalmain_king_friends' : board.count_diagonalmain_kings_friends,
-            'diagonalmain_king_foes' : board.count_diagonalmain_kings_foes,
-            'diagonaldouble_pawn_friends' : board.count_diagonaldouble_pawns_friends,
-            'diagonaldouble_pawn_foes' : board.count_diagonaldouble_pawns_foes,
-            'diagonaldouble_king_friends' : board.count_diagonaldouble_kings_friends,
-            'diagonaldouble_king_foes' : board.count_diagonaldouble_kings_foes,
-            'loner_pawn_friends' : board.count_loner_pawns_friends,
-            'loner_pawn_foes' : board.count_loner_pawns_foes,
-            'loner_king_friends' : board.count_loner_kings_friends,
-            'loner_king_foes' : board.count_loner_kings_foes,
-            'holes_friends' : board.count_holes_friends,
-            'holes_foes' : board.count_holes_foes,
-            'triangle_friends' : board.triangle_friends,
-            'triangle_foes' : board.triangle_foes,
-            'oreo_friends' : board.oreo_friends,
-            'oreo_foes': board.oreo_foes,
-            'bridge_friends' : board.bridge_friends,
-            'bridge_foes' : board.bridge_foes,
-            'dog_friends' : board.dog_friends,
-            'dog_foes' : board.dog_foes,
-            'corner_pawn_friends' : board.pawn_corner_friends,
-            'corner_pawn_foes' : board.pawn_corner_foes,
-            'corner_king_friends' : board.king_corner_friends,
-            'corner_king_foes' : board.king_corner_foes}
-
 # @functools.lru_cache(CACHE_SIZE)
 def eval(board, player, weights):
     score = 0
@@ -109,7 +53,6 @@ class BoardEvaluator:
         """
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
-
         if not self._weights and sanity_check:
             print("{} instantiated with no nonzero weights".format(type(self)),
                   file=sys.stderr)

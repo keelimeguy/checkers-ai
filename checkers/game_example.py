@@ -1,15 +1,26 @@
+import os.path
+import argparse
+import json
+
 from checkers.players import * # McCartneyServerPlayer, MinMaxClientPlayer
 from checkers.game_api import CheckersGame
 
+weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights.json")
+
 if __name__ == '__main__':
 
-    weights = {"count_friends" : 5,
+    parser = argparse.ArgumentParser(description='Example of playing a game with LocalServerPlayer and PoliteMinMaxClientPlayer.')
+    parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
+    args = parser.parse_args()
+
+    weights_learn = json.load(open(args.weights, 'r'))
+    weights_teach = {"count_friends" : 5,
                "count_foes" : -5,
                "count_friends_kings" : 2,
                "count_foes_kings" : -2}
 
-    server = LocalServerPlayer(verbose=True, weights=weights, depth=2)
-    client = PoliteMinMaxClientPlayer(weights=weights, depth=2)
+    server = LocalServerPlayer(verbose=True, weights=weights_learn, depth=2)
+    client = PoliteMinMaxClientPlayer(weights=weights_teach, depth=2)
     server.start()
     client.start()
     server_first = server.going_first()
