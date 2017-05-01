@@ -1,4 +1,4 @@
-FLAGS=-Wall -Wextra -O2
+FLAGS=-Wall -Wextra -O2 -Wpedantic
 
 all:
 	# Compile C code:
