@@ -363,12 +363,12 @@ class LocalServerPlayer(CheckersServerBase):
         return self.__board
 
     @_board.setter
-    def _(self, new_board):
+    def _board(self, new_board):
         self.__board = new_board
         self._check_if_terminal()
 
     @_board.deleter
-    def _(self):
+    def _board(self):
         print("Hot shit, the board got deleted in thread {}".format(self.name),
               file=sys.stderr)
         del self.__board

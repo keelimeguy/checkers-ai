@@ -70,6 +70,13 @@ class CheckersGameStateTestCase(unittest.TestCase):
         for move in self.state_class().actions():
             self.assertIsInstance(hash(move), int)
 
+    def test_move_copying(self):
+        """copying a move should yield a different move"""
+        move = self.state_class.Move.from_string("(1:1):(3:3):(5:5)")
+
+        self.assertEqual(move.copy(), move)
+        self.assertIsNot(move.copy(), move)
+
     def test_some_segfaults(self):
         state = self.state_class()
         for move in state.actions():
