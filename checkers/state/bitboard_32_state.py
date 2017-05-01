@@ -79,6 +79,9 @@ class Bitboard32State(CheckersGameState):
     def __eq__(self, other):
         return self.c_board.w == other.c_board.w and self.c_board.b == other.c_board.b and self.c_board.k == other.c_board.k and self.c_board.plyr == other.c_board.plyr
 
+    def __hash__(self):
+        return ((self.c_board.w ^ self.c_board.b)<<32) | (self.c_board.k ^ self.c_board.plyr)
+
     @classmethod
     def from_string(cls, board_string=FRESH_BOARD_REPR):
         new_board = state32_lib.Board_from_string(create_string_buffer(board_string.encode("utf-8")))
