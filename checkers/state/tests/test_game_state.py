@@ -47,6 +47,16 @@ class CheckersGameStateTestCase(unittest.TestCase):
         self.assertEqual(str(self.state_class.from_string(FRESH_BOARD_REPR)),
                          FRESH_BOARD_REPR)
 
+    def test_board_equality(self):
+        """Make sure boards are testable for equality"""
+        self.assertEqual(self.state_class.from_string(FRESH_BOARD_REPR),
+                         self.state_class.from_string(FRESH_BOARD_REPR))
+
+    def test_move_hashing(self):
+        """Make sure moves are hashable and whatever"""
+        for move in self.state_class().actions():
+            self.assertIsInstance(hash(move), int)
+
     def test_initial_state_player(self):
         """Black goes first"""
         fresh_board = self.state_class()

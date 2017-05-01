@@ -18,6 +18,19 @@ W_WIN_IN_3 = """
 
 White's move""".strip()
 
+# W_WIN_IN_3 = """
+# +B+-+-+-
+# -+-+-+-+
+# +W+W+-+-
+# -+-+-+-+
+# +-+-+-+-
+# -+-+-+-+
+# +-+-+-+-
+# -+-+-+-+
+
+# White's move""".strip()
+
+
 class AlphaBetaTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -27,15 +40,22 @@ class AlphaBetaTestCase(unittest.TestCase):
         """AlphaBeta with no weights should figure this out"""
         b = BoardState.from_string(W_WIN_IN_3)
 
-        searcher = AlphaBeta(self.heval)
-        searcher.default_depth = 4
+        searcher = AlphaBeta(self.heval, default_depth=3)
         self.assertEqual(searcher.ab_dfs(b), inf)
+
+
         # This next part fails if intermediate results are not in the cache.
-        self.assertEqual(searcher.ab_dfs(b.result(b.Move.from_string("(5:1):(6:0)")),
+        next_board = b.result(b.Move.from_string("(5:1):(6:0)"))
+
+        self.assertIn((next_board, False), searcher.cache)
+                      # msg="\n".join("{}, {}".format(*x)
+                      #               for x in searcher.cache.keys()))
+
+        self.assertEqual(searcher.ab_dfs(next_board,
                                          maximum=False,
                                          depth=0),
-                         inf,
-                         msg=f"{len(searcher.cache)}")
+                         inf)
+                         # msg=f"cache size: {len(searcher.cache)}")
 
 
     def test_no_win_in_6(self):

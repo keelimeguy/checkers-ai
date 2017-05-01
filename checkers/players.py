@@ -80,6 +80,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
 
     def _tell_server(self, move):
         """tell the server the move and block while waiting for response"""
+        print(f"sending move: {move}")
         response = self.server.send_and_receive(move)
         if response:
             if "Result" in response:
@@ -180,17 +181,21 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         go_first = self._go_first_q.get(block=True)
 
         if go_first:
+            print("This shit's happening", file=sys.stderr)
             move = self._choose_move()
-            self._outbox.put(move)
+            self._outbox.put(move, block=False)
             self._state = self._state.result(move)
+            print("move: {}".format(move), file=sys.stderr)
+            print("But it wasn't the holdup", file=sys.stderr)
 
         while True:
             try:
                 self._precompute()
             except self.StopPrecomputation:
-                pass
+                print("stopped precomputing", file=sys.stderr)
             # block if necessary because that would mean we finished
             # precomputation before our opponent made a move
+            print("waiting for them", file=sys.stderr)
             enemy_move = self._inbox.get(block=True)
             self._state = self._state.result(enemy_move)
             if enemy_move in self._responses:
@@ -201,12 +206,16 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
             self._outbox.put(move, block=False)
             self._state = self._state.result(move)
 
+    def make_move(self):
+        return self._outbox.get(block=True)
+
     def _precompute(self):
         # modifies self._responses with snappy answers to moves we expected
         # this should only be called on the enemy's turn
         self._responses.clear()  # clear responses to old moves
         options = sorted(self._state.actions(),
-                         key=(lambda board: - self._evaluator(board)))
+                         key=(lambda move: -self._evaluator(self._state
+                                                            .result(move))))
 
         def check_inbox():
             if self._inbox.qsize() > 0:
@@ -216,10 +225,6 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
             self._responses[option] = self._choose_move(
                 self._state.result(option),
                 side_effect=check_inbox)
-
-
-                # while True:
-        #     self.outbox.put(
 
 
     def _choose_move(self, state=None, **kwargs):

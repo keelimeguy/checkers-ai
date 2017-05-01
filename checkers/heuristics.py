@@ -13,7 +13,6 @@ from checkers.game_api import GameOver, CheckersClientBase
 
 CACHE_SIZE = 65536
 
-weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights.json")
 
 def param_lookup(board): #will be expanded later
     # I have a better plan, I think.  TODO delete this

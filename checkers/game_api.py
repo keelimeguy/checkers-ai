@@ -1,3 +1,4 @@
+import sys
 import abc
 from threading import Thread
 
@@ -41,6 +42,10 @@ class CheckersGame(Thread):
 
     def step(self):
         move = self.next_player.make_move() # the blocking part of the loop
+        if move is None:
+            print("self.next_player made a None move :( {}".format(
+                self.next_player),
+                  file=sys.stderr)
         self.benchwarmer_player.recv_move(move)
         self.next_player, self.benchwarmer_player = (
             self.benchwarmer_player, self.next_player)
