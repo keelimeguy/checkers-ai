@@ -20,4 +20,4 @@ if __name__ == '__main__':
         game = CheckersGame(client, server)
     game.start()
     game.join()  # wait for game to end
-    print(f"Game result: {game.result}")
+    print("Game result: {}".format(game.result))
