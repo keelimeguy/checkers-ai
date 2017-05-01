@@ -20,7 +20,7 @@ def run_sp_game(weight_file=None):
 
     # Note: python 3.6 is required to run
     return subprocess.check_output(
-        "python3 -m checkers.heuristics -c 1 -w {}".format(outfile),
+        "python3 -m checkers.heuristics -c 1 -o 5 -u 6 -w {}".format(outfile),
         stderr=sys.stderr,  # subprocess.STDOUT,
         shell=True)
 
