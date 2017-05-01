@@ -59,7 +59,7 @@ class CheckersGame(Thread):
                 self.step()
             except GameOver as g:
                 #  maybe tell both players who won and how
-                self.cleanup()
+                self._cleanup()
                 self.result = g.result
                 return
             except:
