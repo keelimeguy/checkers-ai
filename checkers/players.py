@@ -314,6 +314,11 @@ class LocalServerPlayer(CheckersServerBase):
         self._show_move = ((lambda m: print(m, file=sys.stderr)) if verbose
                            else lambda x: None)
         self._board = state or Bitboard32State()
+
+        self._friend_count = self._board.count_friends()
+        self._foe_count = self._board.count_foes()
+        self._moves_since_piece_taken = 0
+
         self._secret_client = PoliteMinMaxClientPlayer(state=self._board,
                                                        **kwargs)
         self._color = color or random.choice(["Black", "White"])
@@ -344,7 +349,7 @@ class LocalServerPlayer(CheckersServerBase):
             raise GameOver(result=("Black" if self._board.player() == "White" else "White"))
         elif foes is 0:
             raise GameOver(result=self._board.player())
-        elif self._move_since_piece_take >= 100:
+        elif self._moves_since_piece_taken >= 100:
             raise GameOver(result="Draw")
 
     def recv_move(self, move):
