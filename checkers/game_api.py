@@ -60,13 +60,7 @@ class CheckersGame(Thread):
             except GameOver as g:
                 #  maybe tell both players who won and how
                 self.result = g.result
-            finally:
-                for player in [self.benchwarmer_player, self.next_player]:
-                    if isinstance(player, CheckersClientBase):
-                        # make it stop executing
-                        player.tell_game_over()
                 return
-
 
 class CheckersPlayerBase(object):
     """This is essentially an interface. See https://pymotw.com/3/abc/

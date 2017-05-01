@@ -28,6 +28,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                 verbose = if you want to hear the server complain
         """
         super().__init__()
+        self.gameover = False
         self._server_verbose = verbose
         self.board = Bitboard32State()
         self.server = SamServer(opponent, is_B_client)
@@ -66,7 +67,9 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             return result
 
     def _tell_thread_to_stop(self):
-        pass  # TODO
+        print("I will stop")
+        self.gameover = True
+        # pass  # TODO
 
     def going_first(self):
         if self._client_is_white is None:
@@ -78,13 +81,16 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self._client_is_white_q.put(
             self.server.connect(verbose=self._server_verbose),
             block=False) # 1 if white else 0
-        if self._client_is_white:
-            self._tell_server("")
+        if not self._client_is_white:
+            self.queue_replies.put(self._tell_server(""),block=False)
 
-        while True:
-            self.queue_replies.put(
-                self._tell_server(self.queue_to_send.get(block=True)).copy(),
+        while not self.gameover:
+            response = self._tell_server(self.queue_to_send.get(block=True))
+            if not isinstance(response, GameOver):
+                response = response.copy()
+            self.queue_replies.put(response,
                 block=False)  # raise exception if queue is full
+        print("McCartneyServerPlayer finished running",file=sys.stderr)
 
     def _tell_server(self, move):
         """tell the server the move and block while waiting for response"""
@@ -109,6 +115,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             nextmove = self.board.Move.from_string(response)
             self.moves.append(nextmove)
             self.board = self.board.result(nextmove)
+            return self.board.move_from_string(response)
         else:
             self.gameover = True
             self.server.disconnect()
@@ -314,6 +321,11 @@ class LocalServerPlayer(CheckersServerBase):
         self._show_move = ((lambda m: print(m, file=sys.stderr)) if verbose
                            else lambda x: None)
         self._board = state or Bitboard32State()
+
+        self._friend_count = self._board.count_friends()
+        self._foe_count = self._board.count_foes()
+        self._moves_since_piece_taken = 0
+
         self._secret_client = PoliteMinMaxClientPlayer(state=self._board,
                                                        **kwargs)
         self._color = color or random.choice(["Black", "White"])
@@ -344,7 +356,7 @@ class LocalServerPlayer(CheckersServerBase):
             raise GameOver(result=("Black" if self._board.player() == "White" else "White"))
         elif foes is 0:
             raise GameOver(result=self._board.player())
-        elif self._move_since_piece_take >= 100:
+        elif self._moves_since_piece_taken >= 100:
             raise GameOver(result="Draw")
 
     def recv_move(self, move):
