@@ -13,11 +13,11 @@ typedef struct Move {
     int length;
 } Move;
 
-Board* Board_alloc();
+Board* Board_alloc(void);
 void Board_init(Board* b, unsigned int _b, unsigned int _w, unsigned int _k, unsigned short _plyr);
 void Board_destroy(Board* b);
 
-Move* Move_alloc();
+Move* Move_alloc(void);
 void Move_init(Move* m, int length);
 Move* Move_copy(Move* src);
 void Move_list_destroy(Move** m, int size);

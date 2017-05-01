@@ -197,14 +197,14 @@ Move** actions(Board* b, int* length) {
 
     // Convert string of moves into Move list..
 
-    int len = strlen(moveStr);
+    unsigned int len = strlen(moveStr);
     int numMoves = 0;
     if (len > 10) numMoves = 1;
-    for (int i = 0; i < len; i++)
+    for (unsigned int i = 0; i < len; i++)
         if(moveStr[i] == ',') numMoves++;
     *length = numMoves;
 
-    if (numMoves==0) return (Move**){0};
+    if (numMoves<=0) return (Move**){0};
 
     // Allocate space for move list
     Move** ret = malloc(sizeof(Move)*numMoves);
