@@ -1,9 +1,12 @@
 import argparse
 import gc
+import sys
 import json
 import os.path
 import random
 import time
+
+import checkers.heuristics as heuristics
 
 try:
     from math import inf
@@ -58,7 +61,7 @@ if __name__ == "__main__":
                             raise result
                     else:
                         for act in actions:
-                            score = alphabeta_search(game.board.result(act), game._client_is_white)
+                            score = heuristics.alphabeta_search(game.board.result(act), game._client_is_white, weights)
                             if float(score) > bestScore:
                                 bestScore = score
                                 move_list = [act]
@@ -99,5 +102,5 @@ if __name__ == "__main__":
         game = None
         gc.collect()
 
-    print("eval cache: ", eval.cache_info())
+    # print("eval cache: ", eval.cache_info())
     print("Stats: {}w:{}d:{}l\navg time = {}s\nmax time = {}s\nmin time = {}s".format(wins, draws, losses, total_time/num, max_time, min_time))
