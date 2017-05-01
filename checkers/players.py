@@ -5,7 +5,7 @@ import sys
 import random
 import time
 
-from threading import Thread
+from threading import Thread, Event
 
 try:
     from math import inf
@@ -169,6 +169,9 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
     class StopPrecomputation(Exception):
         """Thrown when we receive a move and need to stop precomputing"""
 
+    class StopThreadExecution(Exception):
+        """Thrown when the thread ought to stop completely"""
+
     def __init__(self, state=None, weights=None, depth=7):
         """You'd better pass in a dictionary of weights"""
         super().__init__()
@@ -180,6 +183,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                                         default_depth=depth)
         self._go_first_q = queue.Queue(1)
         self._outbox = queue.Queue(1)
+        self._game_over_event = Event()
         # going_first = None  # None if unset, False later
         self._responses = {}  # dict of move -> move
 
@@ -191,9 +195,12 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._inbox.put(move.copy(),
                         block=False)  # useful error if queue is Full
 
+    def tell_game_over(self):
+        self._game_over_event.set()
+
     def run(self):
         # wait to be told who is going first
-        go_first = self._go_first_q.get(block=True)
+        go_first = self.safe_get_queue_blocking(self._go_first_q)
 
         if go_first:
             # print("This shit's happening", file=sys.stderr)
@@ -211,31 +218,44 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
             # print(type(move))  # segfaults
             # print("move: {}".format(str(move)), file=sys.stderr)
             # print("But it wasn't the holdup", file=sys.stderr)
+        try:
+            while True:
+                try:
+                    self._precompute()
+                except self.StopPrecomputation:
+                    print("stopped precomputing", file=sys.stderr)
+                # block if necessary because that would mean we finished
+                # precomputation before our opponent made a move
+                print("waiting for them", file=sys.stderr)
+                # while True:
+                enemy_move = self.safe_get_queue_blocking(self._inbox).copy()
 
+                print("Done waiting!", file=sys.stderr)
+                print(enemy_move, file=sys.stderr)
+                self._state = self._state.result(enemy_move)
+                if enemy_move in self._responses:
+                    move = self._responses[enemy_move]
+                else:
+                    move = self._choose_move()
+
+                    self._outbox.put(move.copy(), block=False)
+                    self._state = self._state.result(move)
+        except self.StopThreadExecution:
+            print("{} ending!".format(self.name), file=sys.stderr)
+            return
+
+    def safe_get_queue_blocking(self, some_queue):
         while True:
             try:
-                self._precompute()
-            except self.StopPrecomputation:
-                print("stopped precomputing", file=sys.stderr)
-            # block if necessary because that would mean we finished
-            # precomputation before our opponent made a move
-            print("waiting for them", file=sys.stderr)
-            # while True:
-            enemy_move = self._inbox.get(block=True).copy()
-            # if isinstance(enemy_move, 
-            print("Done waiting!", file=sys.stderr)
-            print(enemy_move, file=sys.stderr)
-            self._state = self._state.result(enemy_move)
-            if enemy_move in self._responses:
-                move = self._responses[enemy_move]
-            else:
-                move = self._choose_move()
-
-            self._outbox.put(move.copy(), block=False)
-            self._state = self._state.result(move)
+                return some_queue.get(block=True, timeout=0.5)
+            except queue.Empty:
+                if self._game_over_event.is_set():
+                    print("{} ending soon!".format(self.name), file=sys.stderr)
+                    raise self.StopThreadExecution()
 
     def make_move(self):
-        return self._outbox.get(block=True)
+        return self.safe_get_queue_blocking(self._outbox)
+
 
     def _precompute(self):
         # modifies self._responses with snappy answers to moves we expected
@@ -320,7 +340,7 @@ class LocalServerPlayer(CheckersServerBase):
         super().__init__()
         self._show_move = ((lambda m: print(m, file=sys.stderr)) if verbose
                            else lambda x: None)
-        self._board = state or Bitboard32State()
+        self.__board = state or Bitboard32State()
 
         self._friend_count = self._board.count_friends()
         self._foe_count = self._board.count_foes()
@@ -337,11 +357,25 @@ class LocalServerPlayer(CheckersServerBase):
     def start(self):
         pass
 
+    @property
+    def _board(self):
+        """The board, yup"""
+        return self.__board
+
+    @_board.setter
+    def _(self, new_board):
+        self.__board = new_board
+        self._check_if_terminal()
+
+    @_board.deleter
+    def _(self):
+        del self.__board
+
     def going_first(self):
         return self._going_first
 
     def _check_if_terminal(self):
-
+        """called whenever the board is updated"""
         friends = self._board.count_friends()
         foes = self._board.count_foes()
         if self._friend_count == friends and self._foe_count == foes:
@@ -351,23 +385,27 @@ class LocalServerPlayer(CheckersServerBase):
             self._foe_count = foes
             self._moves_since_piece_taken = 0
         # friend = "White" if self._board.plyr else "Black"
-
+        result = None
         if friends is 0:
-            raise GameOver(result=("Black" if self._board.player() == "White" else "White"))
+            result= "Black" if self._board.player() == "White" else "White"
         elif foes is 0:
-            raise GameOver(result=self._board.player())
+            result = self._board.player()
         elif self._moves_since_piece_taken >= 100:
-            raise GameOver(result="Draw")
+            result = "Draw"
+
+        if result:
+            self._secret_client.tell_game_over()
+            raise GameOver(result=result)
 
     def recv_move(self, move):
         self._show_move("client played: {}".format(str(move)))
         self._board = self._board.result(move)
-        self._check_if_terminal()
+        # self._check_if_terminal()
         self._secret_client.recv_move(move)
 
     def make_move(self):
         move = self._secret_client.make_move()
         self._show_move("server played: {}".format(str(move)))
         self._board = self._board.result(move)
-        self._check_if_terminal()
+        # self._check_if_terminal()
         return move
