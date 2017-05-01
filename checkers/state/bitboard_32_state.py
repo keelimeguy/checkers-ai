@@ -29,8 +29,16 @@ class Bitboard32State(CheckersGameState):
 
         def __str__(self):
             assert isinstance(self.move, POINTER(MOVE))
+            print("what is move?: ", self.move)
+            print("what is move.length?: ", self.move.contents.length)
+            print("what is move.route[0]?: ", int(self.move.contents.route[0]))
             ptr = state32_lib.Move_to_string(self.move)
-            string = cast(ptr, c_char_p).value.decode("utf-8")
+            print("what is ptr?: ", ptr)
+            print("what is move now?: ", self.move)
+            ptrcast = cast(ptr, c_char_p)
+            print("what is ptrcast?: ", ptrcast)
+            print("what is ptrcast.value?: ", ptrcast.value)
+            string = ptrcast.value.decode("utf-8")
             state32_lib.free(ptr)
             return string
 
