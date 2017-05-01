@@ -235,7 +235,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         if state is None:
             state = self._state
 
-        alpha = float('-inf')
+        alpha = -inf
         best_yet = None
         for act in sorted(state.actions(),
                           # lowest value for opponent first
