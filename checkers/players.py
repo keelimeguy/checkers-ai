@@ -321,8 +321,7 @@ class LocalServerPlayer(CheckersServerBase):
     def _check_if_terminal(self):
         # friend = "White" if self._board.plyr else "Black"
         if self._board.count_friends() is 0:
-            raise GameOver(  # pain in the neck
-                "Black" if self._board.player() == "White" else "White")
+            raise GameOver(result=("Black" if self._board.player() == "White" else "White"))
         elif self._board.count_foes() is 0:
             raise GameOver(result=self._board.player())
 

@@ -61,6 +61,9 @@ class CheckersGame(Thread):
                 #  maybe tell both players who won and how
                 self.result = g.result
                 return
+            except:
+                print("OTHER ERROR", file=sys.stderr)
+                raise
 
 
 class CheckersPlayerBase(object):
