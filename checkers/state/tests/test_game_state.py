@@ -56,7 +56,6 @@ class CheckersGameStateTestCase(unittest.TestCase):
         initial = self.state_class.from_string(FRESH_BOARD_REPR)
         self.assertEqual(hash(initial),
                          hash(self.state_class.from_string(FRESH_BOARD_REPR)))
-
         hashes = {hash(initial)}
         count = 1
         for move in initial.list_actions():

@@ -9,8 +9,11 @@ weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Example of playing a game with LocalServerPlayer and PoliteMinMaxClientPlayer.')
-    parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
+    parser = argparse.ArgumentParser(
+        description='Example of playing a game with LocalServerPlayer'
+        ' and PoliteMinMaxClientPlayer.')
+    parser.add_argument('-w', '--weights', default=weights_file,
+                        help='File with weight constants')
     args = parser.parse_args()
 
     with open(args.weights, 'r') as f:
