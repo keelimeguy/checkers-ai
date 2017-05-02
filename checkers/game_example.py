@@ -19,6 +19,8 @@ if __name__ == '__main__':
     parser.add_argument('-v', '--verbose', default=False,
                         help='\'True\' if you want to display each message'
                         ' sent between the client and server')
+    parser.add_argument('-t', '--training-eval', action='store_true',
+                        help='train against a simple evaluator')
     args = parser.parse_args()
 
     with open(args.weights, 'r') as f:
@@ -32,7 +34,9 @@ if __name__ == '__main__':
         server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
         client = MinMaxClientPlayer(weights=weights_learn, depth=2)
     else:
-        server = LocalServerPlayer(color="Black", verbose=args.verbose,
+        evaluator = TrainingEvaluator() if args.training_eval else None
+        server = LocalServerPlayer(color="Black", evaluator=evaluator,
+                                   verbose=args.verbose,
                                    weights=weights_teach, depth=2)
         client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
 

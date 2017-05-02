@@ -180,13 +180,16 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
     class StopThreadExecution(Exception):
         """Thrown when the thread ought to stop completely"""
 
-    def __init__(self, state=None, weights=None, depth=7):
-        """You'd better pass in a dictionary of weights"""
+    def __init__(self, state=None, weights=None, evaluator=None, depth=7):
+        """You'd better pass in a dictionary of weights
+
+        evaluator takes precedence over weights"""
+
         super().__init__()
         # self.evaluate = evaluation_function  # better make a subclass instead
         self._state = Bitboard32State()
         self._inbox = queue.Queue(1)
-        self._evaluator = BoardEvaluator(weights)
+        self._evaluator = evaluator or BoardEvaluator(weights)
         self._search_engine = AlphaBeta(self._evaluator,
                                         default_depth=depth)
         self._go_first_q = queue.Queue(1)
@@ -320,35 +323,6 @@ class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
 
     def _precompute(self):
         pass
-
-class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
-    def __init__(self, opponent=0, is_B_client=False, verbose=False):
-        super().__init__(opponent, is_B_client, verbose)
-        self._client_is_white = self.server.connect(verbose=self._server_verbose)
-        if self._client_is_white:
-            self._tell_server("")
-
-    def recv_move(self, move):
-        self.moves.append(move)  # not thread safe, but okay for correct use
-        self.board = self.board.result(move)
-        # The sequence
-        #   get a move from server (and enqueue)
-        #   dequeue that move (and feed to client player)
-        #   recv a move from the client player
-        # should never be broken.  (Unless we pipeline our messages for
-        # sequences of forced jumps, but that would fail unless the other team
-        # did the same optimization! Please don't do that!)
-        # Thus this exception:
-        if self.queue_replies.qsize() != 0:
-            raise RuntimeError(  # see note above before commenting this out
-                "recv_move ({}) called on a {} with "
-                "nonzero pending messages from server".format(str(move), type(self)))
-
-        # This version does not use the queue and threading, meant to directly make and recieve moves
-        # ..hence "Simple"
-        return self._tell_server(str(move))
-        # self.queue_to_send.put(str(move), block=False)
-
 
 class LocalServerPlayer(CheckersServerBase):
 
