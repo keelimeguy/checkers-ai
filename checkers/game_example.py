@@ -4,6 +4,7 @@ import json
 
 from checkers.players import * # McCartneyServerPlayer, MinMaxClientPlayer
 from checkers.game_api import CheckersGame
+from checkers.heuristics import TrainingEvaluator
 
 weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights.json")
 
@@ -35,9 +36,9 @@ if __name__ == '__main__':
         client = MinMaxClientPlayer(weights=weights_learn, depth=2)
     else:
         evaluator = TrainingEvaluator() if args.training_eval else None
-        server = LocalServerPlayer(color="Black", evaluator=evaluator,
+        server = LocalServerPlayer(evaluator=evaluator,
                                    verbose=args.verbose,
-                                   weights=weights_teach, depth=2)
+                                   weights=weights_teach, depth=5)
         client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
 
 

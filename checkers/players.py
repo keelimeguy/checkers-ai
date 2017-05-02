@@ -215,9 +215,9 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         go_first = self.safe_get_queue_blocking(self._go_first_q)
 
         if go_first:
-            print("This shit's happening", file=sys.stderr)
+            # print("This shit's happening", file=sys.stderr)
             move = self._choose_move()
-            print("asdfasdf", file=sys.stderr)
+            # print("asdfasdf", file=sys.stderr)
             self._outbox.put(move.copy(), block=False)
             # print("asdfasdfasdf", file=sys.stderr)
             # print(type(move), file=sys.stderr)
@@ -294,7 +294,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
 
         alpha = -inf
         best_yet = None
-        print("Made it here, of course", file=sys.stderr)
+        # print("Made it here, of course", file=sys.stderr)
         for act in sorted(state.actions(),
                           # lowest value for opponent first
                           key=(lambda a: self._evaluator(state.result(a)))):
