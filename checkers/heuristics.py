@@ -24,7 +24,7 @@ def eval(board, player, weights):
     for parameter in weights:
         if parameter == "Probability of Win": #This field used to track fitness of weight set
             continue
-        weight = int(weights[parameter]["weight"])
+        weight = int(weights[parameter])
         score += weight * param_values[parameter]()
 
     if board.c_board.contents.plyr == player:

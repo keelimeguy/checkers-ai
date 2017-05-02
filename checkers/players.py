@@ -21,6 +21,9 @@ from checkers.game_api import GameOver, CheckersServerBase, CheckersClientBase
 
 class McCartneyServerPlayer(Thread, CheckersServerBase):
 
+    class StopThreadExecution(Exception):
+        """Thrown when the server thread ought to stop completely"""
+
     def __init__(self, opponent=0, is_B_client=False, verbose=False):
         """Pass
                 opponent= SERVER_NUMBER
@@ -28,7 +31,6 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
                 verbose = if you want to hear the server complain
         """
         super().__init__()
-        self.gameover = False
         self._server_verbose = verbose
         self.board = Bitboard32State()
         self.server = SamServer(opponent, is_B_client)
@@ -67,11 +69,10 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
             return result
 
     def _tell_thread_to_stop(self):
-        print("I will stop")
-        self.gameover = True
-        # pass  # TODO
+        self.queue_to_send.put(self.StopThreadExecution())
 
     def going_first(self):
+        # The server goes first if the client is white
         if self._client_is_white is None:
             self._client_is_white = self._client_is_white_q.get(block=True)
         return self._client_is_white
@@ -81,47 +82,54 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         self._client_is_white_q.put(
             self.server.connect(verbose=self._server_verbose),
             block=False) # 1 if white else 0
-        if not self._client_is_white:
+        time.sleep(0.001)
+
+        if self.going_first():
             self.queue_replies.put(self._tell_server(""),block=False)
 
-        while not self.gameover:
-            response = self._tell_server(self.queue_to_send.get(block=True))
-            if not isinstance(response, GameOver):
-                response = response.copy()
-            self.queue_replies.put(response,
-                block=False)  # raise exception if queue is full
-        print("McCartneyServerPlayer finished running",file=sys.stderr)
+        try:
+            while True:
+                response = self._tell_server(self.queue_to_send.get(block=True))
+                if not isinstance(response, GameOver):
+                    response = response.copy()
+                self.queue_replies.put(response,
+                    block=False)  # raise exception if queue is full
+        except self.StopThreadExecution:
+            print("McCartneyServerPlayer finished running",file=sys.stderr)
+            return
 
     def _tell_server(self, move):
         """tell the server the move and block while waiting for response"""
-        print("sending move: {}".format(move))
+
+        if isinstance(move, self.StopThreadExecution):
+            raise move
+
         response = self.server.send_and_receive(move)
         if response:
             if "Result" in response:
                 self.server.disconnect()
                 if "Result:Black" in response:
-                    return GameOver(result="Black")
+                    return GameOver(result="Black", client_win=((not self.going_first()) == 1))
                 elif "Result:White" in response:
-                    return GameOver(result="White")
+                    return GameOver(result="White", client_win=(self.going_first() == 1))
                 else:
-                    return GameOver(result="Draw")
+                    return GameOver(result="Draw", client_win=False)
 
             elif "Error" in response:
                 self.server.disconnect()
                 self.show_game()
                 print("Error detected:", file=sys.stderr)
                 print(response, file=sys.stderr)
-                return GameOver(result=None)
+                return GameOver(result=None, client_win=None)
             nextmove = self.board.Move.from_string(response)
             self.moves.append(nextmove)
             self.board = self.board.result(nextmove)
             return self.board.move_from_string(response)
         else:
-            self.gameover = True
             self.server.disconnect()
             self.show_game()
             print("Unknown Error: No Response", file=sys.stderr)
-            return GameOver(result=None)
+            return GameOver(result=None, client_win=None)
 
 
     # We store a list of moves played throughout a game, and use this function to show the entire game at the end
@@ -227,12 +235,12 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                     print("stopped precomputing", file=sys.stderr)
                 # block if necessary because that would mean we finished
                 # precomputation before our opponent made a move
-                print("waiting for them", file=sys.stderr)
+                # print("waiting for them", file=sys.stderr)
                 # while True:
                 enemy_move = self.safe_get_queue_blocking(self._inbox).copy()
 
-                print("Done waiting!", file=sys.stderr)
-                print(enemy_move, file=sys.stderr)
+                # print("Done waiting!", file=sys.stderr)
+                # print(enemy_move, file=sys.stderr)
                 self._state = self._state.result(enemy_move)
                 if enemy_move in self._responses:
                     move = self._responses[enemy_move]
@@ -251,7 +259,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 return some_queue.get(block=True, timeout=0.5)
             except queue.Empty:
                 if self._game_over_event.is_set():
-                    print("{} ending soon!".format(self.name), file=sys.stderr)
+                    # print("{} ending soon!".format(self.name), file=sys.stderr)
                     raise self.StopThreadExecution()
 
     def make_move(self):
@@ -287,19 +295,26 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         for act in sorted(state.actions(),
                           # lowest value for opponent first
                           key=(lambda a: self._evaluator(state.result(a)))):
-            print("Considering {}".format(str(act)), file=sys.stderr)
+            # print("Considering {}".format(str(act)), file=sys.stderr)
             if best_yet is None:
                 # almost redundant, but keeps us from stalling if we're losing
-                best_yet = act
+                best_yet = [act]
 
             current_val = self._search_engine.ab_dfs(
                 state.result(act), alpha=alpha, maximum=False,
                 **kwargs)
             if current_val > alpha:
                 alpha = current_val
-                best_yet = act
-        print("Chose a move {}".format(best_yet))
-        return best_yet
+                best_yet = [act]
+            elif current_val == alpha:
+                best_yet.append(act)
+        index = random.randint(0, len(best_yet)-1) if best_yet is not None and len(best_yet)>1 else 0
+        chosen = best_yet[index] if best_yet is not None else None
+        # print("Chose a move {}".format(chosen))
+        if not chosen:
+            print(next(state.actions(), None), file=sys.stderr)
+            raise ValueError("No actions: ", str(state))
+        return chosen
 
 class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
 
@@ -394,12 +409,19 @@ class LocalServerPlayer(CheckersServerBase):
             result= "Black" if self._board.player() == "White" else "White"
         elif foes is 0:
             result = self._board.player()
+        elif not next(self._board.actions(), None):
+            result= "Black" if self._color == "White" else "White"
         elif self._moves_since_piece_taken >= 100:
             result = "Draw"
 
+        if result in ["White", "Black"]:
+            client_win = result != self._color
+        else:
+            client_win = False
+
         if result:
             self._secret_client.tell_game_over()
-            raise GameOver(result=result)
+            raise GameOver(result=result, client_win=client_win)
 
     def recv_move(self, move):
         self._show_move("client played: {}".format(str(move)))

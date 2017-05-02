@@ -34,10 +34,6 @@ for parameter in weight_tests:
         with open(os.path.join(parent_dir, "weights.json"), "r") as f:
             active_weights = json.load(f)
         active_weights[parameter] = weight
-        # if parameter in active_weights:
-            # active_weights[parameter]["weight"] = weight
-        # else:
-            # active_weights[parameter] = {"weight" : weight, "wins" : 0, "total" : 0}
         with open(outfile, "w") as f:
             json.dump(active_weights, f)
 
@@ -55,16 +51,26 @@ for parameter in weight_tests:
                 perror(e.output)
                 break
         os.chdir(current_dir)
+        draws = 0
+        wins = 0
+        losses = 0
         for line in result.split(b'\n'):
-            if line and line.split()[0] == b"Game result:":
-                result_line =  line.split()[1]
-                print("Learn: ", result_line)
-                print("(Unfinished code)")
+            if line:
+                rline = line.split(b':')
+                if rline[0] == b"Game result":
+                    result_line =  rline[1].split()[0]
+                    if result_line == b"Draw":
+                        draws = 1
+                        break;
+                if rline[0] == b"Client Win?":
+                    result_line =  rline[1].split()[0]
+                    if result_line == b"True":
+                        wins = 1
+                    if result_line == b"False":
+                        losses = 1
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
         weight_tests[parameter][str(weight)][0] += wins
         weight_tests[parameter][str(weight)][1] += wins + draws + losses
-
-        break
 
 with open("learning_weights.json", "w") as f:
     json.dump(weight_tests, f)
