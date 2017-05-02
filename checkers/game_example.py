@@ -30,11 +30,11 @@ if __name__ == '__main__':
                      "count_foes_kings" : -5}
     if args.server:
         server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
-        client = MinMaxClientPlayer(weights=weights_learn, depth=2)
+        client = MinMaxClientPlayer(weights=weights_learn, depth=1)
     else:
-        server = LocalServerPlayer(color="Black", verbose=args.verbose,
-                                   weights=weights_teach, depth=2)
-        client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
+        server = LocalServerPlayer(verbose=args.verbose,
+                                   weights=weights_teach, depth=0)
+        client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=0)
 
 
     server.start()
@@ -47,5 +47,7 @@ if __name__ == '__main__':
         game = CheckersGame(client, server)
     game.start()
     game.join()  # wait for game to end
+    server.join()  # wait for game to end
+    client.join()  # wait for game to end
     print("Game result: {}".format(game.result))
     print("Client Win?: {}".format(game.client_win))
