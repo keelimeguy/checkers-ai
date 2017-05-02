@@ -2,8 +2,8 @@ import os
 import json
 import pdb
 
-PRUNE_NUM = 4 #This number of best weights for each parameter will be kept (at most)
-PRUNE_PERC = 0.5 #Conditional win percentages below this will be discarded as well
+PRUNE_NUM = 6 #This number of best weights for each parameter will be kept (at most)
+PRUNE_PERC = 0.54 #Conditional win percentages below this will be discarded as well
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(current_dir,"learning_weights.json"),"r") as f:
