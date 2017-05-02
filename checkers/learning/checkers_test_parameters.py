@@ -30,7 +30,7 @@ def perror(*args, **kwargs):
     print(*args, **kwargs)
 
 start_time = time.time()
-while time.time() < start_time + 25200:
+while time.time() < start_time + 3600:
     for parameter in weight_tests:
         for weight in weight_tests[parameter]:
             weight = int(weight)
