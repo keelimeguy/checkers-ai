@@ -2,8 +2,8 @@ import os
 import json
 import pdb
 
-PRUNE_NUM = 4 #This number of best weights for each parameter will be kept (at most)
-PRUNE_PERC = 0.5 #Conditional win percentages below this will be discarded as well
+PRUNE_NUM = 6 #This number of best weights for each parameter will be kept (at most)
+PRUNE_PERC = 0.54 #Conditional win percentages below this will be discarded as well
 
 current_dir = os.path.dirname(os.path.realpath(__file__))
 with open(os.path.join(current_dir,"learning_weights.json"),"r") as f:
@@ -75,8 +75,7 @@ def generate_new_weightset_iter(weights_dict, dict_keys, product, output_dict):
         prob_win_given_weight = int(weights_dict[parameter][weight][0])/total_wins
         prob_weight = int(weights_dict[parameter][weight][1])/total_played
         product = product * (prob_win_given_weight / prob_weight) #statistics might be a bit skewed here, not really sure. Will be easier to tell when we don't win basically every game.
-        output_dict[parameter] = {"weight" : weight, "wins" : weights_dict[parameter][weight][0],
-                                  "total" : weights_dict[parameter][weight][1]}
+        output_dict[parameter] = weight
         if len(dict_keys) != 0:
             full_product, output = generate_new_weightset_iter(weights_dict, dict_keys, product, output_dict)
         else:
