@@ -9,10 +9,11 @@ class GameOver(Exception):
     finished, if that's happening
     """
 
-    def __init__(self, *args, result=None, **kwargs):
+    def __init__(self, *args, result=None, client_win=None, **kwargs):
         # result should be "Black" "White" or "Draw"
         super().__init__(*args, **kwargs)
         self.result = result
+        self.client_win = client_win
 
 # class ChoosyCheckersGame(CheckersGame):
 
@@ -39,6 +40,7 @@ class CheckersGame(Thread):
         self.next_player = player1  # this, we'll be switching around
         self.benchwarmer_player = player2
         self.result = None
+        self.client_win = None
 
     def step(self):
         move = self.next_player.make_move() # the blocking part of the loop
@@ -61,6 +63,7 @@ class CheckersGame(Thread):
                 #  maybe tell both players who won and how
                 self._cleanup()
                 self.result = g.result
+                self.client_win = g.client_win
                 return
             except:
                 self._cleanup()
