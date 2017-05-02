@@ -12,7 +12,7 @@ from collections import namedtuple
 class AlphaBeta(object):
     # __metaclass__ = abc.ABCMeta
 
-    def __init__(self, heuristic, cache_size=10001, default_depth=7):
+    def __init__(self, heuristic, cache_size=65536, default_depth=7):
         self.heuristic_eval = heuristic  # function to evaluate search nodes
         self.cache = pylru.lrucache(cache_size)
         if default_depth is not None:  # 0 is valid, so check for None explicitly

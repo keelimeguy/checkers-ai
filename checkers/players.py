@@ -191,6 +191,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._evaluator = evaluator or BoardEvaluator(weights)
         self._search_engine = AlphaBeta(self._evaluator,
                                         default_depth=depth)
+        # self._search_engine.cache_quality_fudge = 2
         self._go_first_q = queue.Queue(1)
         self._outbox = queue.Queue(1)
         self._game_over_event = Event()
