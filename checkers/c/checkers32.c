@@ -25,7 +25,7 @@ Move* Move_alloc() {
     return malloc(sizeof(Move));
 }
 
-void Move_init(Move* m, int length) {
+void Move_init(Move* m, unsigned int length) {
     m->length = length;
     m->route = malloc(length * sizeof(unsigned short));
 }
@@ -33,7 +33,7 @@ void Move_init(Move* m, int length) {
 Move* Move_copy(Move* src) {
     Move* ret = Move_alloc();
     Move_init(ret, src->length);
-    for (int i = 0; i < ret->length; i++)
+    for (unsigned int i = 0; i < ret->length; i++)
         ret->route[i] = src->route[i];
     return ret;
 }
@@ -43,13 +43,13 @@ void Move_destroy(Move* m) {
     free(m);
 }
 
-void Move_list_destroy(Move** m, int size) {
-    for (int i = 0; i < size; i++)
+void Move_list_destroy(Move** m, unsigned int size) {
+    for (unsigned int i = 0; i < size; i++)
         Move_destroy(m[i]);
     free(m);
 }
 
-char Board_char_at_pos(Board* b, unsigned short pos) {
+char Board_char_at_pos(Board* b, unsigned int pos) {
     char ret = '-';
     if (b->b & (1<<(pos-1)))
         ret = 'b';
@@ -63,7 +63,7 @@ char Board_char_at_pos(Board* b, unsigned short pos) {
 char* Board_to_string(Board* b) {
     char* repr = malloc(85 * sizeof(char));
     int next = 0;
-    for(int i = 1; i <= 32; i++) {
+    for(unsigned int i = 1; i <= 32; i++) {
         if (pos_to_row(i)%2) {
             repr[next++] = '+';
             repr[next++] = Board_char_at_pos(b, i);
@@ -126,7 +126,7 @@ Board* Board_from_string(char* str) {
 
 char* Move_to_string(Move* m) {
     char* repr = malloc((m->length*5 + m->length) * sizeof(char));
-    for (int i = 0; i < m->length; i++) {
+    for (unsigned int i = 0; i < m->length; i++) {
         unsigned short pos = m->route[i];
         repr[i*6] = '(';
         repr[i*6+1] = (char)(pos_to_row(pos) + 48);
@@ -149,7 +149,7 @@ Move* Move_from_string(char* str) {
     unsigned short row_end = row_start;
     unsigned short col_end = col_start;
 
-    int numSteps = 1;
+    unsigned int numSteps = 1;
     unsigned short temp_pos[10]; // Max move should be 9 jumps.. I think
     temp_pos[0] = (7-row_start)*4+1 + col_start/2;
 
@@ -170,7 +170,7 @@ Move* Move_from_string(char* str) {
 
     Move* ret = Move_alloc();
     Move_init(ret, numSteps);
-    for (int j = 0; j<numSteps; j++)
+    for (unsigned int j = 0; j<numSteps; j++)
         ret->route[j] = temp_pos[j];
     return ret;
 }
@@ -182,11 +182,11 @@ char* player(Board* b) {
         sprintf(str, "White");
     else
         sprintf(str, "Black");
-    str[5] = (char)0;
+    /* str[5] = (char)0;  totally already happens */
     return str;
 }
 
-Move** actions(Board* b, int* length) {
+Move** actions(Board* b, unsigned int* length) {
     char moveStr[OUTSTR_SIZE]; // Sorry...
     moveStr[0] = 0; // Just in case...
 
@@ -197,20 +197,20 @@ Move** actions(Board* b, int* length) {
 
     // Convert string of moves into Move list..
 
-    int len = strlen(moveStr);
-    int numMoves = 0;
+    unsigned int len = strlen(moveStr);
+    unsigned int numMoves = 0;
     if (len > 10) numMoves = 1;
-    for (int i = 0; i < len; i++)
+    for (unsigned int i = 0; i < len; i++)
         if(moveStr[i] == ',') numMoves++;
     *length = numMoves;
 
-    if (numMoves==0) return (Move**){0};
+    if (numMoves<=0) return (Move**){0}; /* suspicious */
 
     // Allocate space for move list
     Move** ret = malloc(sizeof(Move)*numMoves);
 
-    int index = 0;
-    for (int i = 0; i < numMoves; i++) {
+    unsigned int index = 0;
+    for (unsigned int i = 0; i < numMoves; i++) {
         unsigned short row_start = (unsigned short)(moveStr[index+1]-48); // 48 is ASCII for '0'
         unsigned short col_start = (unsigned short)(moveStr[index+3]-48);
         unsigned short row_end = row_start;
@@ -218,7 +218,7 @@ Move** actions(Board* b, int* length) {
 
         // (r:c):(r:c):(r:c), (r:c):(r:C)
 
-        int numSteps = 1;
+        unsigned int numSteps = 1;
         unsigned short temp_pos[10]; // Max move should be 9 jumps.. I think
         temp_pos[0] = (7-row_start)*4+1 + col_start/2;
 
@@ -240,7 +240,7 @@ Move** actions(Board* b, int* length) {
 
         ret[i] = Move_alloc();
         Move_init(ret[i], numSteps);
-        for (int j = 0; j<numSteps; j++)
+        for (unsigned int j = 0; j<numSteps; j++)
             ret[i]->route[j] = temp_pos[j];
     }
     return ret;
@@ -253,11 +253,11 @@ Board* result(Board* b, Move* move) {
     res->k = b->k;
     res->plyr = ! b->plyr;
 
-    int index = 0;
+    unsigned int index = 0;
     unsigned short pos_start;
     unsigned short pos_end;
     unsigned short row_is_even = ! (pos_to_row(move->route[0]) % 2);
-    while(index < (move->length - 1)) {
+    while((index + 1) < move->length) {
 
         pos_start = move->route[index++];
         pos_end = move->route[index];

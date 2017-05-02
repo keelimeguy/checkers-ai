@@ -9,9 +9,16 @@ weights_file = os.path.join(os.path.dirname(os.path.realpath(__file__)),"weights
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser(description='Example of playing a game with LocalServerPlayer and PoliteMinMaxClientPlayer.')
-    parser.add_argument('-w', '--weights', default=weights_file, help='File with weight constants')
-    parser.add_argument('-v', '--verbose', default=False, help='\'True\' if you want to display each message sent between the client and server')
+    parser = argparse.ArgumentParser(
+        description='Example of playing a game with LocalServerPlayer'
+        ' and PoliteMinMaxClientPlayer.')
+    parser.add_argument('-w', '--weights', default=weights_file,
+                        help='File with weight constants')
+    parser.add_argument('-s', '--server', action="store_true",
+                        help="Play against the real remote server")
+    parser.add_argument('-v', '--verbose', default=False,
+                        help='\'True\' if you want to display each message'
+                        ' sent between the client and server')
     args = parser.parse_args()
 
     with open(args.weights, 'r') as f:
@@ -21,11 +28,14 @@ if __name__ == '__main__':
                      "count_foes" : -3,
                      "count_friends_kings" : 5,
                      "count_foes_kings" : -5}
+    if args.server:
+        server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
+        client = MinMaxClientPlayer(weights=weights_learn, depth=2)
+    else:
+        server = LocalServerPlayer(color="Black", verbose=args.verbose,
+                                   weights=weights_teach, depth=2)
+        client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
 
-    # server = McCartneyServerPlayer(verbose=(1 if args.verbose else 0))
-    server = LocalServerPlayer(color="Black", verbose=args.verbose, weights=weights_teach, depth=2)
-    client = PoliteMinMaxClientPlayer(weights=weights_learn, depth=2)
-    # client = MinMaxClientPlayer(weights=weights_learn, depth=2)
 
     server.start()
     client.start()

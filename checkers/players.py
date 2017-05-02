@@ -65,8 +65,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         if isinstance(result, GameOver):
             self._tell_thread_to_stop()
             raise result
-        else:
-            return result
+        return result
 
     def _tell_thread_to_stop(self):
         self.queue_to_send.put(self.StopThreadExecution())
@@ -200,7 +199,10 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._go_first_q.put(go_first, block=False)
 
     def recv_move(self, move):
-        self._inbox.put(move.copy(),
+        if isinstance(move, GameOver):
+            self.tell_game_over()
+        else:
+            self._inbox.put(move.copy(),
                         block=False)  # useful error if queue is Full
 
     def tell_game_over(self):
@@ -211,43 +213,27 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         go_first = self.safe_get_queue_blocking(self._go_first_q)
 
         if go_first:
-            # print("This shit's happening", file=sys.stderr)
             move = self._choose_move()
-            # print("asdfasdf", file=sys.stderr)
             self._outbox.put(move.copy(), block=False)
-            # print("asdfasdfasdf", file=sys.stderr)
-            # print(type(move), file=sys.stderr)
-            # print(move.move, file=sys.stderr)
             interim  = self._state.result(move)
-            # print(move.move, file=sys.stderr)
-            # print("again {}".format(type(move)))
             self._state = interim
-            # print("asdfasdfasdfasdf", file=sys.stderr)
-            # print(type(move))  # segfaults
-            # print("move: {}".format(str(move)), file=sys.stderr)
-            # print("But it wasn't the holdup", file=sys.stderr)
         try:
             while True:
                 try:
                     self._precompute()
                 except self.StopPrecomputation:
-                    print("stopped precomputing", file=sys.stderr)
+                    # print("stopped precomputing", file=sys.stderr)
+                    pass
                 # block if necessary because that would mean we finished
                 # precomputation before our opponent made a move
-                # print("waiting for them", file=sys.stderr)
-                # while True:
                 enemy_move = self.safe_get_queue_blocking(self._inbox).copy()
-
-                # print("Done waiting!", file=sys.stderr)
-                # print(enemy_move, file=sys.stderr)
                 self._state = self._state.result(enemy_move)
                 if enemy_move in self._responses:
                     move = self._responses[enemy_move]
                 else:
                     move = self._choose_move()
-
-                    self._outbox.put(move.copy(), block=False)
-                    self._state = self._state.result(move)
+                self._outbox.put(move.copy(), block=False)
+                self._state = self._state.result(move)
         except self.StopThreadExecution:
             print("{} ending!".format(self.name), file=sys.stderr)
             return
@@ -258,11 +244,12 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 return some_queue.get(block=True, timeout=0.5)
             except queue.Empty:
                 if self._game_over_event.is_set():
-                    # print("{} ending soon!".format(self.name), file=sys.stderr)
+                    print("{} ending soon!".format(self.name), file=sys.stderr)
                     raise self.StopThreadExecution()
 
     def make_move(self):
-        return self.safe_get_queue_blocking(self._outbox)
+        ret = self.safe_get_queue_blocking(self._outbox)
+        return ret
 
 
     def _precompute(self):

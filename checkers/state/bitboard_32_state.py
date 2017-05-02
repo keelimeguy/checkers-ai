@@ -112,7 +112,7 @@ class Bitboard32State(CheckersGameState):
 
     def list_actions(self):
         movelist = pointer(pointer(MOVE()))
-        numMoves = c_int(0)
+        numMoves = c_uint(0)
         movelist = state32_lib.actions(self.c_board, byref(numMoves))
         moves = [Bitboard32State.Move(movelist[i]) for i in range(numMoves.value)]
         state32_lib.Move_list_destroy(movelist, numMoves.value)

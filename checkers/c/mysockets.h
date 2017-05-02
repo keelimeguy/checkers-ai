@@ -36,7 +36,7 @@ char *getTime(void);
 void die(char *s);
 
 int setup(int isB, int opponent, int verbose);
-void end_connection();
+void end_connection(void);
 char* send_move(char* move, int* error);
 
 #endif
