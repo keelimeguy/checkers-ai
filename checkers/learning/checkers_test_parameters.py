@@ -71,6 +71,5 @@ for parameter in weight_tests:
         print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
         weight_tests[parameter][str(weight)][0] += wins
         weight_tests[parameter][str(weight)][1] += wins + draws + losses
-
-with open("learning_weights.json", "w") as f:
-    json.dump(weight_tests, f)
+        with open("learning_weights.json", "w") as f:
+            json.dump(weight_tests, f)
