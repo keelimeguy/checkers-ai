@@ -238,7 +238,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 # print("waiting for them", file=sys.stderr)
                 # while True:
                 enemy_move = self.safe_get_queue_blocking(self._inbox).copy()
-
+                print("got here")
                 # print("Done waiting!", file=sys.stderr)
                 # print(enemy_move, file=sys.stderr)
                 self._state = self._state.result(enemy_move)
