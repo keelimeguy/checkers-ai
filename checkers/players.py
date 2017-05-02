@@ -44,6 +44,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
     def recv_move(self, move):
         self.moves.append(move)  # not thread safe, but okay for correct use
         self.board = self.board.result(move)
+        print(str(self.board))
         # The sequence
         #   get a move from server (and enqueue)
         #   dequeue that move (and feed to client player)
@@ -281,6 +282,8 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
 
         alpha = -inf
         best_yet = None
+        if len(list(state.actions())) is 1:
+            return next(state.actions())
         for act in sorted(state.actions(),
                           # lowest value for opponent first
                           key=(lambda a: self._evaluator(state.result(a)))):
