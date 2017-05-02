@@ -295,7 +295,7 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 best_yet.append(act)
         index = random.randint(0, len(best_yet)-1) if best_yet is not None and len(best_yet)>1 else 0
         chosen = best_yet[index] if best_yet is not None else None
-        print("Chose a move {}".format(chosen))
+        # print("Chose a move {}".format(chosen))
         if not chosen:
             print(next(state.actions(), None), file=sys.stderr)
             raise ValueError("No actions: ", str(state))
