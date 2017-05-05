@@ -2,6 +2,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 
 #Tests various weights on parameters. Results are stored in learning_weights.json
 #Recognition for other parameters will be added next.
@@ -28,49 +29,50 @@ def perror(*args, **kwargs):
     kwargs["file"] = sys.stderr
     print(*args, **kwargs)
 
-for parameter in weight_tests:
-    for weight in weight_tests[parameter]:
-        weight = int(weight)
-        with open(os.path.join(parent_dir, "weights.json"), "r") as f:
-            active_weights = json.load(f)
-        active_weights[parameter] = weight
-        with open(outfile, "w") as f:
-            json.dump(active_weights, f)
+start_time = time.time()
+while time.time() < start_time + 3600:
+    for parameter in weight_tests:
+        for weight in weight_tests[parameter]:
+            weight = int(weight)
+            with open(os.path.join(parent_dir, "weights.json"), "r") as f:
+                active_weights = json.load(f)
+            active_weights[parameter] = weight
+            with open(outfile, "w") as f:
+                json.dump(active_weights, f)
 
-        #This is horrible code, but everything else that I can think of does not work due to memory leak.
-        os.chdir(run_dir)
-        try:
-            result = run_sp_game()
-        except subprocess.CalledProcessError as e:
-            perror("Failed first attempt:")
-            perror(e.output)
+            #This is horrible code, but everything else that I can think of does not work due to memory leak.
+            os.chdir(run_dir)
             try:
                 result = run_sp_game()
             except subprocess.CalledProcessError as e:
-                perror("Failed second attempt:")
+                perror("Failed first attempt:")
                 perror(e.output)
-                break
-        os.chdir(current_dir)
-        draws = 0
-        wins = 0
-        losses = 0
-        for line in result.split(b'\n'):
-            if line:
-                rline = line.split(b':')
-                if rline[0] == b"Game result":
-                    result_line =  rline[1].split()[0]
-                    if result_line == b"Draw":
-                        draws = 1
-                        break;
-                if rline[0] == b"Client Win?":
-                    result_line =  rline[1].split()[0]
-                    if result_line == b"True":
-                        wins = 1
-                    if result_line == b"False":
-                        losses = 1
-        print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
-        weight_tests[parameter][str(weight)][0] += wins
-        weight_tests[parameter][str(weight)][1] += wins + draws + losses
-
-with open("learning_weights.json", "w") as f:
-    json.dump(weight_tests, f)
+                try:
+                    result = run_sp_game()
+                except subprocess.CalledProcessError as e:
+                    perror("Failed second attempt:")
+                    perror(e.output)
+                    break
+            os.chdir(current_dir)
+            draws = 0
+            wins = 0
+            losses = 0
+            for line in result.split(b'\n'):
+                if line:
+                    rline = line.split(b':')
+                    if rline[0] == b"Game result":
+                        result_line =  rline[1].split()[0]
+                        if result_line == b"Draw":
+                            draws = 1
+                            break;
+                    if rline[0] == b"Client Win?":
+                        result_line =  rline[1].split()[0]
+                        if result_line == b"True":
+                            wins = 1
+                        if result_line == b"False":
+                            losses = 1
+            print("Finished '{}', weight {}: {}/{}".format(parameter, weight, wins, wins+draws+losses))
+            weight_tests[parameter][str(weight)][0] += wins
+            weight_tests[parameter][str(weight)][1] += wins + draws + losses
+            with open("learning_weights.json", "w") as f:
+                json.dump(weight_tests, f)

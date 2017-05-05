@@ -31,7 +31,33 @@ def eval(board, player, weights):
         return score
     return -score
 
-class BoardEvaluator:
+class GenericBoardEvaluator:
+
+    def __init__(self, eval_function, cache_size=100):
+        """Takes an evaluation function that need not notice when the game is
+        over.
+
+        cache_size is for an lru_cache.  A large value would probably be
+        redundant given the number of similar things being cached
+        """
+        # note this is an instance property, cache included
+        @functools.lru_cache(cache_size)
+        def _evaluate(board):
+            # return +/- infinity if the game is over
+            if board.count_friends() == 0:
+                return -inf
+            elif board.count_foes() == 0:
+                return inf
+            else:
+                return eval_function(board)
+
+        self._evaluate = _evaluate
+
+    def __call__(self, board):
+        return self._evaluate(board)
+
+
+class BoardEvaluator(GenericBoardEvaluator):
     """Use this to heuristically evaluate boards for a given set of heuristic
     weights.
 
@@ -44,6 +70,7 @@ class BoardEvaluator:
     my_board_value = be(my_board)  #  invokes the __call__ method
     my_other_board_value = be(my_other_board)
     """
+
     def __init__(self, weights, cache_size=100, sanity_check=True):
         """weights: should map names of functions to weights on those functions.
         (Functions with weight 0 are optimized away.)
@@ -51,25 +78,27 @@ class BoardEvaluator:
         cache_size is for an lru_cache.  A large value would probably be
         redundant given the number of similar things being cached
         """
+
         self._weights = {param : weights[param] for param in weights
                          if weights[param] != 0}
+
         if not self._weights and sanity_check:
             print("{} instantiated with no nonzero weights".format(type(self)),
                   file=sys.stderr)
-        # note this is an instance property, cache included
-        @functools.lru_cache(cache_size)
-        def _evaluate(board):
+
+        def evaluate(board):
             # return +/- infinity if the game is over
-            if board.count_friends() == 0:
-                return -inf
-            elif board.count_foes() == 0:
-                return inf
             return sum(weights[param] * getattr(board, param)()
                        for param in self._weights)
-        self._evaluate = _evaluate
+        super().__init__(evaluate, cache_size=cache_size)
 
-    def __call__(self, board):
-        return self._evaluate(board)
+
+class TrainingEvaluator(GenericBoardEvaluator):
+
+    def __init__(self):
+
+        super().__init__(lambda board: board.count_friends() / board.count_foes())
+    
 
 def alphabeta_search(node, player, weights):
     ## Simple alpha-beta minimax search

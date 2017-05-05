@@ -44,6 +44,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
     def recv_move(self, move):
         self.moves.append(move)  # not thread safe, but okay for correct use
         self.board = self.board.result(move)
+        print(str(self.board))
         # The sequence
         #   get a move from server (and enqueue)
         #   dequeue that move (and feed to client player)
@@ -65,8 +66,7 @@ class McCartneyServerPlayer(Thread, CheckersServerBase):
         if isinstance(result, GameOver):
             self._tell_thread_to_stop()
             raise result
-        else:
-            return result
+        return result
 
     def _tell_thread_to_stop(self):
         self.queue_to_send.put(self.StopThreadExecution())
@@ -180,15 +180,19 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
     class StopThreadExecution(Exception):
         """Thrown when the thread ought to stop completely"""
 
-    def __init__(self, state=None, weights=None, depth=7):
-        """You'd better pass in a dictionary of weights"""
+    def __init__(self, state=None, weights=None, evaluator=None, depth=7):
+        """You'd better pass in a dictionary of weights
+
+        evaluator takes precedence over weights"""
+
         super().__init__()
         # self.evaluate = evaluation_function  # better make a subclass instead
         self._state = Bitboard32State()
         self._inbox = queue.Queue(1)
-        self._evaluator = BoardEvaluator(weights)
+        self._evaluator = evaluator or BoardEvaluator(weights)
         self._search_engine = AlphaBeta(self._evaluator,
                                         default_depth=depth)
+        # self._search_engine.cache_quality_fudge = 2
         self._go_first_q = queue.Queue(1)
         self._outbox = queue.Queue(1)
         self._game_over_event = Event()
@@ -200,7 +204,10 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         self._go_first_q.put(go_first, block=False)
 
     def recv_move(self, move):
-        self._inbox.put(move.copy(),
+        if isinstance(move, GameOver):
+            self.tell_game_over()
+        else:
+            self._inbox.put(move.copy(),
                         block=False)  # useful error if queue is Full
 
     def tell_game_over(self):
@@ -211,43 +218,27 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
         go_first = self.safe_get_queue_blocking(self._go_first_q)
 
         if go_first:
-            # print("This shit's happening", file=sys.stderr)
             move = self._choose_move()
-            # print("asdfasdf", file=sys.stderr)
             self._outbox.put(move.copy(), block=False)
-            # print("asdfasdfasdf", file=sys.stderr)
-            # print(type(move), file=sys.stderr)
-            # print(move.move, file=sys.stderr)
             interim  = self._state.result(move)
-            # print(move.move, file=sys.stderr)
-            # print("again {}".format(type(move)))
             self._state = interim
-            # print("asdfasdfasdfasdf", file=sys.stderr)
-            # print(type(move))  # segfaults
-            # print("move: {}".format(str(move)), file=sys.stderr)
-            # print("But it wasn't the holdup", file=sys.stderr)
         try:
             while True:
                 try:
                     self._precompute()
                 except self.StopPrecomputation:
-                    print("stopped precomputing", file=sys.stderr)
+                    # print("stopped precomputing", file=sys.stderr)
+                    pass
                 # block if necessary because that would mean we finished
                 # precomputation before our opponent made a move
-                # print("waiting for them", file=sys.stderr)
-                # while True:
                 enemy_move = self.safe_get_queue_blocking(self._inbox).copy()
-
-                # print("Done waiting!", file=sys.stderr)
-                # print(enemy_move, file=sys.stderr)
                 self._state = self._state.result(enemy_move)
                 if enemy_move in self._responses:
                     move = self._responses[enemy_move]
                 else:
                     move = self._choose_move()
-
-                    self._outbox.put(move.copy(), block=False)
-                    self._state = self._state.result(move)
+                self._outbox.put(move.copy(), block=False)
+                self._state = self._state.result(move)
         except self.StopThreadExecution:
             print("{} ending!".format(self.name), file=sys.stderr)
             return
@@ -258,11 +249,12 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
                 return some_queue.get(block=True, timeout=0.5)
             except queue.Empty:
                 if self._game_over_event.is_set():
-                    # print("{} ending soon!".format(self.name), file=sys.stderr)
+                    print("{} ending soon!".format(self.name), file=sys.stderr)
                     raise self.StopThreadExecution()
 
     def make_move(self):
-        return self.safe_get_queue_blocking(self._outbox)
+        ret = self.safe_get_queue_blocking(self._outbox)
+        return ret
 
 
     def _precompute(self):
@@ -290,6 +282,8 @@ class MinMaxClientPlayer(Thread, CheckersClientBase):
 
         alpha = -inf
         best_yet = None
+        if len(list(state.actions())) is 1:
+            return next(state.actions())
         for act in sorted(state.actions(),
                           # lowest value for opponent first
                           key=(lambda a: self._evaluator(state.result(a)))):
@@ -318,35 +312,6 @@ class PoliteMinMaxClientPlayer(MinMaxClientPlayer):
 
     def _precompute(self):
         pass
-
-class SimpleMcCartneyServerPlayer(McCartneyServerPlayer):
-    def __init__(self, opponent=0, is_B_client=False, verbose=False):
-        super().__init__(opponent, is_B_client, verbose)
-        self._client_is_white = self.server.connect(verbose=self._server_verbose)
-        if self._client_is_white:
-            self._tell_server("")
-
-    def recv_move(self, move):
-        self.moves.append(move)  # not thread safe, but okay for correct use
-        self.board = self.board.result(move)
-        # The sequence
-        #   get a move from server (and enqueue)
-        #   dequeue that move (and feed to client player)
-        #   recv a move from the client player
-        # should never be broken.  (Unless we pipeline our messages for
-        # sequences of forced jumps, but that would fail unless the other team
-        # did the same optimization! Please don't do that!)
-        # Thus this exception:
-        if self.queue_replies.qsize() != 0:
-            raise RuntimeError(  # see note above before commenting this out
-                "recv_move ({}) called on a {} with "
-                "nonzero pending messages from server".format(str(move), type(self)))
-
-        # This version does not use the queue and threading, meant to directly make and recieve moves
-        # ..hence "Simple"
-        return self._tell_server(str(move))
-        # self.queue_to_send.put(str(move), block=False)
-
 
 class LocalServerPlayer(CheckersServerBase):
 
