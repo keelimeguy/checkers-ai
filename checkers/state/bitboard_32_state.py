@@ -23,7 +23,7 @@ class Bitboard32State(CheckersGameState):
         def __init__(self, p_move=None):
             if p_move:
                 self.move = state32_lib.Move_copy(p_move)
-            if not self.move:
+            if not hasattr(self, "move") or not self.move:
                 self.move = state32_lib.Move_alloc()
                 state32_lib.Move_init(self.move, 0)
 
@@ -32,7 +32,7 @@ class Bitboard32State(CheckersGameState):
             ptr = state32_lib.Move_to_string(self.move)
             ptrcast = cast(ptr, c_char_p)
             string = ptrcast.value.decode("utf-8")
-            state32_lib.free(ptr)
+            free_str_ptr(ptr)
             return string
 
         def __del__(self):
@@ -51,8 +51,11 @@ class Bitboard32State(CheckersGameState):
                 raise ValueError("invalid move string: {}".format(repr(movestr)))
             return cls(state32_lib.Move_from_string(movestr.encode("utf-8")))
 
+        # def __eq__(self, other):
+        #     return self.move.contents.length == other.move.contents.length
+        # NOOOOOOO why why why
         def __eq__(self, other):
-            return self.move.contents.length == other.move.contents.length
+            return str(self) == str(other)
 
         def __gt__(self, other):
             return self.move.contents.length > other.move.contents.length
@@ -61,6 +64,9 @@ class Bitboard32State(CheckersGameState):
             assert isinstance(self.move.contents.length, int)
             return sum(self.move.contents.route[i] * 3**i
                        for i in range(self.move.contents.length))
+
+        def __repr__(self):
+            return super().__repr__() + str(self)
 
     def __init__(self, black_pieces=0x00000fff, white_pieces=0xfff00000, king_pieces=0x00000000, is_white=False, board=None):
         self.c_board = board
@@ -75,7 +81,8 @@ class Bitboard32State(CheckersGameState):
     def __str__(self):
         ptr = state32_lib.Board_to_string(self.c_board)
         string = cast(ptr, c_char_p).value.decode("utf-8")
-        state32_lib.free(ptr)
+        free_str_ptr(ptr)
+        # del ptr
         return string
 
     def __del__(self):
@@ -128,13 +135,9 @@ class Bitboard32State(CheckersGameState):
         # Returns player whose turn it is next, not the starting player of a client
         ptr = state32_lib.player(self.c_board)
         string = cast(ptr, c_char_p).value.decode("utf-8")
-        state32_lib.free(ptr)
+        free_str_ptr(ptr)
         return string
 
-
-
-
-    # We will use heuristics as described in the Warsaw Paper
 
 
 
@@ -527,3 +530,13 @@ class Bitboard32State(CheckersGameState):
 
     def king_corner_foes(self):
         return self.corner_check(self.c_board.contents.plyr, True)
+
+
+def free_str_ptr(ptr):
+    # print("about to segfault")
+    # state32_lib.free(ptr)
+    del ptr
+    # print("never mind")
+
+    # We will use heuristics as described in the Warsaw Paper
+
