@@ -6,8 +6,8 @@ import unittest
 import gc
 
 # put a line to import your game state implementation here
-from ..bitboard_32_state import Bitboard32State
-from ..state_superclass import *
+from checkers.state import Bitboard32State
+# from checkers.state.state_superclass import *
 
 FRESH_BOARD_REPR = """+b+b+b+b
 b+b+b+b+
@@ -126,7 +126,7 @@ class CheckersGameStateTestCase(unittest.TestCase):
                         str(current)), type(current))
             next_state = current.result(action)
             # Now test some basic stuff that makes sense
-            self.assertIsInstance(next_state, CheckersGameState)
+            self.assertIsInstance(next_state, self.state_class)
             self.assertNotEqual(next_state, current)
             self.assertNotEqual(next_state.player(), current.player())
             self.assertIn(next_state.player(), set(["Black", "White"]))

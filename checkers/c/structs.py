@@ -38,10 +38,10 @@ state32_lib.Board_from_string.argtypes = [c_char_p]
 state32_lib.Move_from_string.restype = POINTER(MOVE)
 state32_lib.Move_from_string.argtypes = [c_char_p]
 
-state32_lib.Board_to_string.restype = c_void_p
+state32_lib.Board_to_string.restype = c_char_p
 state32_lib.Board_to_string.argtypes = [POINTER(BOARD)]
 
-state32_lib.Move_to_string.restype = c_void_p
+state32_lib.Move_to_string.restype = c_char_p
 state32_lib.Move_to_string.argtypes = [POINTER(MOVE)]
 
 state32_lib.player.restype = c_void_p
